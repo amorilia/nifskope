@@ -76,6 +76,76 @@ for i in sys.argv:
 block_names.sort()
 compound_names.sort()
 basic_names.sort()
+enum_names.sort()
+
+def ListAttributes( compound ):
+    attr_list = ""
+    count  = 0
+
+    #Create Attribute List
+    for a in compound.members:
+        temp.set_var( "attr-name", a.name )
+        temp.set_var( "attr-type", a.type )
+        temp.set_var( "attr-arg", a.arg )
+        temp.set_var( "attr-arr1", a.arr1.lhs )
+        temp.set_var( "attr-arr2", a.arr2.lhs )
+        cond_string = a.cond.code("")
+        if cond_string:
+            temp.set_var( "attr-cond", cond_string )
+        else:
+            temp.set_var( "attr-cond", "" )
+
+        if count % 2 == 0:
+            temp.set_var( "row-class", "reg0" )
+        else:
+            temp.set_var( "row-class", "reg1" )
+
+        temp.set_var( "attr-desc", a.description.replace("\n", "<br/>") )
+
+        temp.set_var( "attr-from", a.orig_ver1 )
+        temp.set_var( "attr-to", a.orig_ver2 )
+
+        attr_list += temp.parse( "templates/attr_row.html" )
+
+        count += 1
+
+    return attr_list
+
+#
+# Generate Version List Page
+#
+
+temp = Template()
+temp.set_var( "title", "NIF File Format Versions" )
+
+#List each Basic Type with Description
+
+count = 0
+version_list = ""
+for n in version_names:
+    x = version_types[n]
+
+    if count % 2 == 0:
+        temp.set_var( "row-class", "reg0" )
+    else:
+        temp.set_var( "row-class", "reg1" )
+            
+    temp.set_var( "list-name", x.num )
+    temp.set_var( "list-desc", x.description.replace("\n", "<br/>") )
+
+    version_list += temp.parse( "templates/version_row.html" )
+
+    count += 1
+
+
+temp.set_var( "list", version_list )
+
+temp.set_var( "contents", temp.parse( "templates/version_list.html") )
+
+f = file(ROOT_DIR + '/doc/version_list.html', 'w')
+f.write( temp.parse( "templates/main.html" ) )
+f.close()
+        
 
 #
 # Generate Basic List Page
@@ -132,19 +202,113 @@ for n in basic_names:
 
     for b in block_names:
         for m in block_types[b].members:
-            if m.ctype == n:
+            if m.type == n:
                 found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
                 break
 
     for b in compound_names:
         for m in compound_types[b].members:
-            if m.ctype == n:
+            if m.type == n:
                 found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
                 break
 
     temp.set_var( "found-in", found_in );
     
     temp.set_var( "contents", temp.parse( "templates/basic.html") )
+
+    f = file(ROOT_DIR + '/doc/' + x.cname + '.html', 'w')
+    f.write( temp.parse( "templates/main.html" ) )
+    f.close()
+
+#
+# Generate Enum List Page
+#
+
+temp = Template()
+temp.set_var( "title", "Enum Data Types" )
+
+#List each Enum Type with Description
+
+count = 0
+enum_list = ""
+for n in enum_names:
+    x = enum_types[n]
+
+    if count % 2 == 0:
+        temp.set_var( "row-class", "reg0" )
+    else:
+        temp.set_var( "row-class", "reg1" )
+            
+    temp.set_var( "list-name", x.name )
+    temp.set_var( "list-desc", x.description.replace("\n", "<br/>") )
+
+    enum_list += temp.parse( "templates/list_row.html" )
+
+    count += 1
+
+
+temp.set_var( "list", enum_list )
+
+temp.set_var( "contents", temp.parse( "templates/list.html") )
+
+f = file(ROOT_DIR + '/doc/enum_list.html', 'w')
+f.write( temp.parse( "templates/main.html" ) )
+f.close()
+    
+
+    
+#
+# Generate Enum Pages
+#
+
+count = 0
+for n in enum_names:
+    x = enum_types[n]
+
+    temp = Template()
+    temp.set_var( "title", x.name )
+    temp.set_var( "name", x.name )
+    temp.set_var( "storage", x.storage )
+    temp.set_var( "description", x.description.replace("\n", "<br/>") )
+
+    #Create Found In list
+    found_in = ""
+
+    for b in block_names:
+        for m in block_types[b].members:
+            if m.type == n:
+                found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+                break
+
+    for b in compound_names:
+        for m in compound_types[b].members:
+            if m.type == n:
+                found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+                break
+
+    temp.set_var( "found-in", found_in );
+
+    #Create Choice List
+
+    count = 0
+    choice_list = ""
+    for o in x.options:
+        if count % 2 == 0:
+            temp.set_var( "row-class", "reg0" )
+        else:
+            temp.set_var( "row-class", "reg1" )
+
+        temp.set_var( "enum-number", o.value )
+        temp.set_var( "enum-name", o.name )
+        temp.set_var( "enum-desc", o.description.replace("\n", "<br/>") )
+
+        choice_list += temp.parse( "templates/enum_row.html" )
+
+        count += 1
+
+    temp.set_var( "choices", choice_list )
+    
+    temp.set_var( "contents", temp.parse( "templates/enum.html") )
 
     f = file(ROOT_DIR + '/doc/' + x.cname + '.html', 'w')
     f.write( temp.parse( "templates/main.html" ) )
@@ -209,13 +373,13 @@ for n in compound_names:
 
     for b in block_names:
         for m in block_types[b].members:
-            if m.ctype == n:
+            if m.type == n:
                 found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
                 break
 
     for b in compound_names:
         for m in compound_types[b].members:
-            if m.ctype == n:
+            if m.type == n:
                 found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
                 break
 
@@ -226,12 +390,13 @@ for n in compound_names:
     count = 0
     for a in x.members:
         temp.set_var( "attr-name", a.name )
-        temp.set_var( "attr-type", a.ctype )
+        temp.set_var( "attr-type", a.type )
         temp.set_var( "attr-arg", a.arg )
         temp.set_var( "attr-arr1", a.arr1.lhs )
         temp.set_var( "attr-arr2", a.arr2.lhs )
-        if a.cond.lhs and a.cond.op and a.cond.rhs:
-            temp.set_var( "attr-cond", a.cond.lhs + " " + a.cond.op + " " + a.cond.rhs )
+        cond_string = a.cond.code("")
+        if cond_string:
+            temp.set_var( "attr-cond", cond_string )
         else:
             temp.set_var( "attr-cond", "" )
 
@@ -256,3 +421,96 @@ for n in compound_names:
     f = file(ROOT_DIR + '/doc/' + x.cname + '.html', 'w')
     f.write( temp.parse( "templates/main.html" ) )
     f.close()
+
+#
+# Generate NiObject List Page
+#
+
+temp = Template()
+temp.set_var( "title", "NIF Object Types" )
+
+#List each NiObject with Description
+
+count = 0
+niobject_list = ""
+for n in block_names:
+    x = block_types[n]
+
+    if count % 2 == 0:
+        temp.set_var( "row-class", "reg0" )
+    else:
+        temp.set_var( "row-class", "reg1" )
+            
+    temp.set_var( "list-name", x.name )
+    temp.set_var( "list-desc", x.description.replace("\n", "<br/>") )
+
+    niobject_list += temp.parse( "templates/list_row.html" )
+
+    count += 1
+
+
+temp.set_var( "list", niobject_list )
+
+temp.set_var( "contents", temp.parse( "templates/list.html") )
+
+f = file(ROOT_DIR + '/doc/niobject_list.html', 'w')
+f.write( temp.parse( "templates/main.html" ) )
+f.close()
+    
+
+    
+#
+# Generate NiObject Pages
+#
+
+mkpath(os.path.join(ROOT_DIR, "obj"))
+mkpath(os.path.join(ROOT_DIR, "gen"))
+
+count = 0
+for n in block_names:
+    x = block_types[n]
+
+    temp = Template()
+    temp.set_var( "title", x.name )
+    temp.set_var( "name", x.name )
+    temp.set_var( "description", x.description.replace("\n", "<br/>") )
+
+    #Create Ancestor List
+
+    ancestors = []
+    b = x
+    while b:
+        ancestors.append(b)
+        b = b.inherit
+
+    ancestors.reverse()
+        
+    #Create Attribute List
+    attr_list = ""
+    count = 0
+
+    for a in ancestors:
+        temp.set_var( "inherit", a.name )
+        attr_list += temp.parse( "templates/inherit_row.html" )
+
+        inherit_list = ""
+        inherit_list = ListAttributes( a )
+
+        attr_list += inherit_list
+    
+    temp.set_var( "attributes", attr_list )
+
+    #Create Parent Of list
+    parent_of = ""
+    for b in block_names:
+        if block_types[b].inherit == x:
+            parent_of += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+
+    temp.set_var( "parent-of", parent_of );
+    
+    temp.set_var( "contents", temp.parse( "templates/niobject.html") )
+
+    f = file(ROOT_DIR + '/doc/' + x.cname + '.html', 'w')
+    f.write( temp.parse( "templates/main.html" ) )
+    f.close()
+
