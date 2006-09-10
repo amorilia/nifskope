@@ -1,17 +1,11 @@
-# nifxml_niflib.py
+# nifxml_doc.py
 #
-# This script generates C++ code for Niflib.
+# This script generates HTML documentation from the XML file.
 #
 # --------------------------------------------------------------------------
 # Command line options
 #
 # -p /path/to/niflib : specifies the path where niflib can be found 
-#
-# -b : enable bootstrap mode (generates templates)
-# 
-# -i : do NOT generate implmentation; place all code in defines.h
-#
-# -a : generate accessors for data in classes
 #
 # --------------------------------------------------------------------------
 # ***** BEGIN LICENSE BLOCK *****
@@ -118,7 +112,7 @@ def ListAttributes( compound ):
 temp = Template()
 temp.set_var( "title", "NIF File Format Versions" )
 
-#List each Basic Type with Description
+#List each Version with Description
 
 count = 0
 version_list = ""
@@ -132,7 +126,7 @@ for n in version_names:
             
     temp.set_var( "list-name", x.num )
     temp.set_var( "list-desc", x.description.replace("\n", "<br/>") )
-
+    
     version_list += temp.parse( "templates/version_row.html" )
 
     count += 1
@@ -196,6 +190,10 @@ for n in basic_names:
     temp.set_var( "title", x.name )
     temp.set_var( "name", x.name )
     temp.set_var( "description", x.description.replace("\n", "<br/>") )
+    if count == "1":
+        temp.set_var( "count", "<p>Yes</p>" )
+    else:
+        temp.set_var( "count", "<p>No</p>" )
 
     #Create Found In list
     found_in = ""
@@ -386,33 +384,7 @@ for n in compound_names:
     temp.set_var( "found-in", found_in );
 
     #Create Attribute List
-    attr_list = ""
-    count = 0
-    for a in x.members:
-        temp.set_var( "attr-name", a.name )
-        temp.set_var( "attr-type", a.type )
-        temp.set_var( "attr-arg", a.arg )
-        temp.set_var( "attr-arr1", a.arr1.lhs )
-        temp.set_var( "attr-arr2", a.arr2.lhs )
-        cond_string = a.cond.code("")
-        if cond_string:
-            temp.set_var( "attr-cond", cond_string )
-        else:
-            temp.set_var( "attr-cond", "" )
-
-        if count % 2 == 0:
-            temp.set_var( "row-class", "reg0" )
-        else:
-            temp.set_var( "row-class", "reg1" )
-
-        temp.set_var( "attr-desc", a.description.replace("\n", "<br/>") )
-
-        temp.set_var( "attr-from", a.orig_ver1 )
-        temp.set_var( "attr-to", a.orig_ver2 )
-
-        attr_list += temp.parse( "templates/attr_row.html" )
-
-        count += 1
+    attr_list = ListAttributes( x)
 
     temp.set_var( "attributes", attr_list )
     
@@ -427,7 +399,7 @@ for n in compound_names:
 #
 
 temp = Template()
-temp.set_var( "title", "NIF Object Types" )
+temp.set_var( "title", "NIF Object List" )
 
 #List each NiObject with Description
 
@@ -451,7 +423,8 @@ for n in block_names:
 
 temp.set_var( "list", niobject_list )
 
-temp.set_var( "contents", temp.parse( "templates/list.html") )
+temp.set_var( "niobject-contents", temp.parse( "templates/list.html") )
+temp.set_var( "contents", temp.parse( "templates/niobject_nav.html") )
 
 f = file(ROOT_DIR + '/doc/niobject_list.html', 'w')
 f.write( temp.parse( "templates/main.html" ) )
@@ -514,3 +487,59 @@ for n in block_names:
     f.write( temp.parse( "templates/main.html" ) )
     f.close()
 
+#global value
+object_tree = ""
+
+def ListObjectTree( root ):
+
+    global object_tree
+
+    #get first line of description
+    desc = root.description.splitlines(False)[0]
+
+    #add a new list for this ancestor
+    object_tree +=  "<li><a href=\"" + root.name + ".html\"><b>" + root.name + "</b></a> | " + desc + "</li>\n"
+    """
+    <ul>
+    <li>
+    <a href="index.php?mode=list&amp;table=attr&amp;block_id=379&amp;version="><b>NiObject</b></a>
+     | Abstract block type.<ul>
+    <li>
+    """
+
+    #Create Child List
+
+    children = []
+    for b in block_names:
+        if block_types[b].inherit == root:
+            children.append(block_types[b])
+
+    if len(children) > 0:
+        object_tree += "<ul>\n"
+        
+        for c in children:
+            ListObjectTree(c)
+
+        object_tree += "</ul>\n"
+
+#
+# Generate NiObject Hierarchy Page
+#
+
+temp = Template()
+temp.set_var( "title", "NIF Object Hierarchy" )
+
+# Build Tree
+
+object_tree = ""
+ListObjectTree( block_types["NiObject"] )
+temp.set_var( "object-tree", object_tree )
+
+
+temp.set_var( "niobject-contents", temp.parse( "templates/hierarchy.html") )
+temp.set_var( "contents", temp.parse( "templates/niobject_nav.html") )
+
+f = file(ROOT_DIR + '/doc/index.html', 'w')
+f.write( temp.parse( "templates/main.html" ) )
+f.close()
+        

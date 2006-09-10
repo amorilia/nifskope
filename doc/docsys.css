@@ -1,6 +1,6 @@
 hr        { border: 1px; color: black; background: black; height: 1px; } 
 body      { font-family: Verdana, Arial, Helvetica, sans-serif; }
-p, td, th, div, pre { color: black; font-size: 10pt; }
+p, td, th, div, pre, li { color: black; font-size: 10pt; }
 td        { vertical-align: text-top; }
 a         { color: #006699; text-decoration: none;}
 a:link    { color: #006699; text-decoration: none;}
