@@ -75,13 +75,88 @@ for i in sys.argv:
 
 block_names.sort()
 compound_names.sort()
+basic_names.sort()
+
+#
+# Generate Basic List Page
+#
+
+temp = Template()
+temp.set_var( "title", "Basic Data Types" )
+
+#List each Compound with Description
+
+count = 0
+basic_list = ""
+for n in basic_names:
+    x = basic_types[n]
+
+    if count % 2 == 0:
+        temp.set_var( "row-class", "reg0" )
+    else:
+        temp.set_var( "row-class", "reg1" )
+            
+    temp.set_var( "list-name", x.name )
+    temp.set_var( "list-desc", x.description )
+
+    basic_list += temp.parse( "templates/list_row.html" )
+
+    count += 1
+
+
+temp.set_var( "list", basic_list )
+
+temp.set_var( "contents", temp.parse( "templates/list.html") )
+
+f = file(ROOT_DIR + '/doc/basic_list.html', 'w')
+f.write( temp.parse( "templates/main.html" ) )
+f.close()
+    
+
+    
+#
+# Generate Basic Pages
+#
+
+count = 0
+for n in basic_names:
+    x = basic_types[n]
+
+    temp = Template()
+    temp.set_var( "title", x.name )
+    temp.set_var( "name", x.name )
+    temp.set_var( "description", x.description )
+
+    #Create Found In list
+    found_in = ""
+
+    for b in block_names:
+        for m in block_types[b].members:
+            if m.ctype == n:
+                found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+                break
+
+    for b in compound_names:
+        for m in compound_types[b].members:
+            if m.ctype == n:
+                found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+                break
+
+    temp.set_var( "found-in", found_in );
+    
+    temp.set_var( "contents", temp.parse( "templates/basic.html") )
+
+    f = file(ROOT_DIR + '/doc/' + x.cname + '.html', 'w')
+    f.write( temp.parse( "templates/main.html" ) )
+    f.close()
+
 
 #
 # Generate Compound List Page
 #
 
 temp = Template()
-temp.set_var( "title", "Compounds" )
+temp.set_var( "title", "Compound Data Types" )
 
 #List each Compound with Description
 
