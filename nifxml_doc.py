@@ -84,7 +84,7 @@ basic_names.sort()
 temp = Template()
 temp.set_var( "title", "Basic Data Types" )
 
-#List each Compound with Description
+#List each Basic Type with Description
 
 count = 0
 basic_list = ""
@@ -97,7 +97,7 @@ for n in basic_names:
         temp.set_var( "row-class", "reg1" )
             
     temp.set_var( "list-name", x.name )
-    temp.set_var( "list-desc", x.description )
+    temp.set_var( "list-desc", x.description.replace("\n", "<br/>") )
 
     basic_list += temp.parse( "templates/list_row.html" )
 
@@ -125,7 +125,7 @@ for n in basic_names:
     temp = Template()
     temp.set_var( "title", x.name )
     temp.set_var( "name", x.name )
-    temp.set_var( "description", x.description )
+    temp.set_var( "description", x.description.replace("\n", "<br/>") )
 
     #Create Found In list
     found_in = ""
@@ -171,7 +171,7 @@ for n in compound_names:
         temp.set_var( "row-class", "reg1" )
             
     temp.set_var( "list-name", x.name )
-    temp.set_var( "list-desc", x.description )
+    temp.set_var( "list-desc", x.description.replace("\n", "<br/>") )
 
     compound_list += temp.parse( "templates/list_row.html" )
 
@@ -202,7 +202,7 @@ for n in compound_names:
     temp = Template()
     temp.set_var( "title", x.name )
     temp.set_var( "name", x.name )
-    temp.set_var( "description", x.description )
+    temp.set_var( "description", x.description.replace("\n", "<br/>") )
 
     #Create Found In list
     found_in = ""
@@ -240,7 +240,7 @@ for n in compound_names:
         else:
             temp.set_var( "row-class", "reg1" )
 
-        temp.set_var( "attr-desc", a.description )
+        temp.set_var( "attr-desc", a.description.replace("\n", "<br/>") )
 
         temp.set_var( "attr-from", a.orig_ver1 )
         temp.set_var( "attr-to", a.orig_ver2 )
