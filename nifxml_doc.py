@@ -79,7 +79,11 @@ def ListAttributes( compound ):
     #Create Attribute List
     for a in compound.members:
         temp.set_var( "attr-name", a.name )
-        temp.set_var( "attr-type", a.type )
+        attr_type = '<a href="%s.html"><b>%s<b></a>'%(a.type, a.type)
+        if a.template:
+            attr_type += '&lt;<a href="%s.html">%s</a>&gt;'%(a.template, a.template)
+        
+        temp.set_var( "attr-type", attr_type )
         temp.set_var( "attr-arg", a.arg )
         temp.set_var( "attr-arr1", a.arr1.lhs )
         temp.set_var( "attr-arr2", a.arr2.lhs )
