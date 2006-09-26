@@ -358,9 +358,6 @@ f.close()
 # Generate Compound Pages
 #
 
-mkpath(os.path.join(ROOT_DIR, "obj"))
-mkpath(os.path.join(ROOT_DIR, "gen"))
-
 count = 0
 for n in compound_names:
     x = compound_types[n]
@@ -439,9 +436,6 @@ f.close()
 #
 # Generate NiObject Pages
 #
-
-mkpath(os.path.join(ROOT_DIR, "obj"))
-mkpath(os.path.join(ROOT_DIR, "gen"))
 
 count = 0
 for n in block_names:
