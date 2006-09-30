@@ -493,7 +493,11 @@ def ListObjectTree( root ):
     global object_tree
 
     #get first line of description
-    desc = root.description.splitlines(False)[0]
+    lines = root.description.splitlines(False)
+    if len(lines) > 0:
+        desc = lines[0]
+    else:
+        desc = ""
 
     #add a new list for this ancestor
     object_tree +=  "<li><a href=\"" + root.name + ".html\"><b>" + root.name + "</b></a> | " + desc + "</li>\n"
