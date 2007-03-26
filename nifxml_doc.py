@@ -5,12 +5,12 @@
 # --------------------------------------------------------------------------
 # Command line options
 #
-# -p /path/to/niflib : specifies the path where niflib can be found 
+# -p /path/to/doc : specifies the path where HTML documentation must be created
 #
 # --------------------------------------------------------------------------
 # ***** BEGIN LICENSE BLOCK *****
 #
-# Copyright (c) 2005, NIF File Format Library and Tools
+# Copyright (c) 2005, 2006, 2007 NIF File Format Library and Tools
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
