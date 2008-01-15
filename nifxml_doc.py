@@ -87,7 +87,7 @@ def ListAttributes( compound ):
         temp.set_var( "attr-arg", a.arg )
         temp.set_var( "attr-arr1", a.arr1.lhs )
         temp.set_var( "attr-arr2", a.arr2.lhs )
-        cond_string = a.cond.code("")
+        cond_string = a.cond.code("", brackets = False)
         if cond_string:
             temp.set_var( "attr-cond", cond_string )
         else:
