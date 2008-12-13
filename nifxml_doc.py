@@ -49,6 +49,7 @@
 from nifxml import *
 from distutils.dir_util import mkpath
 import os
+import itertools
 
 #
 # global data
@@ -71,6 +72,11 @@ block_names.sort()
 compound_names.sort()
 basic_names.sort()
 enum_names.sort()
+flag_names.sort()
+
+def tohex(value, nbytes=4):
+    """Improved version of hex."""
+    return ("0x%%0%dX" % (2*nbytes)) % (long(str(value)) & (2**(nbytes*8)-1))
 
 def ListAttributes( compound ):
     attr_list = ""
@@ -233,9 +239,7 @@ temp.set_var( "title", "Enum Data Types" )
 
 count = 0
 enum_list = ""
-for n in enum_names:
-    x = enum_types[n]
-
+for n, x in itertools.chain(enum_types.iteritems(), flag_types.iteritems()):
     if count % 2 == 0:
         temp.set_var( "row-class", "reg0" )
     else:
@@ -264,8 +268,7 @@ f.close()
 #
 
 count = 0
-for n in enum_names:
-    x = enum_types[n]
+for n, x in itertools.chain(enum_types.iteritems(), flag_types.iteritems()):
 
     temp = Template()
     temp.set_var( "title", x.name )
@@ -300,7 +303,11 @@ for n in enum_names:
         else:
             temp.set_var( "row-class", "reg1" )
 
-        temp.set_var( "enum-number", o.value )
+        # represent bit flags with hex
+        if (hasattr(o, "bit")):
+            temp.set_var( "enum-number", tohex(o.value) )
+        else:
+            temp.set_var( "enum-number", o.value )
         temp.set_var( "enum-name", o.name )
         temp.set_var( "enum-desc", o.description.replace("\n", "<br/>") )
 
