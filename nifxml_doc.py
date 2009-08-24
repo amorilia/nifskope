@@ -87,7 +87,7 @@ def ListAttributes( compound ):
         temp.set_var( "attr-name", a.name )
         attr_type = '<a href="%s.html"><b>%s<b></a>'%(a.type, a.type)
         if a.template:
-            attr_type += '&lt;<a href="%s.html">%s</a>&gt;'%(a.template, a.template)
+            attr_type += '&lt;<a href="%s.html">%s</a>&gt;'%(a.template.replace("\\", "_"), a.template)
         
         temp.set_var( "attr-type", attr_type )
         temp.set_var( "attr-arg", a.arg )
@@ -211,20 +211,20 @@ for n in basic_names:
     for b in block_names:
         for m in block_types[b].members:
             if m.type == n:
-                found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+                found_in += "<li><a href=\"" + b.replace("\\", "_") + ".html\">" + b + "</a></li>\n"
                 break
 
     for b in compound_names:
         for m in compound_types[b].members:
             if m.type == n:
-                found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+                found_in += "<li><a href=\"" + b.replace("\\", "_") + ".html\">" + b + "</a></li>\n"
                 break
 
     temp.set_var( "found-in", found_in );
     
     temp.set_var( "contents", temp.parse( "templates/basic.html") )
 
-    f = file(ROOT_DIR + '/doc/' + x.cname + '.html', 'w')
+    f = file(ROOT_DIR + '/doc/' + x.cname.replace('\\', '_') + '.html', 'w')
     f.write( temp.parse( "templates/main.html" ) )
     f.close()
 
@@ -282,13 +282,13 @@ for n, x in itertools.chain(enum_types.iteritems(), flag_types.iteritems()):
     for b in block_names:
         for m in block_types[b].members:
             if m.type == n:
-                found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+                found_in += "<li><a href=\"" + b.replace("\\", "_") + ".html\">" + b + "</a></li>\n"
                 break
 
     for b in compound_names:
         for m in compound_types[b].members:
             if m.type == n:
-                found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+                found_in += "<li><a href=\"" + b.replace("\\", "_") + ".html\">" + b + "</a></li>\n"
                 break
 
     temp.set_var( "found-in", found_in );
@@ -319,7 +319,7 @@ for n, x in itertools.chain(enum_types.iteritems(), flag_types.iteritems()):
     
     temp.set_var( "contents", temp.parse( "templates/enum.html") )
 
-    f = file(ROOT_DIR + '/doc/' + x.cname + '.html', 'w')
+    f = file(ROOT_DIR + '/doc/' + x.cname.replace("\\", "_") + '.html', 'w')
     f.write( temp.parse( "templates/main.html" ) )
     f.close()
 
@@ -380,13 +380,13 @@ for n in compound_names:
     for b in block_names:
         for m in block_types[b].members:
             if m.type == n:
-                found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+                found_in += "<li><a href=\"" + b.replace("\\", "_") + ".html\">" + b + "</a></li>\n"
                 break
 
     for b in compound_names:
         for m in compound_types[b].members:
             if m.type == n:
-                found_in += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+                found_in += "<li><a href=\"" + b.replace("\\", "_") + ".html\">" + b + "</a></li>\n"
                 break
 
     temp.set_var( "found-in", found_in );
@@ -398,7 +398,7 @@ for n in compound_names:
     
     temp.set_var( "contents", temp.parse( "templates/compound.html") )
 
-    f = file(ROOT_DIR + '/doc/' + x.cname + '.html', 'w')
+    f = file(ROOT_DIR + '/doc/' + x.cname.replace("\\", "_") + '.html', 'w')
     f.write( temp.parse( "templates/main.html" ) )
     f.close()
 
@@ -482,13 +482,13 @@ for n in block_names:
     parent_of = ""
     for b in block_names:
         if block_types[b].inherit == x:
-            parent_of += "<li><a href=\"" + b + ".html\">" + b + "</a></li>\n"
+            parent_of += "<li><a href=\"" + b.replace("\\", "_") + ".html\">" + b + "</a></li>\n"
 
     temp.set_var( "parent-of", parent_of );
     
     temp.set_var( "contents", temp.parse( "templates/niobject.html") )
 
-    f = file(ROOT_DIR + '/doc/' + x.cname + '.html', 'w')
+    f = file(ROOT_DIR + '/doc/' + x.cname.replace("\\", "_") + '.html', 'w')
     f.write( temp.parse( "templates/main.html" ) )
     f.close()
 
