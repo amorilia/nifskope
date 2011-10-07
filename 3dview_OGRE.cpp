@@ -77,14 +77,14 @@ bool NifSkopeOgre3D::go()
 	// setup resources
 	// Only add the minimally required resource locations to load up the Ogre head mesh
 	// TODO:remove this after the *.nif mesh + *.dds loader is ready
-	/*Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/programs", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/programs", "FileSystem", "General");
 	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/scripts", "FileSystem", "General");
 	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/textures", "FileSystem", "General");
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/models", "FileSystem", "General");*/
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/programs", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/models", "FileSystem", "General");
+	/*Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/programs", "FileSystem", "General");
 	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/scripts", "FileSystem", "General");
 	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/textures", "FileSystem", "General");
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/models", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/models", "FileSystem", "General");*/
 	//-------------------------------------------------------------------------------------
 	// configure
 	// Grab the OpenGL RenderSystem, or exit
