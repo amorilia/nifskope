@@ -78,3 +78,16 @@ In the "release" folder you'll find NifSkope.exe. You'll need following dlls:
   boost_1_44\lib\libboost_thread-mgw45-mt-1_44.dll ( for mingw build only )
 NifSkope.exe built with mingw will fail to load with dlls from non-mingw sdk
 and vice versa.
+
+linux:
+LD_LIBRARY_PATH should include the OGRE folder containing the OGRE plug-ins.
+If your OGRE is not in the environment paths, use OGRE_INC and OGRE_LIB:
+ if you have OGRE installed in ~/notsys/ogre172 then:
+  qmake "OGRE_INC=~/notsys/ogre172/include/OGRE" OGRE_LIB="~/notsys/ogre172/lib"
+OGRE works - many 10x to "Sussch" @ "ogre3d" forums: "[SOLVED] Qt + Ogre on X" -> http://www.ogre3d.org/forums/viewtopic.php?f=2&t=62805
+
+NIFSKOPE_X - defined when building for X
+NIFSKOPE_WIN - defined when building for ms windows windowing system
+NIFSKOPE_OGRE - defined when building with OGRE support
+NIFSKOPE_OGRE_GL - defined when building with OGRE GL render system support (default)
+NIFSKOPE_OGRE_DX9 - defined when building with OGRE DX9 render system support

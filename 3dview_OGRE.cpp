@@ -1,6 +1,10 @@
 #include "3dview_OGRE.h"
 #define OVERRIDE
 
+#ifdef NIFSKOPE_X
+#include <X11/Xlib.h>
+#endif /* NIFSKOPE_X */
+
 NifSkopeOgre3D *NifSkopeOgre3D::create()
 {
 	NifSkopeOgre3D *tmp = new NifSkopeOgre3D();
@@ -31,14 +35,18 @@ NifSkopeOgre3D::~NifSkopeOgre3D(void)
 bool NifSkopeOgre3D::go()
 {
 	mRoot = new Ogre::Root("", "", "NifSkopeOgre3D.log");
-	// A list of required plugins
+	// A list of required plugins - it will not run without them
 	Ogre::StringVector required_plugins;
 	required_plugins.push_back("GL RenderSystem");
 	required_plugins.push_back("Octree & Terrain Scene Manager");
 	// List of plugins to load
 	Ogre::StringVector plugins_toLoad;
+#ifdef NIFSKOPE_OGRE_GL
 	plugins_toLoad.push_back("RenderSystem_GL");
+#endif /* NIFSKOPE_OGRE_GL */
+#ifdef NIFSKOPE_OGRE_DX9
 	plugins_toLoad.push_back("RenderSystem_Direct3D9");
+#endif /* NIFSKOPE_OGRE_DX */
 	plugins_toLoad.push_back("Plugin_OctreeSceneManager");
 	// Load the OpenGL RenderSystem and the Octree SceneManager plugins
 	for (Ogre::StringVector::iterator j = plugins_toLoad.begin(); j != plugins_toLoad.end(); j++)
@@ -68,32 +76,85 @@ bool NifSkopeOgre3D::go()
 	//-------------------------------------------------------------------------------------
 	// setup resources
 	// Only add the minimally required resource locations to load up the Ogre head mesh
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/programs", "FileSystem", "General");
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/scripts", "FileSystem", "General");
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/textures", "FileSystem", "General");
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/models", "FileSystem", "General");		
+	// TODO:remove this after the *.nif mesh + *.dds loader is ready
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/programs", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/scripts", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/textures", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/models", "FileSystem", "General");		
 	//-------------------------------------------------------------------------------------
 	// configure
 	// Grab the OpenGL RenderSystem, or exit
+#ifdef NIFSKOPE_OGRE_GL
+	//TODO: choice dialog, settings load ?
+	//
 	Ogre::RenderSystem* rs = mRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
+#endif /* NIFSKOPE_OGRE_GL */
+#ifdef NIFSKOPE_OGRE_DX9
 	//Ogre::RenderSystem* rs = mRoot->getRenderSystemByName("Direct3D9 Rendering Subsystem");
+#endif /* NIFSKOPE_OGRE_DX9 */
+#ifdef NIFSKOPE_OGRE_GL
+	//TODO: choice dialog, settings load ?
 	if(!(rs->getName() == "OpenGL Rendering Subsystem")) {
+#endif /* NIFSKOPE_OGRE_GL */
+#ifdef NIFSKOPE_OGRE_DX9
 	//if(!(rs->getName() == "Direct3D9 Rendering Subsystem")) {
+#endif /* NIFSKOPE_OGRE_DX9 */
 		return false; //No RenderSystem found
 	}
 	// configure our RenderSystem
 	rs->setConfigOption("Full Screen", "No");
 	rs->setConfigOption("VSync", "Yes");
-	rs->setConfigOption("Video Mode", "800 x 600 @ 32-bit");
+	rs->setConfigOption("Video Mode", "800 x 600 @ 32-bit");// TODO: check 800 x 600
 	mRoot->setRenderSystem(rs);
 	Ogre::NameValuePairList misc;
 	//misc["parentWindowHandle"] = Ogre::StringConverter::toString((long)window_provider.winId());
-	misc["externalWindowHandle"] = Ogre::StringConverter::toString((long)winId());
+
+#ifdef NIFSKOPE_WIN
+	//works under windows with both GL and DX
+	//misc["externalWindowHandle"] = Ogre::StringConverter::toString((long)winId());
+	misc["parentWindowHandle"] = Ogre::StringConverter::toString((long)winId());
+#else
+#ifdef NIFSKOPE_X
+	//QX11Info info = x11Info(); #ifdef Q_WS_X11 #ifdef _WIN32
+	Display* dpy = XOpenDisplay (getenv ("DISPLAY"));
+    int screen = DefaultScreen (dpy);
+	/*misc["externalWindowHandle"] = fails
+		Ogre::StringConverter::toString((unsigned long)(info.display())) + ":" +
+		Ogre::StringConverter::toString((unsigned int)(info.screen())) + ":" +
+		Ogre::StringConverter::toString((unsigned long)winId());*/
+	QWidget *q_parent = dynamic_cast <QWidget *> ( parent() );
+	if (q_parent) {
+	misc["parentWindowHandle"] = 
+		/*Ogre::StringConverter::toString((unsigned long)(info.display())) + ":" +
+		Ogre::StringConverter::toString((unsigned int)(info.screen())) + ":" +
+		Ogre::StringConverter::toString((unsigned long)q_parent->winId());*/
+		Ogre::StringConverter::toString((unsigned long)(dpy)) + ":" +
+		Ogre::StringConverter::toString((unsigned int)(screen)) + ":" +
+		Ogre::StringConverter::toString((unsigned long)q_parent->winId());
+	} else return false;
+#else
+#error No supported windowing system found
+#endif /* NIFSKOPE_X */
+#endif /* NIFSKOPE_WIN */
+
 	misc["vsync"] = "true";// it ignores the above when "createRenderWindow"
 	//mWin = mRoot->createRenderWindow("mu", 800, 600, false);
 	//  ogre created window 
-	mWin = mRoot->initialise(false, "mu");
-	mWin = mRoot->createRenderWindow("mu", width(), height(), false, &misc);
+	mWin = mRoot->initialise(false, "Nifskope 2");
+	mWin = mRoot->createRenderWindow("Nifskope 2", width(), height(), false, &misc);
+    mWin->setActive( true );
+    mWin->resize(width(), height());
+    mWin->setVisible( true );
+
+    // Get the ID of Ogre render window
+    WId window_id;
+    mWin->getCustomAttribute( "WINDOW", &window_id );
+    // Take over the ogre created window.
+    QWidget::create( window_id );
+    resizeEvent( NULL );
+    setAttribute( Qt::WA_PaintOnScreen );
+    setAttribute( Qt::WA_OpaquePaintEvent );
+
 	//-------------------------------------------------------------------------------------
 	// choose scenemanager
 	// Get the SceneManager, in this case the OctreeSceneManager

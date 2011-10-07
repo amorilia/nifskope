@@ -211,6 +211,9 @@ win32 {
 
     RC_FILE = icon.rc
     DEFINES += EDIT_ON_ACTIVATE
+
+	DEFINES += NIFSKOPE_WIN
+	DEFINES += NIFSKOPE_OGRE_GL
     
     # Ignore specific errors that are very common in the code
     # CFLAGS += /Zc:wchar_t-
@@ -219,6 +222,11 @@ win32 {
     
     # add specific libraries to msvc builds
     MSVCPROJ_LIBS += winmm.lib Ws2_32.lib imm32.lib
+}
+
+unix {
+	DEFINES += NIFSKOPE_X
+	DEFINES += NIFSKOPE_OGRE_GL
 }
 
 win32:console {
