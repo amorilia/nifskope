@@ -1,3 +1,41 @@
+/***** BEGIN LICENSE BLOCK *****
+
+BSD License
+
+Copyright (c) 2005-2010, NIF File Format Library and Tools
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. The name of the NIF File Format Library and Tools project may not be
+   used to endorse or promote products derived from this software
+   without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+***** END LICENCE BLOCK *****/
+
+/*
+  many 10x to "Sussch" @ "ogre3d" forums: "[SOLVED] Qt + Ogre on X"
+  http://www.ogre3d.org/forums/viewtopic.php?f=2&t=62805
+
+*/
+
 #include "3dview_OGRE.h"
 #define OVERRIDE
 
@@ -77,14 +115,14 @@ bool NifSkopeOgre3D::go()
 	// setup resources
 	// Only add the minimally required resource locations to load up the Ogre head mesh
 	// TODO:remove this after the *.nif mesh + *.dds loader is ready
-	/*Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/programs", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/programs", "FileSystem", "General");
 	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/scripts", "FileSystem", "General");
 	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/textures", "FileSystem", "General");
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/models", "FileSystem", "General");*/
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/programs", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/models", "FileSystem", "General");
+	/*Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/programs", "FileSystem", "General");
 	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/scripts", "FileSystem", "General");
 	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/textures", "FileSystem", "General");
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/models", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/models", "FileSystem", "General");*/
 	//-------------------------------------------------------------------------------------
 	// configure
 	// Grab the OpenGL RenderSystem, or exit
