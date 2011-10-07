@@ -213,6 +213,8 @@ win32 {
     DEFINES += EDIT_ON_ACTIVATE
 
 	DEFINES += NIFSKOPE_WIN
+	DEFINES += NIFSKOPE_GL
+	DEFINES += NIFSKOPE_OGRE
 	DEFINES += NIFSKOPE_OGRE_GL
     
     # Ignore specific errors that are very common in the code
@@ -226,6 +228,8 @@ win32 {
 
 unix {
 	DEFINES += NIFSKOPE_X
+	DEFINES += NIFSKOPE_GL
+	DEFINES += NIFSKOPE_OGRE	
 	DEFINES += NIFSKOPE_OGRE_GL
 }
 

@@ -45,7 +45,12 @@ class NifTreeView;
 class ReferenceBrowser;
 class InspectView;
 
+#ifdef NIFSKOPE_GL
+class GLView;
+#endif /* NIFSKOPE_GL */
+#ifdef NIFSKOPE_OGRE
 class NifSkopeQt3D;
+#endif /* NIFSKOPE_OGRE */
 class FileSelector;
  
 class QModelIndex;
@@ -208,8 +213,13 @@ private:
 	InspectView * inspect;
 	
 	//! The main window
-	NifSkopeQt3D * ogl;
-	
+#ifdef NIFSKOPE_GL
+	GLView * ogl;
+#endif /* NIFSKOPE_GL */
+#ifdef NIFSKOPE_OGRE
+	// TODO: find a way :) NifSkopeQt3D * ogl;
+#endif /* NIFSKOPE_OGRE */
+
 	bool selecting;
 	bool initialShowEvent;
 	

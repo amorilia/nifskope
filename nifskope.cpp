@@ -76,7 +76,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //renderer selector - for now
 //#include "3dview.h"
+#ifdef NIFSKOPE_GL
+#include "glview.h"
+#endif /* NIFSKOPE_GL */
+#ifdef NIFSKOPE_OGRE
 #include "3dview_OGRE.h"
+#endif /* NIFSKOPE_OGRE */
 //---------------------------
 
 #include "spellbook.h"
@@ -256,17 +261,24 @@ NifSkope::NifSkope()
 		kfmtree, SLOT( edit( const QModelIndex & ) ) );
 #endif
 
-
+#ifdef NIFSKOPE_GL
+	// open gl
+	setCentralWidget( ogl = GLView::create() );
+#endif /* NIFSKOPE_GL */
+#ifdef NIFSKOPE_OGRE	
 	// 3d view
-	ogl = NifSkopeOgre3D::create();
-	setCentralWidget( ogl );
-	((NifSkopeOgre3D*)ogl)->go();
+	// TODO: find a way :) ogl = NifSkopeOgre3D::create();
+	// TODO: find a way :) setCentralWidget( ogl );
+	// TODO: find a way :)  (NifSkopeOgre3D*)ogl)->go();
+#endif /* NIFSKOPE_OGRE */
 
 	ogl->setNif( nif );
-//	connect( ogl, SIGNAL( clicked( const QModelIndex & ) ),
-//			this, SLOT( select( const QModelIndex & ) ) );
-//	connect( ogl, SIGNAL( customContextMenuRequested( const QPoint & ) ),
-//		this, SLOT( contextMenu( const QPoint & ) ) );
+#ifdef NIFSKOPE_GL
+	connect( ogl, SIGNAL( clicked( const QModelIndex & ) ),
+			this, SLOT( select( const QModelIndex & ) ) );
+	connect( ogl, SIGNAL( customContextMenuRequested( const QPoint & ) ),
+		this, SLOT( contextMenu( const QPoint & ) ) );
+#endif /* NIFSKOPE_GL */
 
 #ifndef DISABLE_INSPECTIONVIEWER
    // this browser shows the state of the current selected item
@@ -276,9 +288,11 @@ NifSkope::NifSkope()
    inspect->setScene( ogl->getScene() );
    connect( tree, SIGNAL( sigCurrentIndexChanged( const QModelIndex & ) ),
       inspect, SLOT( updateSelection( const QModelIndex & ) ) );
-//   connect( ogl, SIGNAL( sigTime( float, float, float ) ),
-//      inspect, SLOT( updateTime( float, float, float ) ) );
-//   connect( ogl, SIGNAL( paintUpdate() ), inspect, SLOT( refresh() ) );
+#ifdef NIFSKOPE_GL	  
+   connect( ogl, SIGNAL( sigTime( float, float, float ) ),
+      inspect, SLOT( updateTime( float, float, float ) ) );
+   connect( ogl, SIGNAL( paintUpdate() ), inspect, SLOT( refresh() ) );
+#endif /* NIFSKOPE_GL */
 #endif
 	// actions
 

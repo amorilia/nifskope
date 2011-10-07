@@ -88,6 +88,7 @@ OGRE works - many 10x to "Sussch" @ "ogre3d" forums: "[SOLVED] Qt + Ogre on X" -
 
 NIFSKOPE_X - defined when building for X
 NIFSKOPE_WIN - defined when building for ms windows windowing system
-NIFSKOPE_OGRE - defined when building with OGRE support
+NIFSKOPE_GL - defined when building with Open GL 2 renderer support (default)
+NIFSKOPE_OGRE - defined when building with OGRE renderer support (default)
 NIFSKOPE_OGRE_GL - defined when building with OGRE GL render system support (default)
 NIFSKOPE_OGRE_DX9 - defined when building with OGRE DX9 render system support
