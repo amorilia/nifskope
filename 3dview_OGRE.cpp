@@ -77,10 +77,14 @@ bool NifSkopeOgre3D::go()
 	// setup resources
 	// Only add the minimally required resource locations to load up the Ogre head mesh
 	// TODO:remove this after the *.nif mesh + *.dds loader is ready
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/programs", "FileSystem", "General");
+	/*Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/programs", "FileSystem", "General");
 	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/scripts", "FileSystem", "General");
 	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/textures", "FileSystem", "General");
-	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/models", "FileSystem", "General");		
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/models", "FileSystem", "General");*/
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/programs", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/scripts", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/textures", "FileSystem", "General");
+	Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/models", "FileSystem", "General");
 	//-------------------------------------------------------------------------------------
 	// configure
 	// Grab the OpenGL RenderSystem, or exit
@@ -111,8 +115,9 @@ bool NifSkopeOgre3D::go()
 
 #ifdef NIFSKOPE_WIN
 	//works under windows with both GL and DX
-	//misc["externalWindowHandle"] = Ogre::StringConverter::toString((long)winId());
-	misc["parentWindowHandle"] = Ogre::StringConverter::toString((long)winId());
+	misc["externalWindowHandle"] = Ogre::StringConverter::toString((long)winId());
+	// TODO: works but the rendering is not fit to the window
+	//misc["parentWindowHandle"] = Ogre::StringConverter::toString((long)winId());
 #else
 #ifdef NIFSKOPE_X
 	//QX11Info info = x11Info(); #ifdef Q_WS_X11 #ifdef _WIN32
@@ -142,10 +147,12 @@ bool NifSkopeOgre3D::go()
 	//  ogre created window 
 	mWin = mRoot->initialise(false, "Nifskope 2");
 	mWin = mRoot->createRenderWindow("Nifskope 2", width(), height(), false, &misc);
+
     mWin->setActive( true );
     mWin->resize(width(), height());
     mWin->setVisible( true );
 
+#ifdef NIFSKOPE_X
     // Get the ID of Ogre render window
     WId window_id;
     mWin->getCustomAttribute( "WINDOW", &window_id );
@@ -154,6 +161,7 @@ bool NifSkopeOgre3D::go()
     resizeEvent( NULL );
     setAttribute( Qt::WA_PaintOnScreen );
     setAttribute( Qt::WA_OpaquePaintEvent );
+#endif /* NIFSKOPE_X */
 
 	//-------------------------------------------------------------------------------------
 	// choose scenemanager
