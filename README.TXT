@@ -83,7 +83,7 @@ linux:
 LD_LIBRARY_PATH should include the OGRE folder containing the OGRE plug-ins.
 If your OGRE is not in the environment paths, use OGRE_INC and OGRE_LIB:
  if you have OGRE installed in ~/notsys/ogre172 then:
-  qmake "OGRE_INC=~/notsys/ogre172/include/OGRE" OGRE_LIB="~/notsys/ogre172/lib"
+  qmake OGRE_INC=~/notsys/ogre172/include/OGRE OGRE_LIB=~/notsys/ogre172/lib
 OGRE works - many 10x to "Sussch" @ "ogre3d" forums: "[SOLVED] Qt + Ogre on X" -> http://www.ogre3d.org/forums/viewtopic.php?f=2&t=62805
 
 NIFSKOPE_X - defined when building for X

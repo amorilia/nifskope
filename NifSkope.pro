@@ -231,6 +231,7 @@ unix {
 	DEFINES += NIFSKOPE_GL
 	DEFINES += NIFSKOPE_OGRE	
 	DEFINES += NIFSKOPE_OGRE_GL
+	LIBS += -lX11
 }
 
 win32:console {

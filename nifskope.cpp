@@ -263,21 +263,22 @@ NifSkope::NifSkope()
 
 #ifdef NIFSKOPE_GL
 	// open gl
-	setCentralWidget( ogl = GLView::create() );
+	//setCentralWidget( ogl = GLView::create() );
 #endif /* NIFSKOPE_GL */
 #ifdef NIFSKOPE_OGRE	
 	// 3d view
-	// TODO: find a way :) ogl = NifSkopeOgre3D::create();
-	// TODO: find a way :) setCentralWidget( ogl );
-	// TODO: find a way :)  (NifSkopeOgre3D*)ogl)->go();
+	// TODO: find a way :)
+	ogl = NifSkopeOgre3D::create();
+	setCentralWidget( ogl );
+	((NifSkopeOgre3D*)ogl)->go();
 #endif /* NIFSKOPE_OGRE */
 
 	ogl->setNif( nif );
 #ifdef NIFSKOPE_GL
-	connect( ogl, SIGNAL( clicked( const QModelIndex & ) ),
-			this, SLOT( select( const QModelIndex & ) ) );
-	connect( ogl, SIGNAL( customContextMenuRequested( const QPoint & ) ),
-		this, SLOT( contextMenu( const QPoint & ) ) );
+	//connect( ogl, SIGNAL( clicked( const QModelIndex & ) ),
+	//		this, SLOT( select( const QModelIndex & ) ) );
+	//connect( ogl, SIGNAL( customContextMenuRequested( const QPoint & ) ),
+	//	this, SLOT( contextMenu( const QPoint & ) ) );
 #endif /* NIFSKOPE_GL */
 
 #ifndef DISABLE_INSPECTIONVIEWER
@@ -289,9 +290,9 @@ NifSkope::NifSkope()
    connect( tree, SIGNAL( sigCurrentIndexChanged( const QModelIndex & ) ),
       inspect, SLOT( updateSelection( const QModelIndex & ) ) );
 #ifdef NIFSKOPE_GL	  
-   connect( ogl, SIGNAL( sigTime( float, float, float ) ),
-      inspect, SLOT( updateTime( float, float, float ) ) );
-   connect( ogl, SIGNAL( paintUpdate() ), inspect, SLOT( refresh() ) );
+   //connect( ogl, SIGNAL( sigTime( float, float, float ) ),
+   //  inspect, SLOT( updateTime( float, float, float ) ) );
+   //connect( ogl, SIGNAL( paintUpdate() ), inspect, SLOT( refresh() ) );
 #endif /* NIFSKOPE_GL */
 #endif
 	// actions
