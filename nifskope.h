@@ -214,10 +214,11 @@ private:
 	
 	//! The main window
 #ifdef NIFSKOPE_GL
-	GLView * ogl;
+	//GLView * ogl;
 #endif /* NIFSKOPE_GL */
 #ifdef NIFSKOPE_OGRE
-	// TODO: find a way :) NifSkopeQt3D * ogl;
+	// TODO: find a way :)
+	NifSkopeQt3D * ogl;
 #endif /* NIFSKOPE_OGRE */
 
 	bool selecting;
