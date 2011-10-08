@@ -1,7 +1,7 @@
 %define desktop_vendor niftools
 
 Name:           nifskope
-Version:        1.1.0
+Version:        2.0.0
 Release:        1%{?dist}
 Summary:        A tool for analyzing and editing NetImmerse/Gamebryo files
 
@@ -20,13 +20,14 @@ NifSkope is a tool for analyzing and editing NetImmerse/Gamebryo files.
 %setup -q
 
 %build
-qmake-qt4 -after TARGET=nifskope
+qmake-qt4 OGRE_INC=/usr/include/OGRE/ OGRE_LIB=/usr/lib64/OGRE/ -after TARGET=nifskope
 make %{?_smp_mflags}
 
 
 %install
 rm -rf $RPM_BUILD_ROOT
-%{__install} -Dp -m0755 nifskope $RPM_BUILD_ROOT/%{_bindir}/nifskope
+%{__install} -Dp -m0755 nifskope.sh $RPM_BUILD_ROOT/%{_bindir}/nifskope
+%{__install} -Dp -m0755 nifskope $RPM_BUILD_ROOT/%{_libdir}/nifskope
 %{__install} -Dp -m0644 nifskope.png $RPM_BUILD_ROOT/%{_datadir}/pixmaps/nifskope.png
 %{__install} -d $RPM_BUILD_ROOT/%{_datadir}/nifskope/doc
 %{__install} -d $RPM_BUILD_ROOT/%{_datadir}/nifskope/shaders
@@ -65,6 +66,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/nifskope/doc
 %dir %{_datadir}/nifskope/lang
 %{_bindir}/nifskope
+%{_libdir}/nifskope
 %{_datadir}/pixmaps/nifskope.png
 %{_datadir}/nifskope/nif.xml
 %{_datadir}/nifskope/kfm.xml
