@@ -30,7 +30,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-/** @file nifskope.h
+/**
  *  The global header for NifSkope
  */
 
@@ -45,7 +45,57 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifSkope
 {
+	/**
+	*	@brief Abstract parent of all UI implementations
+	*	QtMainWindow, GTKMainWindow, FooMainWindow, BarMainWindow, ...
+	*/
+	class MainWindow
+	{
+	public:
+		virtual int Run(int argc, char **argv)
+		{
+			return 0;
+		}
+	};
+	/**
+	*	@brief UI "bridge" - a single level "decorator"
+	*/
+	class IMainWindow
+	{
+	public:
+		IMainWindow()
+		{
+			mw = new MainWindow();
+		}
+		virtual int Run(int argc, char **argv)
+		{
+			return mw->Run (argc, argv);
+		}
+	protected:
+		MainWindow *mw;
+	};
+	/**
+	*	@brief Abstract parent of all UI Command handlers
+	*	usecase:
+	*	IMainWindow cm = new CommandManager(new NifSkopeQt4::MainWindow())
+	*/
+	class CommandManager: public IMainWindow
+	{
+	public:
+		CommandManager(MainWindow *mainwindow)
+		{
+			mw = mainwindow;
+		}
+	};
 
-};
+	/**
+	*	@brief Base abstract Command
+	*/
+	class ICommand
+	{
+		protected:
+			virtual void Execute() = 0;
+	};
+}
 
 #endif /*__NIFSKOPE_H__*/
