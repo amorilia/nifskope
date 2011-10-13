@@ -31,8 +31,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***** END LICENCE BLOCK *****/
 
 /**
- *  The global header for NifSkope
- */
+*  The global header for NifSkope
+*/
 
 #ifndef __NIFSKOPE_H__
 #define __NIFSKOPE_H__
@@ -43,59 +43,18 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NS_URL "niftools.sourceforge.net"
 #define NS_VERSION NS_NAME" "NS_VER
 
-namespace NifSkope
-{
-	/**
-	*	@brief Abstract parent of all UI implementations
-	*	QtMainWindow, GTKMainWindow, FooMainWindow, BarMainWindow, ...
-	*/
-	class MainWindow
-	{
-	public:
-		virtual int Run(int argc, char **argv)
-		{
-			return 0;
-		}
-	};
-	/**
-	*	@brief UI "bridge" - a single level "decorator"
-	*/
-	class IMainWindow
-	{
-	public:
-		IMainWindow()
-		{
-			mw = new MainWindow();
-		}
-		virtual int Run(int argc, char **argv)
-		{
-			return mw->Run (argc, argv);
-		}
-	protected:
-		MainWindow *mw;
-	};
-	/**
-	*	@brief Abstract parent of all UI Command handlers
-	*	usecase:
-	*	IMainWindow cm = new CommandManager(new NifSkopeQt4::MainWindow())
-	*/
-	class CommandManager: public IMainWindow
-	{
-	public:
-		CommandManager(MainWindow *mainwindow)
-		{
-			mw = mainwindow;
-		}
-	};
+#include <map>
+#include <string>
+#include <iostream>
 
-	/**
-	*	@brief Base abstract Command
-	*/
-	class ICommand
-	{
-		protected:
-			virtual void Execute() = 0;
-	};
+#define NS_ALREADYTHERE "The item already exists"
+#define INFO(MSG)\
+{\
+	std::clog << MSG << std::endl;\
+}
+#define ERR(MSG)\
+{\
+	std::cerr << "Error: " << MSG << std::endl;\
 }
 
 #endif /*__NIFSKOPE_H__*/

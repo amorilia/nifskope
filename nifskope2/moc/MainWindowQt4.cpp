@@ -1,9 +1,11 @@
-#include "MainWindow.h"
+#include "MainWindowQt4.h"
+
+#include <nifskope.h>
 
 namespace NifSkopeQt4
 {
 	void
-	MainWindow::LoadStyle(QApplication &app)
+	MainWindowQt4::LoadStyle(QApplication &app)
 	{
 		QDir qssDir (QApplication::applicationDirPath ());
 		// Check app dir, relative from nifskope/release, linux data dir
@@ -29,7 +31,7 @@ namespace NifSkopeQt4
 	}
 
 	int
-	MainWindow::Run(int argc, char **argv)
+	MainWindowQt4::Run(int argc, char **argv)
 	{
 		QApplication app (argc, argv);
 		app.setOrganizationName (NS_ORG);

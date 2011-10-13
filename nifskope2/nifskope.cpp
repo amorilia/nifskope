@@ -35,9 +35,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "nifskope.h"
+#include "CommandManager.h"
 // windowing system selection
 #ifdef NIFSKOPE_QT
-#include "moc/MainWindow.h"
+#include "moc/MainWindowQt4.h"
 #endif
 
 /**
@@ -48,7 +49,7 @@ main(int argc, char **argv)
 {
 // windowing system selection
 #ifdef NIFSKOPE_QT
-	NifSkopeQt4::MainWindow mwin;
+	NifSkopeQt4::MainWindowQt4 mwin;
 #endif
 	NifSkope::CommandManager cm (&mwin);
 	cm.Run(argc, argv);
