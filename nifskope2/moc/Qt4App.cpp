@@ -1,11 +1,12 @@
-#include "MainWindowQt4.h"
+#include "Qt4App.h"
 
 #include <nifskope.h>
+#include "Qt4MainWindow.h"
 
 namespace NifSkopeQt4
 {
 	void
-	MainWindowQt4::LoadStyle(QApplication &app)
+	Qt4App::LoadStyle(QApplication &app)
 	{
 		QDir qssDir (QApplication::applicationDirPath ());
 		// Check app dir, relative from nifskope/release, linux data dir
@@ -31,14 +32,20 @@ namespace NifSkopeQt4
 	}
 
 	int
-	MainWindowQt4::Run(int argc, char **argv)
+	Qt4App::Run(int argc, char **argv)
 	{
+		// init qt
 		QApplication app (argc, argv);
 		app.setOrganizationName (NS_ORG);
 		app.setApplicationName (NS_NAME);
 		app.setOrganizationDomain (NS_URL);
+		// beautify
 		LoadStyle (app);
-		QWidget mainWindow;
+		// create main window and pass the control to it
+		NifSkopeQt4::MainWindow mainWindow;
+		mainWindow.App = this;
+		QWidget centralWidget;
+		mainWindow.setCentralWidget (&centralWidget);
 		mainWindow.setWindowTitle (
 			QApplication::translate("windowlayout", NS_VERSION));
 		mainWindow.show();

@@ -30,30 +30,68 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-/**
+/*
 *	The main file for NifSkope
 */
 
 #include "nifskope.h"
-#include "CommandManager.h"
+#include "NifSkopeApp.h"
 // windowing system selection
 #ifdef NIFSKOPE_QT
-#include "moc/MainWindowQt4.h"
+#include "moc/Qt4App.h"
 #endif
 
-/**
+namespace NifSkope
+{
+	class NSC
+	{
+		/*bool LoadNif  (NifSkope::FileType *, std::string);
+		bool SaveNifAs(NifSkope::FileType *, std::string);
+		// These work on nif nodes - selected in the tree/list view
+		bool Import   (NifSkope::FileType *, std::string);
+		bool Export   (NifSkope::FileType *, std::string);
+
+		bool SanitizeBeforeSave;
+		bool NewWindow();// creates new mainwindow
+		bool ReloadXML();// reloads nif.xml and kfm.xml
+		bool ReloadXMLAndNif(); // ReloadXML() + current .nif
+		bool XMLChecker(// opens a dialog
+			std::string dir
+			bool recursive
+			bool *.nif
+			bool *.kf(a)
+			bool *.kfm
+			NiNode block_match
+			bool report_errors_only
+			int threads = 2
+			std::string version_match
+			Run()
+			ReloadXML()
+			Close()
+ 		);// reports progress, is not modal
+		bool ResourceFiles(// opens a modal dialog
+			bool automatic_selection
+			Add(std::tring *.bsa)
+			Remove(std::tring *.bsa)
+		);
+		void Quit();*/
+	};
+}
+
+/*
 *   main
 */
 int
 main(int argc, char **argv)
 {
+	NifSkope::NifSkopeApp *app = NULL;
 // windowing system selection
 #ifdef NIFSKOPE_QT
-	NifSkopeQt4::MainWindowQt4 mwin;
+	app = new NifSkopeQt4::Qt4App();
 #endif
-	NifSkope::CommandManager cm (&mwin);
-	cm.Run(argc, argv);
-	/*NifModel::loadXML();
-	KfmModel::loadXML();*/
+	if (app) {
+		app->Run (argc, argv);
+		delete app;
+	} else ERR("No UI toolkit was selected")
 	return EXIT_SUCCESS;
 }
