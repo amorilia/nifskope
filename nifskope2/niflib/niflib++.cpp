@@ -213,7 +213,7 @@ NifLoadFile(const char *fname, char **buf, int *size)
 *	Returns true if "buf" starts with "q"
 */
 int
-startswith(const char *q, int qlen, const char *buf, int buflen)
+StartsWith(const char *q, int qlen, const char *buf, int buflen)
 {
 	if (!q || !buf || buflen <= 0 || qlen <= 0)
 		return 0;
@@ -224,20 +224,17 @@ startswith(const char *q, int qlen, const char *buf, int buflen)
 
 /*
 *	Finds first occurrence of "q" and returns its start index
-*	relative to "buf". "q" must be '\0' terminated.
+*	relative to "buf".
 *	Returns "buflen" on failure.
 */
 int
-FindFirst(const char *q, const char *buf, int buflen)
+FindFirst(const char *q, int qlen, const char *buf, int buflen)
 {
 	int i;
-	if (!q || !buf || buflen <= 0)
-		return buflen;
-	int qlen = strlen (q);
-	if (qlen <= 0)
+	if (!q || !buf || buflen <= 0 || qlen <= 0)
 		return buflen;
 	for (i = 0; i < (buflen - qlen) + 1; i++)
-		if (startswith (q, qlen, &buf[i], buflen - (i + 1)))
+		if (StartsWith (q, qlen, &buf[i], buflen - (i + 1)))
 			return i;
 	return buflen;
 }
@@ -253,25 +250,21 @@ FindFirst(const char *q, const char *buf, int buflen)
 *	Returns "buflen" on failure.
 */
 int
-Find(const char *a, const char *b, char *buf, int buflen, int *blcklen)
+Find(const char *a, int alen, const char *b, int blen, char *buf, int buflen, int *blcklen)
 {
 	int i, cnt = 0;
-	if (!a || !b || !buf || !blcklen || buflen <= 0)
+	if (!a || !b || !buf || !blcklen)
 		return buflen;
-	int alen = strlen (a);
-	if (alen <= 0)
-		return buflen;
-	int blen = strlen (b);
-	if (blen <= 0)
+	if (buflen <= 0 || alen <= 0 || blen <= 0)
 		return buflen;
 	for (i = 0; i < (buflen - alen) + 1; i++)
-		if (startswith (a, alen, &buf[i], buflen - (i + 1))) {
+		if (StartsWith (a, alen, &buf[i], buflen - (i + 1))) {
 			// "a" found for 1st time, search for "b" with another "a" in mind
 			int k;
 			for (k = i; k < (buflen - blen) + 1; k++) {
-				if (startswith (a, alen, &buf[k], buflen - (k + 1)))
+				if (StartsWith (a, alen, &buf[k], buflen - (k + 1)))
 					cnt++;
-				if (startswith (b, blen, &buf[k], buflen - (k + 1))) {
+				if (StartsWith (b, blen, &buf[k], buflen - (k + 1))) {
 					if (cnt > 1)// "a" has been found before 1st "b"
 						cnt--;// continue searching
 					else {
@@ -296,22 +289,25 @@ NifXmlProcess (char *buf, int buflen)
 	memset (tmp, 0, buflen);*/
 
 	int sidx, eidx;
-	sidx = FindFirst ("<niftoolsxml", buf, buflen);
-	eidx = FindFirst ("</niftoolsxml>", buf, buflen);
+	int slen = strlen ("<niftoolsxml");
+	sidx = FindFirst ("<niftoolsxml", slen, buf, buflen);
+	int elen = strlen ("</niftoolsxml>");
+	eidx = FindFirst ("</niftoolsxml>", elen, buf, buflen);
 	if (sidx != buflen && eidx != buflen) {
 		INFO("sidx: " << sidx)
 		INFO("eidx: " << eidx)
 		int testsize;
-		int test = Find ("<!--", "-->", buf, buflen, &testsize);
-		if (test != buflen)
+		int test = Find ("<!--", 4, "-->", 3, buf, buflen, &testsize);
+		if (test != buflen) {
 			INFO("found comment at " << test << ", length: " << testsize)
+			char *comment = (char *)NifAlloc (testsize + 1);
+			comment[testsize] = '\0';
+			memcpy (&comment[0], &buf[test], testsize);
+			INFO("\"" << comment << "\"")
+			NifRelease (comment);
+		}
 		else
 			INFO("find failed")
-		char *comment = (char *)NifAlloc (testsize + 1);
-		comment[testsize] = '\0';
-		memcpy (&comment[0], &buf[test], testsize);
-		INFO("\"" << comment << "\"")
-		NifRelease (comment);
 	}
 }
 
