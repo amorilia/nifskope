@@ -30,8 +30,14 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#include "ResourceFiles.h"
+#ifndef __NIFXML_H__
+#define __NIFXML_H__
 
 namespace NifSkope
 {
+	class NifXml
+	{
+	};
 }
+
+#endif /*__NIFXML_H__*/
