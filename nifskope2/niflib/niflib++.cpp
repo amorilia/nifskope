@@ -292,8 +292,8 @@ NifXmlProcess (char *buf, int buflen)
 	// - ignore <!--.*--> - including new line for multiline comments
 	//   If you meet "<!--" count++, if you meet "-->" count--.
 	//   Loop ends when count is 0. Malformed XML if EOF.
-	char *tmp = (char *)NifAlloc (buflen);
-	memset (tmp, 0, buflen);
+	/*char *tmp = (char *)NifAlloc (buflen);
+	memset (tmp, 0, buflen);*/
 
 	int sidx, eidx;
 	sidx = FindFirst ("<niftoolsxml", buf, buflen);
@@ -311,6 +311,7 @@ NifXmlProcess (char *buf, int buflen)
 		comment[testsize] = '\0';
 		memcpy (&comment[0], &buf[test], testsize);
 		INFO("\"" << comment << "\"")
+		NifRelease (comment);
 	}
 }
 
