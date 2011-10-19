@@ -78,7 +78,7 @@ public:
 *
 * niftoolsxml                               22
 *  version                                  13
-*	basic     10    12  9    11              6
+*  basic      10    12  9    11              6
 *  enum       10          19             14
 *   option    10                            18
 *  compound   10    12  9 19 11
@@ -97,7 +97,6 @@ public:
 *	6 - add
 *	7 - niobject
 *	8 - bitflags
-*	9 - option
 */
 
 class NiObject
@@ -126,7 +125,11 @@ time_interval(struct timeval *a, struct timeval *b)
 int
 main(int argc, char **argv)
 {
+	struct timeval tstart, tstop;
+	gettimeofday (&tstart, NULL);
 	NifLib::Parser p("nif.xml");
+	gettimeofday (&tstop, NULL);
+	INFO("loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 	// reading works
 	/*NifStream test ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif", 1024*1024);
 

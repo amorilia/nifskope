@@ -37,12 +37,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define INFO(MSG)\
 {\
-	std::clog << MSG << std::endl;\
+	std::cout << MSG << std::endl;\
 }
 
 #define ERR(MSG)\
 {\
-	std::cerr << "err: " << MSG << std::endl;\
+	std::cout << "err: " << MSG << std::endl;\
 }
 
 void *NifAlloc(size_t size);

@@ -46,7 +46,7 @@ namespace NifLib
 		std::string Value;
 		int Id;
 
-		std::map<std::string, NifLib::Attr> Attr;
+		std::map<std::string, NifLib::Attr *> Attr;
 	};
 }
 
