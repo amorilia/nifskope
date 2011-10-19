@@ -43,31 +43,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/time.h>
 
 #include "Parser.h"
-
-template <typename T> class List
-{
-	std::vector<T> list;
-public:
-	T Add(T item)
-	{
-		list.push_back (item);
-		return item;
-	}
-	int Count()
-	{
-		return (int)list.size ();
-	}
-	T &operator[](int idx)
-	{
-		return list[idx];
-	}
-};
+#include "List.h"
 
 template <typename T> class TreeNode
 {
 public:
 	TreeNode<T> *Parent;
-	List< TreeNode<T> > Nodes;
+	NifLib::List< TreeNode<T> > Nodes;
 };
 
 /*	0 - abstract
@@ -129,7 +111,7 @@ class Nif
 {
 public:
 	Nif(const char *fileName);
-	List<NiObject> Items;
+	NifLib::List<NiObject> Items;
 	void Read();
 	void Write();
 };
@@ -140,21 +122,6 @@ time_interval(struct timeval *a, struct timeval *b)
 {
 	return ( (b->tv_sec - a->tv_sec) * 1000000 ) + (b->tv_usec - a->tv_usec);
 }
-
-/*
-*	Won't use class per tag. "class" is a generalization and tags are not.
-*   Two classes: NifXmlTag and NifXmlAttribute. Those are generalizaitons.
-*/
-class NifXmlTag
-{
-public:
-	NifXmlTag(const char *fileName)
-	{
-	}
-	std::string Name;
-};
-
-
 
 int
 main(int argc, char **argv)

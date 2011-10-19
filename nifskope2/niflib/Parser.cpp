@@ -40,6 +40,10 @@ namespace NifLib
 {
 	/*
 	*	Turn "nif.xml" into objects
+	*	A tag has attributes.
+	*	map<tagname,list<tag>>
+	*	tag
+	*		map<attrname, attr>
 	*/
 	void
 	Parser::Process(char *buf, int buflen)
@@ -94,6 +98,7 @@ namespace NifLib
 			memcpy (buf2, tmp, dst);
 			NifRelease (tmp);
 			//WriteToFile (buf2, dst, "nif2.xml");
+
 			NifRelease (buf2);
 			// TODO: at this point "gbuf" is no longer needed
 		}

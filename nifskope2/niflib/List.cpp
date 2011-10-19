@@ -30,58 +30,21 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#ifndef __PARSER_H__
-#define __PARSER_H__
-
-#include <map>
 #include "List.h"
-#include "Tag.h"
 
 namespace NifLib
 {
-	class Parser
+	template <typename T> T List<T>::Add(T item)
 	{
-		std::map< std::string, NifLib::List<NifLib::Tag> > objs;
-		char *gbuf;
-		int size;
-		/*
-		*	Turn "nif.xml" into objects
-		*	A tag has attributes.
-		*	map<tagname,list<tag>>
-		*	tag
-		*		list<attr>
-		*/
-		void Process(char *buf, int buflen);
-	public:
-		Parser(const char *fname);
-		/*
-		*	Loads a file "fname" in a buffer "*buf".
-		*	Allocates "*buf" and specifies its size in "*size".
-		*	Returns 0 on failure, 1 - otherwise.
-		*/
-		static int LoadFile(const char *fname, char **buf, int *size);
-		/*
-		*	Returns true if "buf" starts with "q"
-		*/
-		static int StartsWith(const char *q, int qlen, const char *buf, int buflen);
-		/*
-		*	Finds first occurrence of "q" and returns its start index
-		*	relative to "buf".
-		*	Returns "buflen" on failure.
-		*/
-		static int FindFirst(const char *q, int qlen, const char *buf, int buflen);
-		/*
-		*	Find a block what starts with "a" and ends with "b" in "buf".
-		*	Handles nested blocks:
-		*   "a1.b1b1" - a="a1", b="b1" will return 0, blcklen=5
-		*   "a1a1.b1b1" - a="a1", b="b1" will return 0, blcklen=9
-		*   "a1a1.b1" - a="a1", b="b1" will return 2, blcklen=5
-		*	Returns its starting index relative to "buf".
-		*	Returns its length, including "a' and "b", in "blcklen".
-		*	Returns "buflen" on failure.
-		*/
-		static int Find(const char *a, int alen, const char *b, int blen, char *buf, int buflen, int *blcklen);
-	};
+		list.push_back (item);
+		return item;
+	}
+	template <typename T> int List<T>::Count()
+	{
+		return (int)list.size ();
+	}
+	template <typename T> T &List<T>::operator[](int idx)
+	{
+		return list[idx];
+	}
 }
-
-#endif /*__PARSER_H__*/
