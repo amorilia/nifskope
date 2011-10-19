@@ -35,22 +35,14 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *	It is "nif.xml" interpreter.
 */
 
-#include <iostream>
 #include <vector>
-#include <cstdlib>
+
+#include "niflib.h"
 
 #include "niff.h"
 #include <sys/time.h>
 
-#define INFO(MSG)\
-{\
-	std::clog << MSG << std::endl;\
-}
-
-#define ERR(MSG)\
-{\
-	std::cerr << "err: " << MSG << std::endl;\
-}
+#include "Parser.h"
 
 template <typename T> class List
 {
@@ -149,179 +141,25 @@ time_interval(struct timeval *a, struct timeval *b)
 	return ( (b->tv_sec - a->tv_sec) * 1000000 ) + (b->tv_usec - a->tv_usec);
 }
 
-class NifXml
+/*
+*	Won't use class per tag. "class" is a generalization and tags are not.
+*   Two classes: NifXmlTag and NifXmlAttribute. Those are generalizaitons.
+*/
+class NifXmlTag
 {
-	List<void *> fsequence;
 public:
-	NifXml(const char *fileName)
+	NifXmlTag(const char *fileName)
 	{
 	}
+	std::string Name;
 };
 
-void *
-NifAlloc(size_t size)
-{
-	return malloc (size);
-}
 
-void
-NifRelease(void *ptr)
-{
-	free (ptr);
-}
-
-/*
-*	Loads a file "fname" in a buffer "*buf".
-*	Allocates "*buf" and specifies its size in "*size".
-*	Returns 0 on failure, 1 - otherwise.
-*/
-int
-NifLoadFile(const char *fname, char **buf, int *size)
-{
-	const int MAX_BUF = 1000000; // bytes
-	FILE *fh = fopen (fname, "r");
-	int result = 0;
-	if (fh) {
-		if (fseek (fh, 0, SEEK_END))
-			ERR("Seek failed")
-		else {
-			long fs = ftell (fh);
-			if (fseek (fh, 0, SEEK_SET))
-				ERR("Seek failed")
-			else {
-				if (fs > (long)MAX_BUF)
-					ERR("Too large, MAX = " << MAX_BUF << " bytes")
-				else {
-					*buf = (char *) NifAlloc (fs);
-					if (!(*buf))
-						ERR("Out of memory")
-					else {
-						*size = (int)fs;
-						if (fread (&((*buf)[0]), (int)fs, 1, fh) != 1)
-							ERR("Read failed")
-						else result = 1;
-					}// buf ptr check
-				}// file length check
-			}// if (fseek (fh, 0, SEEK_SET))
-		}// if (fseek (fh, 0, SEEK_END))
-		fclose (fh);
-	}// if (fh)
-	return result;
-}
-
-/*
-*	Returns true if "buf" starts with "q"
-*/
-int
-StartsWith(const char *q, int qlen, const char *buf, int buflen)
-{
-	if (!q || !buf || buflen <= 0 || qlen <= 0)
-		return 0;
-	if (qlen > buflen)
-		return 0;
-	return !strncmp (q, buf, qlen);
-}
-
-/*
-*	Finds first occurrence of "q" and returns its start index
-*	relative to "buf".
-*	Returns "buflen" on failure.
-*/
-int
-FindFirst(const char *q, int qlen, const char *buf, int buflen)
-{
-	int i;
-	if (!q || !buf || buflen <= 0 || qlen <= 0)
-		return buflen;
-	for (i = 0; i < (buflen - qlen) + 1; i++)
-		if (StartsWith (q, qlen, &buf[i], buflen - (i + 1)))
-			return i;
-	return buflen;
-}
-
-/*
-*	Find a block what starts with "a" and ends with "b" in "buf".
-*	Handles nested blocks:
-*   "a1.b1b1" - a="a1", b="b1" will return 0, blcklen=5
-*   "a1a1.b1b1" - a="a1", b="b1" will return 0, blcklen=9
-*   "a1a1.b1" - a="a1", b="b1" will return 2, blcklen=5
-*	Returns its starting index relative to "buf".
-*	Returns its length, including "a' and "b", in "blcklen".
-*	Returns "buflen" on failure.
-*/
-int
-Find(const char *a, int alen, const char *b, int blen, char *buf, int buflen, int *blcklen)
-{
-	int i, cnt = 0;
-	if (!a || !b || !buf || !blcklen)
-		return buflen;
-	if (buflen <= 0 || alen <= 0 || blen <= 0)
-		return buflen;
-	for (i = 0; i < (buflen - alen) + 1; i++)
-		if (StartsWith (a, alen, &buf[i], buflen - (i + 1))) {
-			// "a" found for 1st time, search for "b" with another "a" in mind
-			int k;
-			for (k = i; k < (buflen - blen) + 1; k++) {
-				if (StartsWith (a, alen, &buf[k], buflen - (k + 1)))
-					cnt++;
-				if (StartsWith (b, blen, &buf[k], buflen - (k + 1))) {
-					if (cnt > 1)// "a" has been found before 1st "b"
-						cnt--;// continue searching
-					else {
-						*blcklen = (k - i) + blen;
-						return i;
-					}
-				}
-			}
-		}
-	return buflen;
-}
-
-void
-NifXmlProcess (char *buf, int buflen)
-{
-	// 1 - remove the impossible :)
-	// - ignore all before "<niftoolsxml"
-	// - ignore <!--.*--> - including new line for multiline comments
-	//   If you meet "<!--" count++, if you meet "-->" count--.
-	//   Loop ends when count is 0. Malformed XML if EOF.
-	/*char *tmp = (char *)NifAlloc (buflen);
-	memset (tmp, 0, buflen);*/
-
-	int sidx, eidx;
-	int slen = strlen ("<niftoolsxml");
-	sidx = FindFirst ("<niftoolsxml", slen, buf, buflen);
-	int elen = strlen ("</niftoolsxml>");
-	eidx = FindFirst ("</niftoolsxml>", elen, buf, buflen);
-	if (sidx != buflen && eidx != buflen) {
-		INFO("sidx: " << sidx)
-		INFO("eidx: " << eidx)
-		int testsize;
-		int test = Find ("<!--", 4, "-->", 3, buf, buflen, &testsize);
-		if (test != buflen) {
-			INFO("found comment at " << test << ", length: " << testsize)
-			char *comment = (char *)NifAlloc (testsize + 1);
-			comment[testsize] = '\0';
-			memcpy (&comment[0], &buf[test], testsize);
-			INFO("\"" << comment << "\"")
-			NifRelease (comment);
-		}
-		else
-			INFO("find failed")
-	}
-}
 
 int
 main(int argc, char **argv)
 {
-	const char *nifxml = "nif.xml";
-	char *buf = NULL;
-	int size = 0;
-	if (NifLoadFile (nifxml, &buf, &size)) {
-		INFO("\"" << nifxml << "\" loaded, size: " << size << " bytes")
-		NifXmlProcess (buf, size);
-		NifRelease (buf);
-	}
+	NifLib::Parser p("nif.xml");
 	// reading works
 	/*NifStream test ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif", 1024*1024);
 
