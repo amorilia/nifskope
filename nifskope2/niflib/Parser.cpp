@@ -52,6 +52,11 @@ namespace NifLib
 		// 1.1 ignore all before "<niftoolsxml"
 		// 1.2 ignore <!--.*--> - including new line for multiline comments
 		char *tmp = (char *)NifAlloc (buflen);
+		if (!tmp) {
+			ERR("Out of memory. NifLib.Parser.Process: failed to allocate " <<
+				buflen << "bytes")
+			return;
+		}
 		int sidx, eidx;
 		int slen = strlen ("<niftoolsxml");
 		int elen = strlen ("</niftoolsxml>");
@@ -94,12 +99,9 @@ namespace NifLib
 			// "dst" points to "first free" i.e. is the length of "tmp"
 			INFO("Removed " << ccnt << " XML comment blocks, total of "
 				<< csize << " bytes")
-			char *buf2 = (char *)NifAlloc (dst);
-			memcpy (buf2, tmp, dst);
+			//WriteToFile (tmp, dst, "nif2.xml");
+			Tokenize (tmp, dst);
 			NifRelease (tmp);
-			//WriteToFile (buf2, dst, "nif2.xml");
-			Tokenize (buf2, dst);
-			NifRelease (buf2);
 			// TODO: at this point "gbuf" is no longer needed
 		}
 	}
@@ -110,9 +112,8 @@ namespace NifLib
 	void
 	Parser::Tokenize(char *buf, int buflen)
 	{
-		// < tag (attribute(s)) > tag value </ tag >
-		int i, bl = buflen, q = 0, ws = 1;
-		int c[8] = {0, 0, 0, 0, 0, 0};
+		// < tag (attribute(s)) > tag value </ tag > or />
+		int i, bl = buflen, q = 0, ws = 1, j;
 		for (i = 0; i < buflen; i++) {
 			// no need to scan for tags in certain "spaces"
 			if (buf[i] == '"')
@@ -120,41 +121,17 @@ namespace NifLib
 			ws = (buf[i] == ' ' || buf[i] == '\t' || buf[i] == '\n');
 			if (ws || q)
 				continue;
-			if (TryParseTag ("<basic", "</basic>", 6, &buf[i], bl - i))
-				c[0]++;
-			else
-			if (TryParseTag ("<version", "</version>", 8, &buf[i], bl - i))
-				c[1]++;
-			else
-			if (TryParseTag ("<enum", "</enum>", 4, &buf[i], bl - i))
-				c[2]++;
-			else
-			if (TryParseTag ("<compound", "</compound>", 9, &buf[i], bl - i))
-				c[3]++;
-			else
-			if (TryParseTag ("<niobject", "</niobject>", 9, &buf[i], bl - i))
-				c[4]++;
-			else
-			if (TryParseTag ("<bitflags", "</bitflags>", 9, &buf[i], bl - i))
-				c[5]++;
-			// for debug only. should be parsed internally by some of the above
-			else
-			if (TryParseTag ("<option", "</option>", 7, &buf[i], bl - i))
-				c[6]++;
-			else
-			if (TryParseTag ("<add", "</add>", 4, &buf[i], bl - i))
-				c[7]++;
+			// tokenize - tag ordering is irrelevant
+			for (j = 0; j < 2 * TAGS_NUM; j += 2)
+				TryParseTag (TAGS[j], TAGS[j+1], TAGSL[j/2], &buf[i], bl - i);
 		}
-		INFO(
-			"<basic :" << c[0] << std::endl <<
-			"<version :" << c[1] << std::endl <<
-			"<enum :" << c[2] << std::endl <<
-			"<compound :" << c[3] << std::endl <<
-			"<niobject :" << c[4] << std::endl <<
-			"<bitflags :" << c[5] << std::endl <<
-			"<option :" << c[6] << std::endl <<
-			"<add :" << c[7]
-		)
+		// stats:
+		// The new "c++" way, ( known way, new for "c++" )
+		for (auto kv = objs.begin (); kv != objs.end (); kv++)
+		// The current "c++" way
+		//std::map< std::string, NifLib::List<NifLib::Tag *> *>::iterator kv;
+		//for (kv = objs.begin (); kv != objs.end (); kv++)
+			INFO(kv->first << ": " << kv->second->Count ());
 	}
 
 	/*
@@ -185,6 +162,7 @@ namespace NifLib
 			if (!q) {
 				if (StartsWith (tagc, l + 2, &buf[i], l + 2)) {
 					//PrintBlockA (buf, i);
+					Add (tago, buf, i);
 					return 1;
 				}
 				if (buf[i] == '<')
@@ -194,6 +172,7 @@ namespace NifLib
 						t--;
 						if (t == 0) {
 							//PrintBlockA (buf, i - 1);
+							Add (tago, buf, i - 1);
 							return 1;
 						}
 					}
@@ -203,9 +182,31 @@ namespace NifLib
 		return 0;
 	}
 
+	/*
+	*	Adds an item to "objs".
+	*	Returns true on success, false otherwise.
+	*/
+	int
+	Parser::Add(char const * const tago, char *buf, int bl)
+	{
+		// std::map< std::string, NifLib::List<NifLib::Tag *> *> objs;
+		if (objs.find (tago) == objs.end ())
+			objs[tago] = new NifLib::List<NifLib::Tag *>();
+		NifLib::Tag *t = new NifLib::Tag();
+		t->Id = gid++;
+		t->Name = tago;
+		if (t->Parse (buf, bl)) {
+			objs[tago]->Add (t);
+			//INFO("Add: " << tago)
+			return 1;
+		}
+		return 0;
+	}
+
 	Parser::Parser(const char *fname)
 	{
 		gbuf = NULL;
+		gid = 1; // no one has the right ot be 0
 		size = 0;
 		if (LoadFile (fname, &gbuf, &size)) {
 			INFO("\"" << fname << "\" loaded, size: " << size << " bytes")
@@ -213,6 +214,22 @@ namespace NifLib
 			NifRelease (gbuf);
 		}
 	}
+	Parser::~Parser()
+	{
+		if (!objs.empty()) {
+			std::map< std::string, NifLib::List<NifLib::Tag *> *>::iterator i;
+			for (i = objs.begin(); i != objs.end(); i++) {
+				NifLib::List<NifLib::Tag *> *l = i->second;
+				int j;
+				for (j = 0; j < l->Count(); j++)
+					delete (*l)[j];
+				l->Clear ();
+				delete l;
+			}
+			objs.clear ();
+		}
+	}
+
 	/*
 	*	Loads a file "fname" in a buffer "*buf".
 	*	Allocates "*buf" and specifies its size in "*size".
@@ -281,29 +298,7 @@ namespace NifLib
 				return i;
 		return buflen;
 	}
-	/*
-	*	Finds first occurrence of "a" || "b" and returns its start index
-	*	relative to "buf".
-	*	Returns "buflen" on failure.
-	*/
-	/*int
-	Parser::FindFirst2(const char *a, int alen, const char *b, int blen, const char *buf, int buflen)
-	{
-		int i, ar = 0, br = 0;
-		if (!a || !b || !buf || buflen <= 0 || alen <= 0 || blen <= 0)
-			return buflen;
-		for (i = 0; i < buflen; i++) {
-			if (i < (buflen - alen) + 1)
-				ar = StartsWith (a, alen, &buf[i], buflen - (i + 1));
-			else ar = 0;
-			if (i < (buflen - blen) + 1)
-				br = StartsWith (b, blen, &buf[i], buflen - (i + 1));
-			else br = 0;
-			if (ar || br)
-				return i;
-		}
-		return buflen;
-	}*/
+
 	/*
 	*	Find a block what starts with "a" and ends with "b" in "buf".
 	*	Handles nested blocks:
@@ -343,34 +338,4 @@ namespace NifLib
 		//INFO("Find: found nothing")
 		return buflen;
 	}
-
-	/*
-	*	Find a block what starts with "a" and ends with "b" in "buf".
-	*	Does not handle nested blocks:
-	*	Returns its starting index relative to "buf".
-	*	Returns its length, including "a' and "b", in "blcklen".
-	*	Returns "buflen" on failure.
-	*/
-	/*int
-	Parser::FindNn(const char *a, int alen, const char *b, int blen, char *buf, int buflen, int *blcklen)
-	{
-		//INFO("Find: buflen = " << buflen)
-		int i;
-		if (!a || !b || !buf || !blcklen)
-			return buflen;
-		if (buflen <= 0 || alen <= 0 || blen <= 0)
-			return buflen;
-		for (i = 0; i < (buflen - alen) + 1; i++)
-			if (StartsWith (a, alen, &buf[i], buflen - (i + 1))) {
-				// "a" found, search for "b"
-				int k;
-				for (k = i; k < (buflen - blen) + 1; k++)
-					if (StartsWith (b, blen, &buf[k], buflen - (k + 1))) {
-						*blcklen = (k - i) + blen;
-						return i;
-					}
-			}
-		//INFO("Find: found nothing")
-		return buflen;
-	}*/
 }

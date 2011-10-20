@@ -44,6 +44,7 @@ namespace NifLib
 		std::map< std::string, NifLib::List<NifLib::Tag *> *> objs;
 		char *gbuf;
 		int size;
+		int gid; // global id
 		/*
 		*	Turn "nif.xml" into objects
 		*	A tag has attributes.
@@ -54,8 +55,10 @@ namespace NifLib
 		void Process(char *buf, int buflen);
 		void Tokenize(char *buf, int buflen);
 		int	TryParseTag(const char *tago, const char *tagc, int l, char *buf, int bl);
+		int Add(char const * const tago, char *buf, int bl);
 	public:
 		Parser(const char *fname);
+		~Parser();
 		/*
 		*	Loads a file "fname" in a buffer "*buf".
 		*	Allocates "*buf" and specifies its size in "*size".
@@ -76,13 +79,6 @@ namespace NifLib
 		static int FindFirst(const char *q, int qlen, const char *buf, int buflen);
 
 		/*
-		*	Finds first occurrence of "a" || "b" and returns its start index
-		*	relative to "buf".
-		*	Returns "buflen" on failure.
-		*/
-		//static int FindFirst2(const char *a, int alen, const char *b, int blen, const char *buf, int buflen);
-
-		/*
 		*	Find a block what starts with "a" and ends with "b" in "buf".
 		*	Handles nested blocks:
 		*   "a1.b1b1" - a="a1", b="b1" will return 0, blcklen=5
@@ -93,15 +89,6 @@ namespace NifLib
 		*	Returns "buflen" on failure.
 		*/
 		static int Find(const char *a, int alen, const char *b, int blen, char *buf, int buflen, int *blcklen);
-
-		/*
-		*	Find a block what starts with "a" and ends with "b" in "buf".
-		*	Does not handle nested blocks:
-		*	Returns its starting index relative to "buf".
-		*	Returns its length, including "a' and "b", in "blcklen".
-		*	Returns "buflen" on failure.
-		*/
-		//static int FindNn(const char *a, int alen, const char *b, int blen, char *buf, int buflen, int *blcklen);
 	};
 }
 

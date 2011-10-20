@@ -33,6 +33,22 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __NIFLIB_H__
 #define __NIFLIB_H__
 
+/*
+*	Core tags - the ones that form structures and types.
+*	Make sure (length(TAGS[i % 2 == 0])) == (length(TAGS[i+1]) - 2).
+*	TAGSL[i] == length(TAGS[i % 2 == 0])
+*/
+#define TAGS_NUM 6
+char const * const TAGS[] = {
+	"<basic"   , "</basic>",
+	"<version" , "</version>",
+	"<enum"    , "</enum>",
+	"<compound", "</compound>",
+	"<niobject", "</niobject>",
+	"<bitflags", "</bitflags>"
+};
+int const TAGSL[] = {6, 8, 4, 9, 9, 9};
+
 #include <iostream>
 
 #define INFO(MSG)\

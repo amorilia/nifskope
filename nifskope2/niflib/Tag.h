@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __TAG_H__
 #define __TAG_H__
 
-#include <string>
 #include <map>
 #include "Attr.h"
 
@@ -42,10 +41,11 @@ namespace NifLib
 	class Tag
 	{
 	public:
-		std::string Name;
-		std::string Value;
+		const char *Name;// whatever encoding the tag name in the XML document is
+		char *Value;
+		int ValueLen;
 		int Id;
-
+		virtual int Parse(const char *Value, int ValueLen);
 		std::map<std::string, NifLib::Attr *> Attr;
 	};
 }

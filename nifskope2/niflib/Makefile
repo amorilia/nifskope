@@ -1,5 +1,6 @@
 CC       = g++
-CXXFLAGS = -g -Wfatal-errors -Wall
+CXXFLAGS = -g -Wfatal-errors -Wall -std=gnu++0x
+#CXXFLAGS = -g -Wfatal-errors -Wall
 CPPFLAGS =
 CFLAGS   =
 LDFLAGS  =

@@ -34,4 +34,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifLib
 {
+	int
+	Tag::Parse(const char *Value, int ValueLen)
+	{
+		return 1;// stub
+	}
 }

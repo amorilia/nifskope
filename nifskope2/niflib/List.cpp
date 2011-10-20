@@ -34,17 +34,4 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifLib
 {
-	template <typename T> T List<T>::Add(T item)
-	{
-		list.push_back (item);
-		return item;
-	}
-	template <typename T> int List<T>::Count()
-	{
-		return (int)list.size ();
-	}
-	template <typename T> T &List<T>::operator[](int idx)
-	{
-		return list[idx];
-	}
 }

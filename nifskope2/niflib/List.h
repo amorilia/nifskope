@@ -41,9 +41,26 @@ namespace NifLib
 	{
 		std::vector<T> list;
 	public:
-		T Add(T item);
-		int Count();
-		T &operator[](int idx);
+		T Add(T item)
+		{
+			list.push_back (item);
+			return item;
+		}
+
+		int Count()
+		{
+			return (int)list.size ();
+		}
+
+		T &operator[](int idx)
+		{
+			return list[idx];
+		}
+
+		void Clear()
+		{
+			list.clear ();
+		}
 	};
 }
 
