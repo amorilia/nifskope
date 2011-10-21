@@ -54,7 +54,7 @@ NifRelease(void *ptr)
 *	debug: print "len" from "buf" as ASCII
 */
 void
-PrintBlockA(char *buf, int len)
+PrintBlockA(const char *buf, int len)
 {
 	char *b = (char *)NifAlloc (len + 1);
 	if (!b) {
@@ -71,7 +71,7 @@ PrintBlockA(char *buf, int len)
 *	debug: print "len" from "buf" as Bytes in "col"-umns
 */
 void
-PrintBlockB(char *buf, int len, int col)
+PrintBlockB(const char *buf, int len, int col)
 {
 	int i;
 	std::stringstream d;
@@ -90,7 +90,7 @@ PrintBlockB(char *buf, int len, int col)
 *	debug: write "buf" "len" bytes to file named "fname"
 */
 void
-WriteToFile(char *buf, int len, const char *fname)
+WriteToFile(const char *buf, int len, const char *fname)
 {
 	FILE *fh = fopen (fname, "w");
 	if (fh) {

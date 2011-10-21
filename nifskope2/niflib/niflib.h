@@ -33,21 +33,45 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __NIFLIB_H__
 #define __NIFLIB_H__
 
+#include <cstdlib>
+
 /*
 *	Core tags - the ones that form structures and types.
 *	Make sure (length(TAGS[i % 2 == 0])) == (length(TAGS[i+1]) - 2).
 *	TAGSL[i] == length(TAGS[i % 2 == 0])
 */
-#define TAGS_NUM 6
+#define TAGS_NUML1 6
+#define TAGS_NUML2 2
 char const * const TAGS[] = {
-	"<basic"   , "</basic>",
-	"<version" , "</version>",
-	"<enum"    , "</enum>",
+	"<basic"   , "</basic>"   ,
+	"<version" , "</version>" ,
+	"<enum"    , "</enum>"    ,
 	"<compound", "</compound>",
 	"<niobject", "</niobject>",
-	"<bitflags", "</bitflags>"
+	"<bitflags", "</bitflags>",
+
+	"<option"  , "</option>"  ,
+	"<add"     , "</add>"
 };
-int const TAGSL[] = {6, 8, 4, 9, 9, 9};
+int const TAGSL[] = {6, 8, 4, 9, 9, 9, 7, 4};
+
+inline int
+TagLen(int id)
+{
+	return TAGSL[id];
+}
+
+inline const char *
+TagOpener(int id)
+{
+	return TAGS[2*id];
+}
+
+inline const char *
+TagCloser(int id)
+{
+	return TAGS[(2*id) + 1];
+}
 
 #include <iostream>
 
@@ -68,14 +92,16 @@ void NifRelease(void *ptr);
 /*
 *	debug: print "len" from "buf" as ASCII
 */
-void PrintBlockA(char *buf, int len);
+void PrintBlockA(const char *buf, int len);
+
 /*
 *	debug: print "len" from "buf" as Bytes in "col"-umns
 */
-void PrintBlockB(char *buf, int len, int col);
+void PrintBlockB(const char *buf, int len, int col);
+
 /*
 *	debug: write "buf" "len" bytes to file named "fname"
 */
-void WriteToFile(char *buf, int len, const char *fname);
+void WriteToFile(const char *buf, int len, const char *fname);
 
 #endif /*__NIFLIB_H__*/

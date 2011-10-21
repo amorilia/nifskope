@@ -34,14 +34,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __ATTR_H__
 
 #include <string>
+#include "Buffer.h"
 
 namespace NifLib
 {
 	class Attr
 	{
 	public:
-		std::string Name;
-		std::string Value;
+		Buffer Name;
+		Buffer Value;
 		int Id;
 	};
 }

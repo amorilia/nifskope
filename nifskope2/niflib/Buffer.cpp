@@ -30,18 +30,28 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#include "Tag.h"
+#include "Buffer.h"
+
+#include <string.h>
+#include <cstdlib>
 #include "niflib.h"
 
 namespace NifLib
 {
-	Tag::~Tag()
+	int
+	Buffer::CopyFrom(const char *srcbuf, int srclen)
 	{
-		int i;
-		for (i = 0; i < Tags.Count(); i++)
-			delete Tags[i];
-		std::map<std::string, NifLib::Attr *>::iterator i2;
-		for (i2 = Attr.begin(); i2 != Attr.end(); i2++)
-			delete i2->second;
+		buf = (char *)NifAlloc (srclen);
+		if (!buf) {
+			ERR("Buffer.CopyFrom: Out of memory")
+			return 0;
+		}
+		len = srclen;
+		return memcpy (buf, srcbuf, srclen) != NULL;
+	}
+	Buffer::~Buffer()
+	{
+		if (buf)
+			NifRelease (buf);
 	}
 }

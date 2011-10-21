@@ -41,6 +41,7 @@ namespace NifLib
 {
 	class Parser
 	{
+		NifLib::Tag *at; // active l1 tag (while parsing)
 		std::map< std::string, NifLib::List<NifLib::Tag *> *> objs;
 		char *gbuf;
 		int size;
@@ -53,9 +54,9 @@ namespace NifLib
 		*		list<attr>
 		*/
 		void Process(char *buf, int buflen);
-		void Tokenize(char *buf, int buflen);
-		int	TryParseTag(const char *tago, const char *tagc, int l, char *buf, int bl);
-		int Add(char const * const tago, char *buf, int bl);
+		void Tokenize(char *buf, int buflen, int tmin, int tcnt);
+		int TryParseTag(int tagid, char *buf, int bl);
+		int Add(int tagid, char *buf, int bl);
 	public:
 		Parser(const char *fname);
 		~Parser();

@@ -35,18 +35,20 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <map>
 #include "Attr.h"
+#include "Buffer.h"
+#include "List.h"
 
 namespace NifLib
 {
 	class Tag
 	{
 	public:
-		const char *Name;// whatever encoding the tag name in the XML document is
-		char *Value;
-		int ValueLen;
-		int Id;
-		virtual int Parse(const char *Value, int ValueLen);
+		int Id;// sequential id initialized in order of reading from the XML
+		int Name;// reference to tag name
+		Buffer Value;
 		std::map<std::string, NifLib::Attr *> Attr;
+		NifLib::List<NifLib::Tag *> Tags;
+		~Tag();
 	};
 }
 

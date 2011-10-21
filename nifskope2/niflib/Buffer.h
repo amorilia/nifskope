@@ -30,18 +30,19 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#include "Tag.h"
-#include "niflib.h"
+#ifndef __BUFFER_H__
+#define __BUFFER_H__
 
 namespace NifLib
 {
-	Tag::~Tag()
+	class Buffer
 	{
-		int i;
-		for (i = 0; i < Tags.Count(); i++)
-			delete Tags[i];
-		std::map<std::string, NifLib::Attr *>::iterator i2;
-		for (i2 = Attr.begin(); i2 != Attr.end(); i2++)
-			delete i2->second;
-	}
+	public:
+		int CopyFrom(const char *srcbuf, int srclen);
+		int len;
+		char *buf;
+		~Buffer();
+	};
 }
+
+#endif /*__BUFFER_H__*/
