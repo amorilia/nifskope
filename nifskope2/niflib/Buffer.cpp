@@ -38,6 +38,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifLib
 {
+	Buffer::Buffer()
+	{
+		len = 0;
+		buf = NULL;
+	}
 	int
 	Buffer::CopyFrom(const char *srcbuf, int srclen)
 	{
@@ -51,7 +56,7 @@ namespace NifLib
 	}
 	Buffer::~Buffer()
 	{
-		if (buf)
+		if (buf && len > 0)
 			NifRelease (buf);
 	}
 }

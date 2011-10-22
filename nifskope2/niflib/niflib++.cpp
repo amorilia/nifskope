@@ -52,53 +52,6 @@ public:
 	NifLib::List< TreeNode<T> > Nodes;
 };
 
-/*	0 - abstract
-*	1 - arg
-*	2 - arr1
-*	3 - arr2
-*	4 - arr3
-*	5 - cond
-*	6 - count
-*	7 - default
-*	8 - inherit
-*	9 - istemplate
-*	10 - name
-*	11 - niflibtype
-*	12 - nifskopetype
-*	13 - num
-*	14 - storage
-*	15 - template
-*	16 - type
-*	17 - userver
-*	18 - value
-*	19 - ver1
-*	20 - ver2
-*	21 - vercond
-*	22 - version
-*
-* niftoolsxml                               22
-*  version                                  13
-*  basic      10    12  9    11              6
-*  enum       10          19             14
-*   option    10                            18
-*  compound   10    12  9 19 11
-*   add       10 16 12    19    20 17  0     1  2  3  4  7 15 21  5
-*  niobject   10          19    20 17  0     8
-*   add
-*  bitflags   10                         14
-*   option
-*
-*	0 - niftoolsxml
-*	1 - version
-*	2 - basic
-*	3 - enum
-*	4 - option
-*	5 - compound
-*	6 - add
-*	7 - niobject
-*	8 - bitflags
-*/
-
 class NiObject
 {
 public:
@@ -130,6 +83,8 @@ main(int argc, char **argv)
 	NifLib::Parser p("nif.xml");
 	gettimeofday (&tstop, NULL);
 	INFO("loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
+
+	p.SaveFile ("nif3.xml");
 	// reading works
 	/*NifStream test ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif", 1024*1024);
 

@@ -46,8 +46,18 @@ namespace NifLib
 	*		map<attrname, attr>
 	*/
 	void
-	Parser::Process(char *buf, int buflen)
+	Parser::Process(const char *fname)
 	{
+		char *buf = NULL;
+		int buflen = 0;
+		if (LoadFile (fname, &buf, &buflen)) {
+			INFO("\"" << fname << "\" loaded, size: " << buflen << " bytes")
+			if (buflen <= 0)
+				return;
+		} else {
+			ERR("\"" << fname << "\" load failed")
+			return;
+		}
 		// 1 - remove the impossible :)
 		// 1.1 ignore all before "<niftoolsxml"
 		// 1.2 ignore <!--.*--> - including new line for multiline comments
@@ -55,16 +65,29 @@ namespace NifLib
 		if (!tmp) {
 			ERR("Out of memory. NifLib.Parser.Process: failed to allocate " <<
 				buflen << "bytes")
+			NifRelease (buf);
 			return;
 		}
+		char *buforigin = buf;
 		int sidx, eidx;
 		int slen = strlen ("<niftoolsxml");
 		int elen = strlen ("</niftoolsxml>");
 		sidx = FindFirst ("<niftoolsxml", slen, buf, buflen);
 		eidx = FindFirst ("</niftoolsxml>", elen, buf, buflen);
 		if (sidx != buflen && eidx != buflen) {
-			//INFO("sidx: " << sidx)
-			//INFO("eidx: " << eidx)
+			// init header, find first '<'
+			int i, q = 0;
+			for (i = sidx + slen; i < buflen; i++) {
+				if (buf[i] == '"')
+					q = !q;
+				if (!q && buf[i] == '<') {
+					header.CopyFrom (buf, i);
+					break;
+				}
+			}
+			// init footer
+			if (buflen - (eidx + elen) > 0)
+				footer.CopyFrom (&buf[eidx], buflen - eidx);
 			// 1.1 ( point out to <niftoolsxml.*</niftoolsxml> )
 			buflen = (eidx - sidx) + elen + 1;// keep the XML valid for now
 			buf += sidx;
@@ -72,37 +95,25 @@ namespace NifLib
 			//     and those blocks should be ignored, and in general - the parser
 			//     doesn't need them.
 			int dst = 0;// points in "tmp"
-			int ccnt = 0;
-			int csize = 0;
 			for (;;) {
 				int clen;
 				int c = Find ("<!--", 4, "-->", 3, buf, buflen, &clen);
 				if (c != buflen) {
-					//INFO("XML comment at " << c << ", length: " << clen)
-					//PrintBlockA (&buf[c], clen);
-					//PrintBlockB (&buf[c], clen, 16);
 					memcpy (&tmp[dst], buf, c);
 					dst += c;
 					buflen -= (c + clen);
-					buf += (c + clen);// move forward
-					// stats:
-					ccnt++;
-					csize += clen;
-				} else {
-					// add the final block
+					buf += (c + clen);
+				} else {// add the final block
 					memcpy (&tmp[dst], buf, buflen);
 					dst += buflen;
-					// and stop
 					break;
 				}
 			}
-			// "dst" points to "first free" i.e. is the length of "tmp"
-			INFO("Removed " << ccnt << " XML comment blocks, total of "
-				<< csize << " bytes")
+			// "dst" is the length of "tmp"
 			//WriteToFile (tmp, dst, "nif2.xml");
+			NifRelease (buforigin);
 			Tokenize (tmp, dst, 0, TAGS_NUML1);
 			NifRelease (tmp);
-			// TODO: at this point "gbuf" is no longer needed
 		}
 	}
 
@@ -112,7 +123,6 @@ namespace NifLib
 	void
 	Parser::Tokenize(char *buf, int buflen, int tmin, int tcnt)
 	{
-		// < tag (attribute(s)) > tag value </ tag > or />
 		int i, bl = buflen, q = 0, ws = 1, j, ll;
 		for (i = 0; i < buflen; i++) {
 			// no need to scan for tags in certain "spaces"
@@ -127,15 +137,11 @@ namespace NifLib
 					break;
 			i += ll;
 		}
-		// stats:
-		/*std::map< std::string, NifLib::List<NifLib::Tag *> *>::iterator kv;
-		for (kv = objs.begin (); kv != objs.end (); kv++)
-			INFO(kv->first << ": " << kv->second->Count ());*/
 	}
 
 	/*
 	*	Tries to get a "tag" from the XML.
-	*	Returns true on success, false otherwise.
+	*	Returns length on success, 0 otherwise.
 	*	"/>" is supported as a "tag closer".
 	*	"buf" is the buffer to scan in, "bl" - its length
 	*/
@@ -160,9 +166,8 @@ namespace NifLib
 				q = !q;
 			if (!q) {
 				if (StartsWith (tagc, l + 2, &buf[i], l + 2)) {
-					//PrintBlockA (buf, i);
 					Add (tagid, buf, i);
-					return i+l+2;
+					return i + l + 2;
 				}
 				if (buf[i] == '<')
 					t++;
@@ -170,7 +175,6 @@ namespace NifLib
 					if (t > 0 && i > 0 && buf[i-1] == '/') {
 						t--;
 						if (t == 0) {
-							//PrintBlockA (buf, i - 1);
 							Add (tagid, buf, i - 1);
 							return i;
 						}
@@ -188,32 +192,29 @@ namespace NifLib
 	int
 	Parser::Add(int tagid, char *buf, int bl)
 	{
-		const char *tago = TagOpener (tagid);
-		// std::map< std::string, NifLib::List<NifLib::Tag *> *> objs;
 		NifLib::Tag *t = new NifLib::Tag();
-		t->Id = gid++;
 		t->Name = tagid;
 		if (tagid < TAGS_NUML1) {
-			if (objs.find (tago) == objs.end ())
-				objs[tago] = new NifLib::List<NifLib::Tag *>();
-			objs[tago]->Add (t);
-			at = t;
-			//INFO("Add: " << tago)
+			if (!objs[tagid])
+				objs[tagid] = new NifLib::List<NifLib::Tag *>();
+			t->Id = gid++;
+			objs[tagid]->Add (t);
+			currentL1 = t;
 			Tokenize (buf, bl, TAGS_NUML1, TAGS_NUML2);
-			at = NULL;
+			currentL1 = NULL;
 		} else {
-			//PrintBlockA (buf, bl);
-			if (!at) {
-				INFO("Parent not found")
+			if (!currentL1) {
+				INFO("Parent tag not found")
+				delete t;
 				return 0;
 			}
-			at->Tags.Add (t);// subtags should be sequential
+			currentL1->Tags.Add (t);// subtags should always be sequential
+			t->Id = currentL1->Tags.Count () - 1;
 		}
 		// parse attributes and add them
 		// < attr="val" >cmnt
 		// < attr="val"
-		// "<option value="0" name="ALPHA_NONE"[>]No alpha blending; the texture is fully opaque."
-
+		int attrid = 0;
 		// idx, quotes, comment, tag opener, tag closer
 		int i, q = 0, c = 0, to = 0, tc = 0;
 		for (i = 0; i < bl; i++) {
@@ -223,21 +224,23 @@ namespace NifLib
 				q = !q;
 			// handle comments
 			if (!c && buf[i] == '>' && i + 1 < bl && !q) {
-				c = 1;// search only once for comment
+				c = 1;// search only once for comment because of subtags
 				int j, q2 = 0;
-				for (j = ++i; ; j++) {
+				for (j = ++i; ; j++) {// checked in the prev. if operator
 					if (buf[j] == '"')
 						q2 = !q2;
-					if (j == bl - 1) {
-						//INFO("i: " << i << ", j: " << j)
-						//PrintBlockA (&buf[i], (j - i) + 1);// comment
-						t->Value.CopyFrom (&buf[i], (j - i) + 1);
+					if (j == bl - 1) {// comment only
+						int a, b, len = (j - i) + 1;
+						Trim (&a, &b, &buf[i], len);
+						if (b >= a)
+							t->Value.CopyFrom (&buf[i + a], (b - a) + 1);
 						break;
 					}
-					else if (buf[j] == '<' && !q2) {
-						//INFO("i: " << i << ", j: " << j)
-						//PrintBlockA (&buf[i], (j - i));// comment
-						t->Value.CopyFrom (&buf[i], (j - i));
+					else if (buf[j] == '<' && !q2) {// comment and subtags
+						int a, b, len = (j - i);
+						Trim (&a, &b, &buf[i], len);
+						if (b >= a)
+							t->Value.CopyFrom (&buf[i + a], (b - a) + 1);
 						break;
 					}
 				}
@@ -246,35 +249,36 @@ namespace NifLib
 			if (buf[i] == '=' && !q && to && !tc) {
 				// name: find non-empty char <-, scan to an empty one
 				Attr *attr = new Attr();
-				char *attrname = NULL;
 				int j;
 				if (i > 0)
 					for (j = i - 1; j > -1; j--)
 						if (buf[j] > ' ') {
 							int k = j;
-							while (--k > -1 && buf[k] > ' ');
-							//PrintBlockA (&buf[k+1], j-k);
-							attr->Name.CopyFrom (&buf[k+1], j-k);
-							if (j-k > 0) {
-								attrname = (char *)NifAlloc ((j-k)+1);
-								attrname[(j-k)] = '\0';
-								memcpy (attrname, &buf[k+1], j-k);
-							}
+							while (--k > -1 && buf[k] > ' ')
+								;
+							attr->Name = AttrId (&buf[k + 1], j - k);
 							break;
 						}
-				// value: find " char ->, scan to the next one
+				// value: find '"' ->, scan to the next one
 				if (i < bl-1)
 					for (j = i + 1; j < bl; j++)
 						if (buf[j] == '"') {
 							int k = j;
-							while (++k < bl && buf[k] != '"');
-							//PrintBlockA (&buf[j+1], k-j-1);
-							attr->Value.CopyFrom (&buf[j+1], k-j-1);
+							while (++k < bl && buf[k] != '"')
+								;
+							attr->Value.CopyFrom (&buf[j + 1], k - j - 1);
 							break;
 						}
-				if (attrname) {
-					t->Attr[attrname] = attr;
-					NifRelease (attrname);
+				// add attribute
+				if (ValidAttrId (attr->Name)) {
+					if (t->AttrExists (attr->Name)) {
+						ERR("Duplicate attribute name: \"" <<
+							AttrText (attr->Name) << "\"" << " for tag #" << t->Id)
+						delete attr;
+					} else {
+						attr->Id = attrid++;
+						t->Attr.Add(attr);
+					}
 				} else {
 					ERR("Invalid attribute name in tag #" << t->Id
 						<< " \"" << TagOpener (t->Name) << "\"")
@@ -287,29 +291,24 @@ namespace NifLib
 
 	Parser::Parser(const char *fname)
 	{
-		gbuf = NULL;
-		at = NULL;
-		gid = 1; // no one has the right ot be 0
-		size = 0;
-		if (LoadFile (fname, &gbuf, &size)) {
-			INFO("\"" << fname << "\" loaded, size: " << size << " bytes")
-			Process (gbuf, size);
-			NifRelease (gbuf);
-		}
+		gid = 0;
+		currentL1 = NULL;
+		objs.SetLength (TAGS_NUML1);
+		Process (fname);
 	}
+
 	Parser::~Parser()
 	{
-		if (!objs.empty()) {
-			std::map< std::string, NifLib::List<NifLib::Tag *> *>::iterator i;
-			for (i = objs.begin(); i != objs.end(); i++) {
-				NifLib::List<NifLib::Tag *> *l = i->second;
+		if (!objs.Empty()) {
+			for (int i = 0; i < objs.Count (); i++) {
+				NifLib::List<NifLib::Tag *> *l = objs[i];
 				int j;
-				for (j = 0; j < l->Count(); j++)
+				for (j = 0; j < l->Count (); j++)
 					delete (*l)[j];
 				l->Clear ();
 				delete l;
 			}
-			objs.clear ();
+			objs.Clear ();
 		}
 	}
 
@@ -350,6 +349,109 @@ namespace NifLib
 			fclose (fh);
 		}// if (fh)
 		return result;
+	}
+
+	/*
+	*	Writes "objs" into a XML file.
+	*	Warning - there are no XML Comment "objs".
+	*/
+	int
+	Parser::SaveFile(const char *fname)
+	{
+		FILE *fh = fopen (fname, "w");
+		if (!fh) {
+			INFO("SaveFile: fopen failed")
+			return 0;
+		}
+#define FWRITE(BUF,SIZE)\
+	if (fwrite (BUF, SIZE, 1, fh) != 1) {\
+		INFO("SaveFile: fwrite failed")\
+		return 0;\
+	}
+		if (header.len > 0) {
+			FWRITE(header.buf, header.len);
+			FWRITE("\n", 1)
+		}
+		// same sequence as input:
+		int count = 0;
+		for (int i = 0; i < objs.Count (); i++)
+			count += objs[i]->Count();
+		NifLib::List<NifLib::Tag *> slist(count);
+		for (int i = 0; i < objs.Count (); i++)
+			for (int j = 0; j < objs[i]->Count(); j++)
+				slist[(*objs[i])[j]->Id] = (*objs[i])[j];
+		// write
+		for (int i = 0; i < slist.Count (); i++){
+			NifLib::Tag *tag = slist[i];
+			// l1 tag opener
+			FWRITE(TagOpener (tag->Name), TagLen (tag->Name))
+			// attributes
+			for (int k = 0; k < tag->Attr.Count (); k++) {
+				FWRITE(" ", 1)
+				FWRITE(AttrText (tag->Attr[k]->Name), AttrLen (tag->Attr[k]->Name))
+				FWRITE("=\"", 2)
+				FWRITE(tag->Attr[k]->Value.buf,	tag->Attr[k]->Value.len)
+				FWRITE("\"", 1)
+			}
+			//
+			FWRITE(">", 1)
+			// l1 comment
+			if (tag->Value.len > 0) {
+				FWRITE("\n\t", 2)
+				FWRITE(tag->Value.buf, tag->Value.len)
+			}
+			FWRITE("\n", 1)
+			// l2 tags
+			int l;
+			for (l = 0; l < tag->Tags.Count(); l++) {
+				NifLib::Tag *tl2 = tag->Tags[l];
+				FWRITE("\t", 1)
+				FWRITE(TagOpener (tl2->Name), TagLen (tl2->Name))
+				// l2 attributes
+				for (int k = 0; k < tl2->Attr.Count (); k++) {
+					FWRITE(" ", 1)
+					FWRITE(
+						AttrText (tl2->Attr[k]->Name),
+						AttrLen (tl2->Attr[k]->Name))
+					FWRITE("=\"", 2)
+					FWRITE(tl2->Attr[k]->Value.buf, tl2->Attr[k]->Value.len)
+					FWRITE("\"", 1)
+				}
+				//
+				FWRITE(">", 1)
+				// l2 comment
+				if (tl2->Value.len > 0) {
+					FWRITE("\n\t\t", 3)
+					FWRITE(tl2->Value.buf, tl2->Value.len)
+				}
+				FWRITE("\n\t", 2)
+				FWRITE(TagCloser (tl2->Name), TagLen (tl2->Name) + 2)
+				FWRITE("\n", 1)
+			}
+			// l1 tag closer
+			FWRITE(TagCloser (tag->Name), TagLen (tag->Name) + 2)
+			FWRITE("\n\n", 2)
+		}
+		if (footer.len > 0)
+			FWRITE(footer.buf, footer.len);
+#undef FWRITE
+		fclose (fh);
+		return -1;
+	}
+
+	/*
+	*	Moves "a" and "b" to positions not containing white space.
+	*	*a <= *b when there is at least one non-white space character
+	*/
+	void
+	Parser::Trim(int *a, int *b, const char *buf, int bl)
+	{
+		for (*a = 0; *a < bl; (*a)++)
+			if (buf[*a] > ' ')
+				break;
+		for (*b = bl - 1; *b >= 0; (*b)--)
+				if (buf[*b] > ' ')
+					break;
 	}
 
 	/*
@@ -395,7 +497,6 @@ namespace NifLib
 	int
 	Parser::Find(const char *a, int alen, const char *b, int blen, char *buf, int buflen, int *blcklen)
 	{
-		//INFO("Find: buflen = " << buflen)
 		int i, cnt = 0;
 		if (!a || !b || !buf || !blcklen)
 			return buflen;
@@ -418,7 +519,6 @@ namespace NifLib
 					}
 				}
 			}
-		//INFO("Find: found nothing")
 		return buflen;
 	}
 }

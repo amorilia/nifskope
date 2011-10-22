@@ -34,11 +34,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __NIFLIB_H__
 
 #include <cstdlib>
+#include <string.h>
 
 /*
 *	Core tags - the ones that form structures and types.
 *	Make sure (length(TAGS[i % 2 == 0])) == (length(TAGS[i+1]) - 2).
 *	TAGSL[i] == length(TAGS[i % 2 == 0])
+*
+*	Changing them or adding new ones will require rebuild one way or another
+*	so these tables should be updated too.
 */
 #define TAGS_NUML1 6
 #define TAGS_NUML2 2
@@ -53,7 +57,65 @@ char const * const TAGS[] = {
 	"<option"  , "</option>"  ,
 	"<add"     , "</add>"
 };
-int const TAGSL[] = {6, 8, 4, 9, 9, 9, 7, 4};
+int const TAGSL[] = {6, 8, 5, 9, 9, 9, 7, 4};
+
+#define ATTR_NUM 22
+char const * const ATTR[] = {
+	"abstract",
+	"arg",
+	"arr1",
+	"arr2",
+	"arr3",
+	"cond",
+	"count",
+	"default",
+	"inherit",
+	"istemplate",
+	"name",
+	"niflibtype",
+	"nifskopetype",
+	"num",
+	"storage",
+	"template",
+	"type",
+	"userver",
+	"value",
+	"ver1",
+	"ver2",
+	"vercond",
+	"version"
+};
+int const ATTRL[] =
+	{8, 3, 4, 4, 4, 4, 5, 7, 7, 9, 4, 10, 12, 3, 7, 8, 4, 7, 5, 4, 4, 7, 7};
+
+inline int
+AttrId(const char *buf, int bl)
+{
+	int i;
+	for (i = 0; i < ATTR_NUM; i++)
+		if (ATTRL[i] <= bl)
+			if (strncmp (buf, ATTR[i], ATTRL[i]) == 0)
+				return i;
+	return -1;
+}
+
+inline int
+ValidAttrId(int id)
+{
+	return id >= 0 && id < ATTR_NUM;
+}
+
+inline int
+AttrLen(int id)
+{
+	return ATTRL[id];
+}
+
+inline const char *
+AttrText(int id)
+{
+	return ATTR[id];
+}
 
 inline int
 TagLen(int id)

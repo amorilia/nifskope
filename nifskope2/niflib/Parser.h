@@ -41,22 +41,27 @@ namespace NifLib
 {
 	class Parser
 	{
-		NifLib::Tag *at; // active l1 tag (while parsing)
-		std::map< std::string, NifLib::List<NifLib::Tag *> *> objs;
-		char *gbuf;
-		int size;
+		NifLib::Tag *currentL1;
+		NifLib::List<NifLib::List<NifLib::Tag *> *> objs;
 		int gid; // global id
+		Buffer header;
+		Buffer footer;
+
 		/*
-		*	Turn "nif.xml" into objects
-		*	A tag has attributes.
-		*	map<tagname,list<tag>>
-		*	tag
-		*		list<attr>
+		*	Turn "nif.xml" into objects, grouped by "type":
+		*
+		*	List< List<Tag> >
+		*		Tag
+		*			List<Attr>
+		*       	List<Tag>
+		*			Tag
+		*				List<Attr>
 		*/
-		void Process(char *buf, int buflen);
+		void Process(const char *fname);
 		void Tokenize(char *buf, int buflen, int tmin, int tcnt);
 		int TryParseTag(int tagid, char *buf, int bl);
 		int Add(int tagid, char *buf, int bl);
+		//void ParseAttr(
 	public:
 		Parser(const char *fname);
 		~Parser();
@@ -67,6 +72,16 @@ namespace NifLib
 		*/
 		static int LoadFile(const char *fname, char **buf, int *size);
 
+		/*
+		*	Writes "objs" into a XML file.
+		*	Warning - there are no XML Comment "objs".
+		*/
+		int SaveFile(const char *fname);
+
+		/*
+		*	Moves "a" and "b" to positions not containing white space.
+		*/
+		static void Trim(int *a, int *b, const char *buf, int bl);
 		/*
 		*	Returns true if "buf" starts with "q"
 		*/

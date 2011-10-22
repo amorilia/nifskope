@@ -35,13 +35,20 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifLib
 {
+	bool
+	Tag::AttrExists(int attrid)
+	{
+		for (int i = 0; i < Attr.Count (); i++)
+			if (Attr[i]->Name == attrid)
+				return true;
+		return false;
+	}
+
 	Tag::~Tag()
 	{
-		int i;
-		for (i = 0; i < Tags.Count(); i++)
+		for (int i = 0; i < Tags.Count (); i++)
 			delete Tags[i];
-		std::map<std::string, NifLib::Attr *>::iterator i2;
-		for (i2 = Attr.begin(); i2 != Attr.end(); i2++)
-			delete i2->second;
+		for (int i = 0; i < Attr.Count (); i++)
+			delete Attr[i];
 	}
 }

@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __LIST_H__
 
 #include <vector>
+#include <cstdlib>
 
 namespace NifLib
 {
@@ -41,6 +42,22 @@ namespace NifLib
 	{
 		std::vector<T> list;
 	public:
+		List()
+		{
+		}
+
+		List(int length)
+		{
+			SetLength (length);
+		}
+
+		void SetLength(int length)
+		{
+			Clear ();
+			for (int i = 0; i < length; i++)
+				list.push_back (NULL);
+		}
+
 		T Add(T item)
 		{
 			list.push_back (item);
@@ -60,6 +77,11 @@ namespace NifLib
 		void Clear()
 		{
 			list.clear ();
+		}
+
+		bool Empty()
+		{
+			return Count () <= 0;
 		}
 	};
 }

@@ -34,4 +34,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifLib
 {
+	Attr::Attr()
+	{
+		Name = -1;
+	}
 }

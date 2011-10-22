@@ -46,8 +46,9 @@ namespace NifLib
 		int Id;// sequential id initialized in order of reading from the XML
 		int Name;// reference to tag name
 		Buffer Value;
-		std::map<std::string, NifLib::Attr *> Attr;
+		NifLib::List<NifLib::Attr *> Attr;
 		NifLib::List<NifLib::Tag *> Tags;
+		bool AttrExists(int attrid);
 		~Tag();
 	};
 }

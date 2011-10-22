@@ -41,9 +41,10 @@ namespace NifLib
 	class Attr
 	{
 	public:
-		Buffer Name;
+		Attr();
 		Buffer Value;
 		int Id;
+		int Name;
 	};
 }
 
