@@ -277,6 +277,7 @@ namespace NifLib
 				INFO("E : tmp_result: " << tmp_result << ", bc: " << bc)
 			} // if (op > 0)
 		}// main for
+		NifRelease (buf);
 
 		// pass 3 - brackets
 		return EvaluateL2 (l2);
