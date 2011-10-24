@@ -30,46 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#include "Buffer.h"
-
-#include <string.h>
-#include <cstdlib>
-#include "niflib.h"
+#include "Field.h"
 
 namespace NifLib
 {
-	Buffer::Buffer()
-	{
-		len = 0;
-		buf = NULL;
-	}
-
-	int
-	Buffer::CopyFrom(const char *srcbuf, int srclen)
-	{
-		buf = (char *)NifAlloc (srclen);
-		if (!buf) {
-			ERR("Buffer.CopyFrom: Out of memory")
-			return 0;
-		}
-		len = srclen;
-		return memcpy (buf, srcbuf, srclen) != NULL;
-	}
-
-	int
-	Buffer::Equals(const char *srcbuf, int srclen)
-	{
-		if (srclen != len)
-			return 0;
-		if (buf && len > 0)
-			return !strncmp (buf, srcbuf, len);
-		else
-			return 0;
-	}
-
-	Buffer::~Buffer()
-	{
-		if (buf && len > 0)
-			NifRelease (buf);
-	}
 }

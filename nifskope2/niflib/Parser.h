@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __PARSER_H__
 #define __PARSER_H__
 
-#include <map>
 #include "List.h"
 #include "Tag.h"
 
@@ -42,7 +41,6 @@ namespace NifLib
 	class Parser
 	{
 		NifLib::Tag *currentL1;
-		NifLib::List<NifLib::List<NifLib::Tag *> *> objs;
 		int gid; // global id
 		Buffer header;
 		Buffer footer;
@@ -61,7 +59,8 @@ namespace NifLib
 		void Tokenize(char *buf, int buflen, int tmin, int tcnt);
 		int TryParseTag(int tagid, char *buf, int bl);
 		int Add(int tagid, char *buf, int bl);
-		//void ParseAttr(
+	protected:
+		NifLib::List<NifLib::List<NifLib::Tag *> *> objs;
 	public:
 		Parser(const char *fname);
 		~Parser();
@@ -82,6 +81,14 @@ namespace NifLib
 		*	Moves "a" and "b" to positions not containing white space.
 		*/
 		static void Trim(int *a, int *b, const char *buf, int bl);
+
+		/*
+		*	Finds "c" starting from "pos" in "buf" while avoiding
+		*	whitespaces only.
+		*	Returns -1 when not found.
+		*/
+		static int FindPrevw(const char *buf, int pos, char c);
+
 		/*
 		*	Returns true if "buf" starts with "q"
 		*/

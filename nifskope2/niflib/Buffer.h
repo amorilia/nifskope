@@ -40,6 +40,7 @@ namespace NifLib
 	public:
 		Buffer();
 		int CopyFrom(const char *srcbuf, int srclen);
+		int Equals(const char *srcbuf, int srclen);
 		int len;
 		char *buf;
 		~Buffer();

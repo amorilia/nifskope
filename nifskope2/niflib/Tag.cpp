@@ -32,9 +32,17 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Tag.h"
 #include "niflib.h"
+#include <cstdlib>
 
 namespace NifLib
 {
+	Tag::Tag()
+	{
+		Id = -1;
+		Name = -1;
+		Parent = NULL;
+	}
+
 	bool
 	Tag::AttrExists(int attrid)
 	{
@@ -42,6 +50,14 @@ namespace NifLib
 			if (Attr[i]->Name == attrid)
 				return true;
 		return false;
+	}
+
+	NifLib::Attr *Tag::AttrById(int attrid)
+	{
+		for (int i = 0; i < Attr.Count (); i++)
+			if (Attr[i]->Name == attrid)
+				return Attr[i];
+		return NULL;
 	}
 
 	Tag::~Tag()

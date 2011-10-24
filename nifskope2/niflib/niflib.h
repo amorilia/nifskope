@@ -58,35 +58,63 @@ char const * const TAGS[] = {
 	"<add"     , "</add>"
 };
 int const TAGSL[] = {6, 8, 5, 9, 9, 9, 7, 4};
+#define TBASIC 0
+#define TENUM 2
+#define TCOMPOUND 3
+#define TBITFLAGS 5
 
 #define ATTR_NUM 22
 char const * const ATTR[] = {
-	"abstract",
-	"arg",
-	"arr1",
-	"arr2",
-	"arr3",
-	"cond",
-	"count",
-	"default",
-	"inherit",
-	"istemplate",
-	"name",
-	"niflibtype",
-	"nifskopetype",
-	"num",
-	"storage",
-	"template",
-	"type",
-	"userver",
-	"value",
-	"ver1",
-	"ver2",
-	"vercond",
-	"version"
+	/*  0 */"abstract",
+	/*  1 */"arg",
+	/*  2 */"arr1",
+	/*  3 */"arr2",
+	/*  4 */"arr3",
+	/*  5 */"cond",
+	/*  6 */"count",
+	/*  7 */"default",
+	/*  8 */"inherit",
+	/*  9 */"istemplate",
+	/* 10 */"name",
+	/* 11 */"niflibtype",
+	/* 12 */"nifskopetype",
+	/* 13 */"num",
+	/* 14 */"storage",
+	/* 15 */"template",
+	/* 16 */"type",
+	/* 17 */"userver",
+	/* 18 */"value",
+	/* 19 */"ver1",
+	/* 20 */"ver2",
+	/* 21 */"vercond",
+	/* 22 */"version"
 };
 int const ATTRL[] =
 	{8, 3, 4, 4, 4, 4, 5, 7, 7, 9, 4, 10, 12, 3, 7, 8, 4, 7, 5, 4, 4, 7, 7};
+
+#define AARR1 2
+#define ACOND 5
+#define ANAME 10
+#define ANIFLIBTYPE 11
+#define ASTORAGE 14
+#define ATYPE 16
+#define AVER1 19
+#define AVER2 20
+#define AVERCOND 21
+
+const int OPL[] = {0, 2, 2, 1, 2, 1, 1, 2};
+#define EVAL_OP_NONE 0
+#define EVAL_OP_EQU 1
+#define EVAL_OP_GTEQU 2
+
+const int OPBL[] = {0, 2, 2};
+#define EVAL_OPB_NONE 0
+#define EVAL_OPB_OR 1
+#define EVAL_OPB_AND 2
+
+#define EVAL_TYPE_UNKNOWN -1
+#define EVAL_TYPE_VERSION 1
+#define EVAL_TYPE_UINT 2
 
 inline int
 AttrId(const char *buf, int bl)

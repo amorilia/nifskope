@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __TAG_H__
 #define __TAG_H__
 
-#include <map>
 #include "Attr.h"
 #include "Buffer.h"
 #include "List.h"
@@ -43,12 +42,15 @@ namespace NifLib
 	class Tag
 	{
 	public:
+		Tag();
 		int Id;// sequential id initialized in order of reading from the XML
 		int Name;// reference to tag name
-		Buffer Value;
+		Buffer Value;// XML document value - a free form text for UIs
+		NifLib::Tag *Parent;
 		NifLib::List<NifLib::Attr *> Attr;
 		NifLib::List<NifLib::Tag *> Tags;
 		bool AttrExists(int attrid);
+		NifLib::Attr *AttrById(int attrid);
 		~Tag();
 	};
 }

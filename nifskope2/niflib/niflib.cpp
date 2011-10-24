@@ -73,6 +73,10 @@ PrintBlockA(const char *buf, int len)
 void
 PrintBlockB(const char *buf, int len, int col)
 {
+	if (len <= 0) {
+		INFO("PrintBlockB: empty, len = " << len)
+		return;
+	}
 	int i;
 	std::stringstream d;
 #define FMT std::setw (2) << std::setfill ('0') << std::hex << std::uppercase

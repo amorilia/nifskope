@@ -210,6 +210,7 @@ namespace NifLib
 			}
 			currentL1->Tags.Add (t);// subtags should always be sequential
 			t->Id = currentL1->Tags.Count () - 1;
+			t->Parent = currentL1;
 		}
 		// parse attributes and add them
 		// < attr="val" >cmnt
@@ -267,6 +268,8 @@ namespace NifLib
 							while (++k < bl && buf[k] != '"')
 								;
 							attr->Value.CopyFrom (&buf[j + 1], k - j - 1);
+							/*if (attr->Name == AVERCOND)
+								PrintBlockA (&buf[j + 1], k - j - 1);*/
 							break;
 						}
 				// add attribute
@@ -452,6 +455,29 @@ namespace NifLib
 		for (*b = bl - 1; *b >= 0; (*b)--)
 				if (buf[*b] > ' ')
 					break;
+	}
+
+	/*
+	*	Finds "c" starting from "pos" in "buf" while avoiding
+	*	whitespaces only.
+	*	Returns -1 when not found.
+	*/
+	int
+	Parser::FindPrevw(const char *buf, int pos, char c)
+	{
+		if (c <= ' ')
+			return -1;
+		if (pos > 0) {
+			if (buf[pos - 1] <= ' ') {// scan at all ?
+				while (--pos > -1 && buf[pos] <= ' ')
+					if (buf[pos] == c)
+						return pos;
+			} else {
+				if (buf[pos] == c)
+					return pos;
+			}
+		}
+		return -1;
 	}
 
 	/*

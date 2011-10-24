@@ -43,6 +43,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/time.h>
 
 #include "Parser.h"
+#include "Compiler.h"
 #include "List.h"
 
 template <typename T> class TreeNode
@@ -50,22 +51,6 @@ template <typename T> class TreeNode
 public:
 	TreeNode<T> *Parent;
 	NifLib::List< TreeNode<T> > Nodes;
-};
-
-class NiObject
-{
-public:
-	void Read(NifStream &stream);
-	void Write(NifStream &stream);
-};
-
-class Nif
-{
-public:
-	Nif(const char *fileName);
-	NifLib::List<NiObject> Items;
-	void Read();
-	void Write();
 };
 
 // Returns (b - a) in microseconds
@@ -80,11 +65,14 @@ main(int argc, char **argv)
 {
 	struct timeval tstart, tstop;
 	gettimeofday (&tstart, NULL);
-	NifLib::Parser p("nif.xml");
+	NifLib::Compiler p("nif.xml");
 	gettimeofday (&tstop, NULL);
 	INFO("loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 
-	p.SaveFile ("nif3.xml");
+	//p.SaveFile ("nif3.xml");
+	//p.Build ();
+	p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
+
 	// reading works
 	/*NifStream test ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif", 1024*1024);
 

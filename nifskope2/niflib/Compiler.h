@@ -30,46 +30,54 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#include "Buffer.h"
+#ifndef __COMPILER_H__
+#define __COMPILER_H__
 
-#include <string.h>
-#include <cstdlib>
-#include "niflib.h"
+#include "Parser.h"
+#include "niff.h"
+#include "Tag.h"
+#include "Attr.h"
+#include "List.h"
+#include "Field.h"
+#include <string>
+#include <sstream>
 
 namespace NifLib
 {
-	Buffer::Buffer()
+	class Compiler: public Parser
 	{
-		len = 0;
-		buf = NULL;
-	}
-
-	int
-	Buffer::CopyFrom(const char *srcbuf, int srclen)
-	{
-		buf = (char *)NifAlloc (srclen);
-		if (!buf) {
-			ERR("Buffer.CopyFrom: Out of memory")
-			return 0;
+		NifLib::List<NifLib::Field *> flist;
+		NIFuint nVersion;// global nif file variable
+		int	Read_bool (NifStream *s, char *b);
+		void AddField(NifLib::Tag *field, char *buf, int bl);
+		template <typename T> static T str2(const std::string &val)
+		{
+			std::stringstream aa;
+			aa << val;
+			T k;
+			aa >> k;
+			return k;
 		}
-		len = srclen;
-		return memcpy (buf, srcbuf, srclen) != NULL;
-	}
+		int Evaluate(NifLib::Attr* cond);
+		int EvalDeduceType(const char *val, int len);
+		int EvaluateL2(NifLib::List<NIFuint> &l2);
 
-	int
-	Buffer::Equals(const char *srcbuf, int srclen)
-	{
-		if (srclen != len)
-			return 0;
-		if (buf && len > 0)
-			return !strncmp (buf, srcbuf, len);
-		else
-			return 0;
-	}
+		/*
+		*	Starts from current count-1 and scans untill the first field.
+		*	Returns NULL when not found.
+		*/
+		NifLib::Field *FFBackwards(int attrid, const char *val, int len);
+	public:
+		Compiler(const char *fname);
+		~Compiler();
 
-	Buffer::~Buffer()
-	{
-		if (buf && len > 0)
-			NifRelease (buf);
-	}
+		static NIFuint HeaderString2Version(const char *buf, int bl);
+		void ReadNif(const char *fname);
+		bool V12Check(NifLib::Tag *field);
+		NifLib::Tag *Find(int tagid, int attrid, const char *attrvalue, int len);
+
+		void Build();
+	};
 }
+
+#endif /*__COMPILER_H__*/
