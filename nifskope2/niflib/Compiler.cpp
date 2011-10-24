@@ -73,7 +73,7 @@ namespace NifLib
 	*		( User Version >= 3.14 )
 	*		it may work in other scenarios, but its experimental
 	*	- it expects following operators between lvalue and rvalue:
-	*		'==' '>=' '>' '<' '<=' '&' '!='
+	*		'==' '>=' '>' '<' '<=' '&' '!=' '-'
 	*	- it expects following operators between brackets '(' ')':
 	*		'||' '&&'
 	*	- it expects following operator before an opening bracket '(':
@@ -141,18 +141,18 @@ namespace NifLib
 		int op = EVAL_OP_NONE;
 		int opb = EVAL_OPB_NONE;
 		int lt = EVAL_TYPE_UNKNOWN, rt = EVAL_TYPE_UNKNOWN;
-		//char *lbuf = NULL;
-		//int llen = 0;
+		char *lbuf = NULL;
+		int llen = 0;
 		char *rbuf = NULL;
 		int rlen = 0;
 		NifLib::List<NIFuint> l2;
 		for (i = 0; i < len; i++) {
 			op = EVAL_OP_NONE;
 			opb = EVAL_OPB_NONE;
-			lt = EVAL_TYPE_UNKNOWN;
+			lt = EVAL_TYPE_UNKNOWN; if(lt);
 			rt = EVAL_TYPE_UNKNOWN;
-			//lbuf = NULL;
-			//llen = 0;
+			lbuf = NULL; if(lbuf);
+			llen = 0; if(llen);
 			rbuf = NULL;
 			rlen = 0;
 			if (buf[i] == '!') {
@@ -170,11 +170,12 @@ namespace NifLib
 			}
 			if (Parser::StartsWith ("==", 2, &buf[i], len - i)) op = EVAL_OP_EQU;
 			else if (Parser::StartsWith (">=", 2, &buf[i], len - i)) op = EVAL_OP_GTEQU;
-			else if (buf[i] == '>') op = 3;
-			else if (Parser::StartsWith ("<=", 2, &buf[i], len - i)) op = 4;
-			else if (buf[i] == '<') op = 5;
-			else if (buf[i] == '&') op = 6;
-			else if (Parser::StartsWith ("!=", 2, &buf[i], len - i)) op = 7;
+			else if (buf[i] == '>') op = EVAL_OP_GT;
+			else if (Parser::StartsWith ("<=", 2, &buf[i], len - i)) op = EVAL_OP_LTEQU;
+			else if (buf[i] == '<') op = EVAL_OP_LT;
+			else if (buf[i] == '&') op = EVAL_OP_AND;
+			else if (Parser::StartsWith ("!=", 2, &buf[i], len - i)) op = EVAL_OP_NOTEQU;
+			else if (buf[i] == '-') op = EVAL_OP_SUB;
 			if (Parser::StartsWith ("||", 2, &buf[i], len - i)) opb = EVAL_OPB_OR;
 			else if (Parser::StartsWith ("&&", 2, &buf[i], len - i)) opb = EVAL_OPB_AND;
 			if (opb) {
@@ -189,18 +190,14 @@ namespace NifLib
 				// l_operand: scan <- non-empty..(
 				int j;
 				NifLib::Field *lf;
-				NifLib::Field *rf;
+				NifLib::Field *rf;if(rf);
 				if (i > 0)
 					for (j = i - 1; j > -1; j--)
 						if (buf[j] > ' ') {
 							int k = j;
-							if (bc) {
+							if (bc)
 								while (--k > -1 && buf[k] != '(')
 									;
-								/*// find out if there is '!'
-								if (k > 0)
-									ne = Parser::FindPrevw (buf, k - 1, '!') > -1;*/
-							}
 							else k = 0;// TODO: scan to prev. delimiter
 							// "trim" start
 							while (++k < i)
@@ -239,7 +236,7 @@ namespace NifLib
 				else INFO("E: L: [" << " ," << lt << "]")
 				if (rf) INFO("E: R: [" << "f," << rt << "]")
 				else INFO("E: R: [" << " ," << rt << "]")*/
-				NIFuint tmp_result = 0;
+				NIFuint tmp = 0;
 				if (lf && rt != EVAL_TYPE_UNKNOWN) {
 					// left is a field, right is a const
 					if (rt == EVAL_TYPE_VERSION ||
@@ -257,11 +254,21 @@ namespace NifLib
 								<< lf->Value.len << " > " << 4)
 						} else {
 							if (op == EVAL_OP_EQU)
-								tmp_result =
-									lf->Value.Equals ((const char *)&item, lf->Value.len);
+								tmp = lf->Value.Equals ((const char *)&item, lf->Value.len);
 							else if (op == EVAL_OP_GTEQU)
-								tmp_result =
-									(NIFuint)*(NIFuint *)&(lf->Value.buf[0]) >= item;
+								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) >= item;
+							else if (op == EVAL_OP_GT)
+								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) > item;
+							else if (op == EVAL_OP_LTEQU)
+								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) <= item;
+							else if (op == EVAL_OP_LT)
+								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) < item;
+							else if (op == EVAL_OP_AND)
+								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) & item;
+							else if (op == EVAL_OP_NOTEQU)
+								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) != item;
+							else if (op == EVAL_OP_SUB)
+								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) - item;
 							else {
 								INFO("E : EVAL_OP no implemented yet: " << op)
 							}
@@ -270,16 +277,15 @@ namespace NifLib
 				} else {
 					INFO("E: Operand combination not implemented yet")
 				}
-				/*if (ne)
-					tmp_result = !tmp_result;*/
 				l2.Add (5);
-				l2.Add (tmp_result);
-				INFO("E : tmp_result: " << tmp_result << ", bc: " << bc)
+				l2.Add (tmp);
+				//INFO("E : tmp_result: " << tmp_result << ", bc: " << bc)
 			} // if (op > 0)
 		}// main for
 		NifRelease (buf);
 
 		// pass 3 - brackets
+		// TODO: cache queries
 		return EvaluateL2 (l2);
 	}
 
@@ -445,36 +451,106 @@ namespace NifLib
 	}
 
 	void
-	Compiler::ReadNif(const char *fname)
+	Compiler::ReadObject(NifStream &s, NifLib::Tag *t)
 	{
-		NifLib::Tag *t = Find (TCOMPOUND, ANAME, "Header", 6);
-		NifLib::Attr *tname = t->AttrById (ANAME);
 		if (!t) {
-			ERR("Missing header structure")
+			ERR("Missing tag")
 			return;
 		}
-		INFO("Found header structure")
-		NifStream s(fname, 1*1024*1024);
-		INFO("Loaded \"" << fname << "\"")
-
+		NifLib::Attr *tname = t->AttrById (ANAME);
 #define SFIELD(L1, L2)\
 	"\"" << std::string (L1->Value.buf, L1->Value.len)\
 	<< "." << std::string (L2->Value.buf, L2->Value.len) << "\""
 #define HEX(N) std::setw (N) << std::setfill ('0') << std::hex << std::uppercase
 #define DEC std::dec
-		INFO("R: Header")
+#define READ(BT, BYTES, RT, CNT)\
+{\
+	BT *buf;\
+	buf = (BT *)NifAlloc (BYTES);\
+	if (!buf) {\
+		ERR("Out of memory")\
+		return;\
+	}\
+	NIFint rr = s.Read##RT (&buf[0], CNT);\
+	if (rr != BYTES) {\
+		ERR("ReadUInt failed")\
+		NifRelease (buf);\
+		return;\
+	}\
+	INFO("R "#BT"(" << CNT << "): " << SFIELD(tname, fname) << ": \""\
+		<< DEC << buf[0] << " " << HEX(8) << buf[0] << "\"" << DEC)\
+	AddField (field, (char *)&buf[0], BYTES);\
+	pos += rr;\
+	NifRelease (buf);\
+}
 		for (int i = 0; i < t->Tags.Count (); i++) {// its kinda CS:IP :)
 			NifLib::Tag *field = t->Tags[i];// a field
 			NifLib::Attr *ftype = field->AttrById (ATYPE);// field type
 			NifLib::Attr *fname = field->AttrById (ANAME);// field name
+			// critical checks
 			if (!ftype) {// field must have a type
-				INFO("Unknown type for l2 tag in l1 tag #" << t->Id)
-				continue;
+				INFO("R: Unknown type for l2 tag in l1 tag #" << t->Id)
+				return;
 			}
-			if (!V12Check (field)) {
+			if (!V12Check (field)) {// "ver1" and "ver2" checks
 				INFO("R: " << SFIELD(tname, fname)	<< ": *** V12Check")
 				continue;
 			}
+			NifLib::Attr *tcond = field->AttrById (ACOND);
+			if (tcond) {
+				int eval_result = Evaluate (tcond);
+				INFO("*R cond:" << "\""
+					<< std::string (tcond->Value.buf, tcond->Value.len) << "\": "
+					<< eval_result)
+				if (!eval_result)
+					continue;
+			}
+			NifLib::Attr *vcond = field->AttrById (AVERCOND);
+			if (vcond) {
+				int eval_result = Evaluate (vcond);
+				INFO("*R vercond:" << "\""
+					<< std::string (vcond->Value.buf, vcond->Value.len) << "\": "
+					<< eval_result)
+				if (!eval_result)
+					continue;
+			}
+
+			// init 1d array
+			// can be const uint, field, expression
+			NIFint i1 = 1;// 1d size
+			NifLib::Attr *tarr1 = field->AttrById (AARR1);
+			if (tarr1) {
+				//INFO(" - has arr1")
+				int x;
+				for (x = 0; x < tarr1->Value.len; x++)
+					if (tarr1->Value.buf[x] < '0' ||
+						tarr1->Value.buf[x] > '9' )
+						break;
+				if (x == tarr1->Value.len)
+					i1 = str2<NIFint> (std::string (tarr1->Value.buf, tarr1->Value.len));
+				else {// not a const int
+					NifLib::Field *v =
+						FFBackwards(ANAME, tarr1->Value.buf, tarr1->Value.len);
+					if (v)
+						i1 = v->AsNIFuint ();
+					else {// not a field
+						i1 = Evaluate (tarr1);
+						INFO("*R (arr1): \""
+							<< std::string (tarr1->Value.buf, tarr1->Value.len) << "\":"
+							<< i1)
+						if (i1 <= 0) {
+							ERR("R : can't determine arr1 contents")
+							return;
+						}
+					}
+				}
+			}// if (tarr1)
+
+			// arr2:
+			// can be const, field, field what is array (jagged)
+
+			// arr3:
+			// can be const
 
 			NifLib::Tag *tt = Find (TBASIC, ANAME, ftype->Value.buf, ftype->Value.len);
 			if (!tt) {// try find out if its 'enum'
@@ -493,68 +569,137 @@ namespace NifLib
 			}
 			if (tt) {// *** its a basic type
 				NifLib::Attr *ta = tt->AttrById (ANIFLIBTYPE);
-				//NifLib::Attr *tarr1 = field->AttrById (AARR1);
-				NifLib::Attr *tcond = field->AttrById (ACOND);
-				if (tcond) {// we have a condition :)
-					INFO("*R :" << "\""
-						<< std::string (tcond->Value.buf, tcond->Value.len) << "\"")
-					int eval_result = Evaluate (tcond);
-					INFO("*R : " << eval_result)
-					if (!eval_result)
-						continue;
-				}
 				// <add name="Header String" type="HeaderString">
 				// *** read basic type "HeaderString" mapped to our code here:
 				//     it has no attribute description in the XML so its
-				//     bhaviour is hard-coded
+				//     behaviour is hard-coded
 				if (ta->Value.Equals ("HeaderString", 12) ||
 					ta->Value.Equals ("LineString", 10)) {
-					const NIFint BS = 1024;
-					NIFchar buf[BS];
-					NIFint rr = s.ReadCharCond (&buf[0], BS, '\n');
-					if (rr <= BS) {
+					i1 = 1024;// max length
+					NIFchar *buf;
+					buf = (NIFchar *)NifAlloc (1*i1);
+					if (!buf) {
+						ERR("Out of memory")
+						return;
+					}
+					NIFint rr = s.ReadCharCond (&buf[0], i1, '\n');
+					if (rr <= i1) {
 						//PrintBlockB (&buf[0], rr, 16);
-						INFO("R hstr: " << SFIELD(tname, fname)
-							<< ": \"" << std::string (&buf[0], rr - 1) << "\"")
+						INFO("R hstr(" << rr << "): " << SFIELD(tname, fname)
+							<< ": \"" << std::string (&buf[0], rr - 1) << "\"" << DEC)
 						AddField (field, &buf[0], rr);
 					} else {// file format not supported
 						ERR("ReadCharCond failed")
+						NifRelease (buf);
+						return;
 					}
 					// TODO: see to it that Build() turns those to NIFuint
 					nVersion = HeaderString2Version (&buf[0], rr - 1);
+					pos += rr;
+					NifRelease (buf);
 				} else
 				if (ta->Value.Equals ("unsigned int", 12)) {
-					const NIFint BS = 1;
-					NIFuint buf[BS];
-					NIFint rr = s.ReadUInt (&buf[0], BS);
-					if (rr != 4*BS) {// read failed
-						ERR("ReadUInt failed")
+					READ(NIFuint, 4*i1, UInt, i1)
+					/*NIFuint *buf;
+					buf = (NIFuint *)NifAlloc (4*i1);
+					if (!buf) {
+						ERR("Out of memory")
+						return;
 					}
-					INFO("R uint: " << SFIELD(tname, fname) << ": \""
-						<< DEC << buf[0] << " " << HEX(8) << buf[0] << "\"")
-					AddField (field, (char *)&buf[0], 4*BS);
+					NIFint rr = s.ReadUInt (&buf[0], i1);
+					if (rr != 4*i1) {// read failed
+						ERR("ReadUInt failed")
+						NifRelease (buf);
+						return;
+					}
+					INFO("R uint(" << i1 << "): " << SFIELD(tname, fname) << ": \""
+						<< DEC << buf[0] << " " << HEX(8) << buf[0] << "\"" << DEC)
+					AddField (field, (char *)&buf[0], 4*i1);
+					pos += rr;
+					NifRelease (buf);*/
+				} else
+				if (ta->Value.Equals ("int", 3)) {
+					READ(NIFint, 4*i1, Int, i1)
 				} else
 				if (ta->Value.Equals ("byte", 4)) {
-					const NIFint BS = 1;
-					NIFbyte buf[BS];
-					NIFint rr = s.ReadByte (&buf[0], BS);
-					if (rr != 1*BS) {// read failed
-						ERR("ReadByte failed")
+					NIFbyte *buf;
+					buf = (NIFbyte *)NifAlloc (1*i1);
+					if (!buf) {
+						ERR("Out of memory")
+						return;
 					}
-					INFO("R byte: " << SFIELD(tname, fname) << ": \""
-						<< DEC << (int)buf[0] << " " << HEX(2) << (int)buf[0] << "\"")
-					AddField (field, (char *)&buf[0], 1*BS);
+					NIFint rr = s.ReadByte (&buf[0], i1);
+					if (rr != 1*i1) {// read failed
+						ERR("ReadByte failed")
+						NifRelease (buf);
+						return;
+					}
+					INFO("R byte(" << i1 << "): " << SFIELD(tname, fname) << ": \""
+						<< DEC << (int)buf[0] << " " << HEX(2) << (int)buf[0] << "\"" << DEC)
+					PrintBlockA ((const char *)buf, i1);
+					AddField (field, (char *)&buf[0], 1*i1);
+					pos += rr;
+					NifRelease (buf);
+				} else
+				if (ta->Value.Equals ("unsigned short", 14)) {
+					NIFushort *buf;
+					buf = (NIFushort *)NifAlloc (2*i1);
+					if (!buf) {
+						ERR("Out of memory")
+						return;
+					}
+					NIFint rr = s.ReadUShort (&buf[0], i1);
+					if (rr != 2*i1) {// read failed
+						ERR("ReadUShort failed")
+						NifRelease (buf);
+						return;
+					}
+					INFO("R ushort(" << i1 << "): " << SFIELD(tname, fname) << ": \""
+						<< DEC << buf[0] << " " << HEX(4) << buf[0] << "\"" << DEC)
+					AddField (field, (char *)&buf[0], 2*i1);
+					pos += rr;
+					NifRelease (buf);
 				} else
 					INFO("R: " << SFIELD(tname, fname) << ": *** not implemented"
 					<< " (" << std::string (ta->Value.buf, ta->Value.len) << ")")
-			} else {
+			} else {// if (tt) {// *** its a basic type
 				INFO("R: " << SFIELD(tname, fname) << ": *** not basic"
 				<< " (" << std::string (ftype->Value.buf, ftype->Value.len) << ")")
+				tt = Find (TCOMPOUND, ANAME, ftype->Value.buf, ftype->Value.len);
+				if (!tt)
+					tt = Find (TNIOBJECT, ANAME, ftype->Value.buf, ftype->Value.len);
+				if (!tt) {
+					ERR("Uknown tag")
+					return;// can not continue - its sequential file format
+				}
+				for (int idx = 0; idx < i1; idx++)// 1d array
+					ReadObject (s, tt);
 			}
 		}
+#undef READ
 #undef DEC
 #undef HEX
 #undef SFIELD
+	}
+
+	void
+	Compiler::ReadNif(const char *fname)
+	{
+		NifLib::Tag *t = Find (TCOMPOUND, ANAME, "Header", 6);
+		if (t) {
+			INFO("Found header structure")
+			pos = 0;
+			NifStream s(fname, 1*1024*1024);
+			INFO("Opened \"" << fname << "\"")
+
+			INFO("R: Header")
+			ReadObject (s, t);
+#define HEX(N) std::setw (N) << std::setfill ('0') << std::hex << std::uppercase
+#define DEC std::dec
+			INFO("FP :" << HEX(8) << pos << DEC)
+#undef DEC
+#undef HEX
+		}
 	}
 
 	bool

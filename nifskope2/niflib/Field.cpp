@@ -34,4 +34,16 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifLib
 {
+	NIFuint
+	Field::AsNIFuint()
+	{
+		if (Value.len <= 0)
+			throw "Field::AsNIFuint: can't convert";
+		if (Value.len == 1)
+			return *(NIFbyte *)(&Value.buf[0]);
+		else if (Value.len == 2 || Value.len == 3)
+			return *(NIFushort *)(&Value.buf[0]);
+		else
+			return *(NIFuint *)(&Value.buf[0]);
+	}
 }

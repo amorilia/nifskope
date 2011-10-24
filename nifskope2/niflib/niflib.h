@@ -61,6 +61,7 @@ int const TAGSL[] = {6, 8, 5, 9, 9, 9, 7, 4};
 #define TBASIC 0
 #define TENUM 2
 #define TCOMPOUND 3
+#define TNIOBJECT 4
 #define TBITFLAGS 5
 
 #define ATTR_NUM 22
@@ -93,6 +94,7 @@ int const ATTRL[] =
 	{8, 3, 4, 4, 4, 4, 5, 7, 7, 9, 4, 10, 12, 3, 7, 8, 4, 7, 5, 4, 4, 7, 7};
 
 #define AARR1 2
+#define AARR2 3
 #define ACOND 5
 #define ANAME 10
 #define ANIFLIBTYPE 11
@@ -102,10 +104,16 @@ int const ATTRL[] =
 #define AVER2 20
 #define AVERCOND 21
 
-const int OPL[] = {0, 2, 2, 1, 2, 1, 1, 2};
+const int OPL[] = {0, 2, 2, 1, 2, 1, 1, 2, 1};
 #define EVAL_OP_NONE 0
 #define EVAL_OP_EQU 1
 #define EVAL_OP_GTEQU 2
+#define EVAL_OP_GT 3
+#define EVAL_OP_LTEQU 4
+#define EVAL_OP_LT 5
+#define EVAL_OP_AND 6
+#define EVAL_OP_NOTEQU 7
+#define EVAL_OP_SUB 8
 
 const int OPBL[] = {0, 2, 2};
 #define EVAL_OPB_NONE 0

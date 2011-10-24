@@ -35,6 +35,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Buffer.h"
 #include "Tag.h"
+#include "niff.h"
 
 namespace NifLib
 {
@@ -43,6 +44,7 @@ namespace NifLib
 	public:
 		Buffer Value;
 		NifLib::Tag *Tag;
+		NIFuint AsNIFuint();
 	};
 }
 

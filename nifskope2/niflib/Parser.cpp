@@ -268,7 +268,7 @@ namespace NifLib
 							while (++k < bl && buf[k] != '"')
 								;
 							attr->Value.CopyFrom (&buf[j + 1], k - j - 1);
-							/*if (attr->Name == AVERCOND)
+							/*if (attr->Name == AARR2)
 								PrintBlockA (&buf[j + 1], k - j - 1);*/
 							break;
 						}

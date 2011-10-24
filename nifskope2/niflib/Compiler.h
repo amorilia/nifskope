@@ -46,6 +46,7 @@ namespace NifLib
 {
 	class Compiler: public Parser
 	{
+		int pos;
 		NifLib::List<NifLib::Field *> flist;
 		NIFuint nVersion;// global nif file variable
 		int	Read_bool (NifStream *s, char *b);
@@ -67,6 +68,8 @@ namespace NifLib
 		*	Returns NULL when not found.
 		*/
 		NifLib::Field *FFBackwards(int attrid, const char *val, int len);
+
+		void ReadObject(NifStream &s, NifLib::Tag *t);
 	public:
 		Compiler(const char *fname);
 		~Compiler();
