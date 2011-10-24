@@ -598,69 +598,35 @@ namespace NifLib
 					pos += rr;
 					NifRelease (buf);
 				} else
-				if (ta->Value.Equals ("unsigned int", 12)) {
+				if (ta->Value.Equals ("unsigned int", 12) ||
+					ta->Value.Equals ("IndexString", 11)) {
 					READ(NIFuint, 4*i1, UInt, i1)
-					/*NIFuint *buf;
-					buf = (NIFuint *)NifAlloc (4*i1);
-					if (!buf) {
-						ERR("Out of memory")
-						return;
-					}
-					NIFint rr = s.ReadUInt (&buf[0], i1);
-					if (rr != 4*i1) {// read failed
-						ERR("ReadUInt failed")
-						NifRelease (buf);
-						return;
-					}
-					INFO("R uint(" << i1 << "): " << SFIELD(tname, fname) << ": \""
-						<< DEC << buf[0] << " " << HEX(8) << buf[0] << "\"" << DEC)
-					AddField (field, (char *)&buf[0], 4*i1);
-					pos += rr;
-					NifRelease (buf);*/
 				} else
-				if (ta->Value.Equals ("int", 3)) {
+				if (ta->Value.Equals ("int", 3) ||
+					ta->Value.Equals ("*", 1) ||
+					ta->Value.Equals ("Ref", 3)) {
 					READ(NIFint, 4*i1, Int, i1)
 				} else
 				if (ta->Value.Equals ("byte", 4)) {
-					NIFbyte *buf;
-					buf = (NIFbyte *)NifAlloc (1*i1);
-					if (!buf) {
-						ERR("Out of memory")
-						return;
-					}
-					NIFint rr = s.ReadByte (&buf[0], i1);
-					if (rr != 1*i1) {// read failed
-						ERR("ReadByte failed")
-						NifRelease (buf);
-						return;
-					}
-					INFO("R byte(" << i1 << "): " << SFIELD(tname, fname) << ": \""
-						<< DEC << (int)buf[0] << " " << HEX(2) << (int)buf[0] << "\"" << DEC)
-					PrintBlockA ((const char *)buf, i1);
-					AddField (field, (char *)&buf[0], 1*i1);
-					pos += rr;
-					NifRelease (buf);
+					READ(NIFbyte, 1*i1, Byte, i1)
 				} else
 				if (ta->Value.Equals ("unsigned short", 14)) {
-					NIFushort *buf;
-					buf = (NIFushort *)NifAlloc (2*i1);
-					if (!buf) {
-						ERR("Out of memory")
-						return;
-					}
-					NIFint rr = s.ReadUShort (&buf[0], i1);
-					if (rr != 2*i1) {// read failed
-						ERR("ReadUShort failed")
-						NifRelease (buf);
-						return;
-					}
-					INFO("R ushort(" << i1 << "): " << SFIELD(tname, fname) << ": \""
-						<< DEC << buf[0] << " " << HEX(4) << buf[0] << "\"" << DEC)
-					AddField (field, (char *)&buf[0], 2*i1);
-					pos += rr;
-					NifRelease (buf);
+					READ(NIFushort, 2*i1, UShort, i1)
 				} else
-					INFO("R: " << SFIELD(tname, fname) << ": *** not implemented"
+				if (ta->Value.Equals ("short", 5)) {
+					READ(NIFshort, 2*i1, Short, i1)
+				} else
+				if (ta->Value.Equals ("float", 5)) {
+					READ(NIFfloat, 4*i1, Float, i1)
+				} else
+				if (ta->Value.Equals ("bool", 4)) {
+					// A boolean; 32-bit from 4.0.0.2, and 8-bit from 4.1.0.1 on.
+					if (nVersion > 0x04010001)
+						READ(NIFbyte, 1*i1, Byte, i1)
+					else
+						READ(NIFint, 4*i1, Int, i1)
+				} else
+					INFO("R: " << SFIELD(tname, fname) << ": *** Unknown basic type"
 					<< " (" << std::string (ta->Value.buf, ta->Value.len) << ")")
 			} else {// if (tt) {// *** its a basic type
 				INFO("R: " << SFIELD(tname, fname) << ": *** not basic"
