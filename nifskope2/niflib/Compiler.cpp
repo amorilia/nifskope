@@ -71,7 +71,7 @@ namespace NifLib
 	*		1.1.2.123 - version
 	*	- it expects variable name left and const value right:
 	*		( User Version >= 3.14 )
-	*		it may work in other scenarios, but its experimental
+	*		TODO:it may work in other scenarios later
 	*	- it expects following operators between lvalue and rvalue:
 	*		'==' '>=' '>' '<' '<=' '&' '!=' '-'
 	*	- it expects following operators between brackets '(' ')':
@@ -256,26 +256,26 @@ namespace NifLib
 							if (op == EVAL_OP_EQU)
 								tmp = lf->Value.Equals ((const char *)&item, lf->Value.len);
 							else if (op == EVAL_OP_GTEQU)
-								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) >= item;
+								tmp = lf->AsNIFuint () >= item;
 							else if (op == EVAL_OP_GT)
-								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) > item;
+								tmp = lf->AsNIFuint () > item;
 							else if (op == EVAL_OP_LTEQU)
-								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) <= item;
+								tmp = lf->AsNIFuint () <= item;
 							else if (op == EVAL_OP_LT)
-								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) < item;
+								tmp = lf->AsNIFuint () < item;
 							else if (op == EVAL_OP_AND)
-								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) & item;
+								tmp = lf->AsNIFuint () & item;
 							else if (op == EVAL_OP_NOTEQU)
-								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) != item;
+								tmp = lf->AsNIFuint () != item;
 							else if (op == EVAL_OP_SUB)
-								tmp = (NIFuint)*(NIFuint *)&(lf->Value.buf[0]) - item;
+								tmp = lf->AsNIFuint () - item;
 							else {
-								INFO("E : EVAL_OP no implemented yet: " << op)
+								INFO("E : EVAL_OP not supported yet: " << op)
 							}
 						}
 					}
 				} else {
-					INFO("E: Operand combination not implemented yet")
+					INFO("E: Operand combination not supported yet")
 				}
 				l2.Add (5);
 				l2.Add (tmp);
@@ -454,7 +454,7 @@ namespace NifLib
 	Compiler::ReadObject(NifStream &s, NifLib::Tag *t)
 	{
 		if (!t) {
-			ERR("Missing tag")
+			ERR("R: Missing tag")
 			return;
 		}
 		NifLib::Attr *tname = t->AttrById (ANAME);
@@ -478,7 +478,7 @@ namespace NifLib
 		return;\
 	}\
 	INFO("R "#BT"(" << CNT << "): " << SFIELD(tname, fname) << ": \""\
-		<< DEC << buf[0] << " " << HEX(8) << buf[0] << "\"" << DEC)\
+		<< DEC << (int)buf[0] << " " << HEX(2*(BYTES/CNT)) << (int)buf[0] << "\"" << DEC)\
 	AddField (field, (char *)&buf[0], BYTES);\
 	pos += rr;\
 	NifRelease (buf);\
@@ -487,6 +487,7 @@ namespace NifLib
 			NifLib::Tag *field = t->Tags[i];// a field
 			NifLib::Attr *ftype = field->AttrById (ATYPE);// field type
 			NifLib::Attr *fname = field->AttrById (ANAME);// field name
+
 			// critical checks
 			if (!ftype) {// field must have a type
 				INFO("R: Unknown type for l2 tag in l1 tag #" << t->Id)
@@ -539,17 +540,17 @@ namespace NifLib
 							<< std::string (tarr1->Value.buf, tarr1->Value.len) << "\":"
 							<< i1)
 						if (i1 <= 0) {
-							ERR("R : can't determine arr1 contents")
+							ERR("R: can't determine arr1 contents")
 							return;
 						}
 					}
 				}
 			}// if (tarr1)
 
-			// arr2:
+			// TODO:arr2:
 			// can be const, field, field what is array (jagged)
 
-			// arr3:
+			// TODO:arr3:
 			// can be const
 
 			NifLib::Tag *tt = Find (TBASIC, ANAME, ftype->Value.buf, ftype->Value.len);
@@ -579,7 +580,7 @@ namespace NifLib
 					NIFchar *buf;
 					buf = (NIFchar *)NifAlloc (1*i1);
 					if (!buf) {
-						ERR("Out of memory")
+						ERR("R: Out of memory")
 						return;
 					}
 					NIFint rr = s.ReadCharCond (&buf[0], i1, '\n');
@@ -589,7 +590,7 @@ namespace NifLib
 							<< ": \"" << std::string (&buf[0], rr - 1) << "\"" << DEC)
 						AddField (field, &buf[0], rr);
 					} else {// file format not supported
-						ERR("ReadCharCond failed")
+						ERR("R: ReadCharCond failed")
 						NifRelease (buf);
 						return;
 					}
@@ -626,7 +627,7 @@ namespace NifLib
 					else
 						READ(NIFint, 4*i1, Int, i1)
 				} else
-					INFO("R: " << SFIELD(tname, fname) << ": *** Unknown basic type"
+					ERR("R: " << SFIELD(tname, fname) << ": *** Unknown basic type"
 					<< " (" << std::string (ta->Value.buf, ta->Value.len) << ")")
 			} else {// if (tt) {// *** its a basic type
 				INFO("R: " << SFIELD(tname, fname) << ": *** not basic"
@@ -635,7 +636,7 @@ namespace NifLib
 				if (!tt)
 					tt = Find (TNIOBJECT, ANAME, ftype->Value.buf, ftype->Value.len);
 				if (!tt) {
-					ERR("Uknown tag")
+					ERR("R: Uknown tag")
 					return;// can not continue - its sequential file format
 				}
 				for (int idx = 0; idx < i1; idx++)// 1d array
