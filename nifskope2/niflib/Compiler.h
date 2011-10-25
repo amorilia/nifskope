@@ -46,9 +46,11 @@ namespace NifLib
 {
 	class Compiler: public Parser
 	{
+		int DETAILEDLOG;
 		int pos;
+		NifLib::List<NifLib::Attr *> argstack;
 		NifLib::List<NifLib::Field *> flist;
-		NIFuint nVersion;// global nif file variable
+		NIFuint nVersion, nUserVersion;// global nif file variable(s)
 		int	Read_bool (NifStream *s, char *b);
 		void AddField(NifLib::Tag *field, char *buf, int bl);
 		template <typename T> static T str2(const std::string &val)

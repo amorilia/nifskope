@@ -83,6 +83,17 @@ namespace NifLib
 		{
 			return Count () <= 0;
 		}
+
+		void RemoveLast()
+		{
+			if (Count () > 0)
+				list.erase (list.end () - 1);
+		}
+
+		void Insert(int idx, T item)
+		{
+			list.insert (list.begin() + idx, item);
+		}
 	};
 }
 

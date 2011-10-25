@@ -91,8 +91,9 @@ char const * const ATTR[] = {
 	/* 22 */"version"
 };
 int const ATTRL[] =
-	{8, 3, 4, 4, 4, 4, 5, 7, 7, 9, 4, 10, 12, 3, 7, 8, 4, 7, 5, 4, 4, 7, 7};
+	{8, 3, 4, 4, 4, 4, 5, 7, 7, 10, 4, 10, 12, 3, 7, 8, 4, 7, 5, 4, 4, 7, 7};
 
+#define AARG 1
 #define AARR1 2
 #define AARR2 3
 #define ACOND 5
@@ -101,6 +102,7 @@ int const ATTRL[] =
 #define ANIFLIBTYPE 11
 #define ASTORAGE 14
 #define ATYPE 16
+#define AUSERVER 17
 #define AVER1 19
 #define AVER2 20
 #define AVERCOND 21

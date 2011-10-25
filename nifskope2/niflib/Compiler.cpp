@@ -91,7 +91,8 @@ namespace NifLib
 		//INFO(std::dec)
 		/*NifLib::Attr testcond;
 		NifLib::Attr *cond = &testcond;
-		const char * test = "(( Version >= 10.0.1.0 ) &amp;&amp; (!(( Version >= 20.2.0.7) &amp;&amp; (User Version == 11 ))))";
+		//const char * test = "(( Version >= 10.0.1.0 ) &amp;&amp; (!(( Version >= 20.2.0.7) &amp;&amp; (User Version == 11 ))))";
+		const char * test = "Texture Count &gt;= 8";
 		cond->Value.CopyFrom(test, strlen (test));*/
 		// TODO: the most used ones like
 		// "Version", "User Version" and "User Version 2"
@@ -123,7 +124,7 @@ namespace NifLib
 				buf[j++] = cond->Value.buf[i];
 		}
 		len = j;
-		INFO("E p1: \"" << std::string (buf, len) << "\"")
+		//INFO("E p1: \"" << std::string (buf, len) << "\"")
 
 		// pass2
 		// "(User Version == 10) || (User Version == 11)"
@@ -156,18 +157,18 @@ namespace NifLib
 			llen = 0; if(llen);
 			rbuf = NULL;
 			rlen = 0;
-			if (buf[i] == '!') {
+			if (buf[i] == '!' && i < (len -1) && buf[i + 1] != '=') {
 				l2.Add (1);
 				l2.Add (0);
 			}
 			if (buf[i] == '(') {
 				bc++;
 				l2.Add (2);
-				l2.Add (0);
+				l2.Add (i);
 			}
 			if (buf[i] == ')') {
 				l2.Add (3);
-				l2.Add (0);
+				l2.Add (i);
 			}
 			if (Parser::StartsWith ("==", 2, &buf[i], len - i)) op = EVAL_OP_EQU;
 			else if (Parser::StartsWith (">=", 2, &buf[i], len - i)) op = EVAL_OP_GTEQU;
@@ -190,8 +191,8 @@ namespace NifLib
 				//INFO("E : op  #" << op << " at [" << i << "], len: " << OPL[op])
 				// l_operand: scan <- non-empty..(
 				int j;
-				NifLib::Field *lf;
-				NifLib::Field *rf;if(rf);
+				NifLib::Field *lf = NULL;
+				NifLib::Field *rf = NULL;if(rf);
 				if (i > 0)
 					for (j = i - 1; j > -1; j--)
 						if (buf[j] > ' ') {
@@ -199,7 +200,7 @@ namespace NifLib
 							if (bc)
 								while (--k > -1 && buf[k] != '(')
 									;
-							else k = 0;// TODO: scan to prev. delimiter
+							else k = -1;// TODO: scan to prev. delimiter
 							// "trim" start
 							while (++k < i)
 								if (buf[k] > ' ')
@@ -219,7 +220,7 @@ namespace NifLib
 							if (bc)
 								while (++k < len && buf[k] != ')')
 									;
-							else k = len - 1;// TODO: scan to next delimiter
+							else k = len;// TODO: scan to next delimiter
 							// "trim" end
 							while (--k > i + OPL[op])
 								if (buf[k] > ' ')
@@ -233,43 +234,107 @@ namespace NifLib
 							break;
 						}
 				// evaluate
+				// handle ARG
+				// can be const or field, as field it can be a template
+				NIFuint ritem;
+				if (rt == EVAL_TYPE_VERSION) {
+					//INFO("E: EVAL_TYPE_VERSION")
+					ritem = HeaderString2Version (rbuf, rlen);
+				} else if (rt == EVAL_TYPE_UINT) {
+					//INFO("E: EVAL_TYPE_UINT")
+					ritem = str2<NIFuint> (std::string (rbuf, rlen));
+				}
+				NIFuint litem;
+				if (lt == EVAL_TYPE_VERSION) {
+					//INFO("E: EVAL_TYPE_VERSION")
+					litem = HeaderString2Version (lbuf, llen);
+				} else if (lt == EVAL_TYPE_UINT) {
+					//INFO("E: EVAL_TYPE_UINT")
+					litem = str2<NIFuint> (std::string (lbuf, llen));
+				}
+				NifLib::Attr* arg = NULL;
+				if (argstack.Count () > 0 ) {
+					arg = argstack[argstack.Count () - 1];
+					//argstack.RemoveLast ();
+				}
+				if (arg && !lf) {
+					//INFO ("E arg: " << "\""
+					//	<< std::string (arg->Value.buf, arg->Value.len) << "\"")
+					int x;
+					for (x = 0; x < arg->Value.len; x++)// TODO: IsInt
+						if (arg->Value.buf[x] < '0' ||
+							arg->Value.buf[x] > '9' )
+							break;
+					if (x == arg->Value.len) {
+						litem = str2<NIFint> (std::string (arg->Value.buf, arg->Value.len));
+						lt = EVAL_TYPE_UINT;
+					}
+					else {
+						lf = FFBackwards (ANAME, arg->Value.buf, arg->Value.len);
+						if (!lf) {
+							//INFO("E: lf not found")
+						}
+						lt = EVAL_TYPE_UNKNOWN;
+					}
+				}
 				/*if (lf) INFO("E: L: [" << "f," << lt << "]")
 				else INFO("E: L: [" << " ," << lt << "]")
 				if (rf) INFO("E: R: [" << "f," << rt << "]")
 				else INFO("E: R: [" << " ," << rt << "]")*/
 				NIFuint tmp = 0;
+				if (lt != EVAL_TYPE_UNKNOWN && rt != EVAL_TYPE_UNKNOWN) {
+					if (op == EVAL_OP_EQU)
+						tmp = litem == ritem;
+					else if (op == EVAL_OP_GTEQU)
+						tmp = litem >= ritem;
+					else if (op == EVAL_OP_GT)
+						tmp = litem > ritem;
+					else if (op == EVAL_OP_LTEQU)
+						tmp = litem <= ritem;
+					else if (op == EVAL_OP_LT)
+						tmp = litem < ritem;
+					else if (op == EVAL_OP_AND)
+						tmp = litem & ritem;
+					else if (op == EVAL_OP_NOTEQU)
+						tmp = litem != ritem;
+					else if (op == EVAL_OP_SUB)
+						tmp = litem - ritem;
+					else {
+						INFO("E [const, const]: EVAL_OP not supported yet: " << op)
+					}
+				}
 				if (lf && rt != EVAL_TYPE_UNKNOWN) {
 					// left is a field, right is a const
 					if (rt == EVAL_TYPE_VERSION ||
 						rt == EVAL_TYPE_UINT) {// supported const type #1 and #2
-						NIFuint item;
+						/*NIFuint item;
 						if (rt == EVAL_TYPE_VERSION) {
 							//INFO("E: EVAL_TYPE_VERSION")
 							item = HeaderString2Version (rbuf, rlen);
 						} else {//rt == EVAL_TYPE_UINT
 							//INFO("E: EVAL_TYPE_UINT")
 							item = str2<NIFuint> (std::string (rbuf, rlen));
-						}
+						}*/
 						if (lf->Value.len > 4) {
 							INFO("E: Type mishmash: "
 								<< lf->Value.len << " > " << 4)
 						} else {
 							if (op == EVAL_OP_EQU)
-								tmp = lf->Value.Equals ((const char *)&item, lf->Value.len);
+								tmp = lf->Value.Equals ((const char *)&ritem, lf->Value.len);
 							else if (op == EVAL_OP_GTEQU)
-								tmp = lf->AsNIFuint () >= item;
+								tmp = lf->AsNIFuint () >= ritem;
 							else if (op == EVAL_OP_GT)
-								tmp = lf->AsNIFuint () > item;
+								tmp = lf->AsNIFuint () > ritem;
 							else if (op == EVAL_OP_LTEQU)
-								tmp = lf->AsNIFuint () <= item;
+								tmp = lf->AsNIFuint () <= ritem;
 							else if (op == EVAL_OP_LT)
-								tmp = lf->AsNIFuint () < item;
+								tmp = lf->AsNIFuint () < ritem;
 							else if (op == EVAL_OP_AND)
-								tmp = lf->AsNIFuint () & item;
+								tmp = lf->AsNIFuint () & ritem;
 							else if (op == EVAL_OP_NOTEQU)
-								tmp = lf->AsNIFuint () != item;
+								tmp = lf->AsNIFuint () != ritem;
 							else if (op == EVAL_OP_SUB)
-								tmp = lf->AsNIFuint () - item;
+								tmp = lf->AsNIFuint () - ritem;
 							else {
 								INFO("E : EVAL_OP not supported yet: " << op)
 							}
@@ -280,10 +345,46 @@ namespace NifLib
 				}
 				l2.Add (5);
 				l2.Add (tmp);
-				//INFO("E : tmp_result: " << tmp_result << ", bc: " << bc)
+				//INFO("E : tmp: " << tmp << ", bc: " << bc)
 			} // if (op > 0)
 		}// main for
+
+		//E p1: "(Has Faces) && (Num Strips == 0)"
+		// 2 3
+		int sl = l2.Count () / 2;
+		for (i = 0; i < sl - 1; i++)
+			if (l2[2 * i] == 2 && l2[(2 * (i + 1))] == 3) {
+				int pos = l2[(2 * i) + 1];
+				while (++pos < len && buf[pos] <= ' ')// move to first non-empty ->
+					;
+				int pos2 = l2[(2 * (i + 1)) + 1];
+				while (--pos2 >= pos && buf[pos2] <= ' ')// move to first non-empty <-
+					;
+				int length = (pos2 - pos) + 1;
+				//INFO("E: field in brackets, no op: " << std::string (&buf[pos], length))
+				NifLib::Field *f = FFBackwards (ANAME, &buf[pos], length);
+				if (f) {
+					//INFO("E: field found")
+					NIFuint val = f->AsNIFuint ();
+					l2.Insert ((2 * (i + 1)), 5);
+					l2.Insert ((2 * (i + 1))+1, val);
+				} //else INFO("E: field not found")
+			}
 		NifRelease (buf);
+
+		if (l2.Count () <= 0) {// a field probably
+			NifLib::Field *v =
+				FFBackwards(ANAME, cond->Value.buf, cond->Value.len);
+			if (v)
+				return (int)v->AsNIFuint ();
+			else {
+				INFO("E: *** can't evaluate that")
+				return 0;// the above is not necessary an error - return false
+			}
+		}
+
+		if (!bc && l2.Count () > 1) // no brackets
+			return l2[1];
 
 		// pass 3 - brackets
 		// TODO: cache queries
@@ -320,9 +421,10 @@ namespace NifLib
 	Compiler::EvaluateL2(NifLib::List<NIFuint> &l2)
 	{
 		//INFO("--")
+		if (l2.Count () < 2)
+			throw "EvaluateL2: invalid argument";
 		int i, k;
 		int c1 = 0, c2 = 0, c3 = 0;
-		//INFO("EL2 :" << std::string (buf, len))
 		/*INFO ("l2: " << l2.Count ())
 		for (i = 0; i < l2.Count () - 1; i += 2)
 			INFO(l2[i] << " " << l2[i+1])*/
@@ -427,6 +529,9 @@ namespace NifLib
 	Compiler::Compiler(const char *fname)
 		: Parser (fname)
 	{
+		nVersion = 0;
+		nUserVersion = 0;
+		DETAILEDLOG = 1;
 	}
 
 	Compiler::~Compiler()
@@ -476,8 +581,8 @@ namespace NifLib
 			ERR("R: A tag should have a name")
 			return;
 		}
-		INFO("Reading \""
-			<< std::string (tname->Value.buf, tname->Value.len) << "\"")
+		/*INFO("Reading \""
+			<< std::string (tname->Value.buf, tname->Value.len) << "\"")*/
 		// handle "inherit"
 		NifLib::Attr *p = t->AttrById (AINHERIT);
 		if (p) {
@@ -499,6 +604,7 @@ namespace NifLib
 #define READ(BT, BYTES, RT, CNT)\
 {\
 	if (CNT > 0 && BYTES > 0) {\
+		long posb = pos;\
 		BT *buf;\
 		buf = (BT *)NifAlloc (BYTES);\
 		if (!buf) {\
@@ -511,8 +617,10 @@ namespace NifLib
 			NifRelease (buf);\
 			return;\
 		}\
-		INFO("R "#BT"(" << CNT << "): " << SFIELD(tname, fname) << ": \""\
-			<< DEC << (int)buf[0] << " " << HEX(2*(BYTES/CNT)) << (int)buf[0] << "\"" << DEC)\
+		if (DETAILEDLOG)\
+		INFO("R "#BT"(" << CNT << ")(" << HEX(8) << posb << DEC\
+			<< "): " << SFIELD(tname, fname) << ": \"" << DEC << (int)buf[0]\
+			<< " " << HEX(2*((BYTES)/(CNT))) << (int)buf[0] << "\"" << DEC)\
 		AddField (field, (char *)&buf[0], BYTES);\
 		pos += rr;\
 		NifRelease (buf);\
@@ -532,6 +640,21 @@ namespace NifLib
 				INFO("R: " << SFIELD(tname, fname)	<< ": *** V12Check")
 				continue;
 			}
+			NifLib::Attr *userver = field->AttrById (AUSERVER);
+			if (userver) {// can be a const
+				NIFuint uv =
+					str2<NIFint> (std::string (userver->Value.buf, userver->Value.len));
+				if (uv != nUserVersion) {
+					INFO("R: " << SFIELD(tname, fname)	<< ": *** userver check")
+					continue;
+				}
+			}
+
+			// ARG
+			NifLib::Attr *ARG = field->AttrById (AARG);
+			if (ARG)
+				argstack.Add (ARG);
+
 			NifLib::Attr *tcond = field->AttrById (ACOND);
 			if (tcond) {
 				int eval_result = Evaluate (tcond);
@@ -541,6 +664,7 @@ namespace NifLib
 				if (!eval_result)
 					continue;
 			}
+
 			NifLib::Attr *vcond = field->AttrById (AVERCOND);
 			if (vcond) {
 				int eval_result = Evaluate (vcond);
@@ -568,7 +692,7 @@ namespace NifLib
 				}
 				else {// not a const int
 					NifLib::Field *v =
-						FFBackwards(ANAME, tarr1->Value.buf, tarr1->Value.len);
+						FFBackwards (ANAME, tarr1->Value.buf, tarr1->Value.len);
 					if (v) {
 						//INFO(" - has arr1 field")
 						//PrintBlockB (v->Value.buf, v->Value.len, 16);
@@ -588,8 +712,52 @@ namespace NifLib
 				}
 			}// if (tarr1)
 
-			// TODO:arr2:
-			// can be const, field, field what is array (jagged)
+			// arr2:
+			// can be const, field, field what is an array (jagged)
+			NIFint i2 = 1;// 2d size
+			NifLib::Field *i2j = NULL;
+			NifLib::Attr *tarr2 = field->AttrById (AARR2);
+			if (tarr2) {
+				//INFO(" - has arr2")
+				int x;
+				for (x = 0; x < tarr2->Value.len; x++)
+					if (tarr2->Value.buf[x] < '0' ||
+						tarr2->Value.buf[x] > '9' )
+						break;
+				if (x == tarr2->Value.len) {
+					//INFO(" - has arr2 const")
+					i2 = str2<NIFint> (std::string (tarr2->Value.buf, tarr2->Value.len));
+				}
+				else {// not a const int
+					NifLib::Field *v =
+						FFBackwards (ANAME, tarr2->Value.buf, tarr2->Value.len);
+					if (v) {// a field
+						//INFO(" - has arr2 field")
+						//PrintBlockB (v->Value.buf, v->Value.len, 16);
+						NifLib::Tag *vtag = v->Tag;
+						NifLib::Attr *varr1 = vtag->AttrById (AARR1);
+						if (varr1) {
+							i2j = v;// jagged
+							INFO("R: *** jagged array")
+						}
+						else {
+							i2 = v->AsNIFuint ();// 2d
+							INFO("R: *** 2d array")
+						}
+					}
+					else {// not a field
+						//INFO(" - has arr2 expression")
+						i2 = Evaluate (tarr2);
+						INFO("*R (arr2): \""
+							<< std::string (tarr2->Value.buf, tarr2->Value.len) << "\":"
+							<< i2)
+						if (i2 <= 0) {
+							ERR("R: can't determine arr2 contents")
+							return;
+						}
+					}
+				}
+			}// if (tarr2)
 
 			// TODO:arr3:
 			// can be const
@@ -640,33 +808,80 @@ namespace NifLib
 					pos += rr;
 					NifRelease (buf);
 				} else
+#define READJBASIC(BT, BT2, SZ, RT)\
+	{\
+		BT *lengths = (BT *)&(i2j->Value.buf[0]);\
+		for (int idx = 0; idx < (int)i1; idx++)\
+			READ(BT2, SZ*(int)lengths[idx], RT, (int)lengths[idx])\
+	}
+#define READJBASICALL(BT2, SZ, RT)\
+	{\
+		NifLib::Tag *_tag = i2j->Tag;\
+		NifLib::Attr *_ta1 = _tag->AttrById (ATYPE);\
+		NifLib::Attr *_ta = _tag->AttrById (ATYPE);\
+		NifLib::Tag *_bt = Find (TBASIC, ANAME, _ta->Value.buf, _ta->Value.len);\
+		if (_bt)\
+			_ta = _bt->AttrById (ANIFLIBTYPE);\
+		if (!_ta) {\
+			ERR("R: cant't handle non basic types jagged array lengths: "\
+			<< "\"" << std::string (_ta1->Value.buf, _ta1->Value.len) << "\"")\
+			return;\
+		}\
+		else if (_ta->Value.Equals ("unsigned int", 12))\
+			READJBASIC(NIFuint, BT2, SZ, RT)\
+		else if (_ta->Value.Equals ("int", 3))\
+			READJBASIC(NIFint, BT2, SZ, RT)\
+		else if (_ta->Value.Equals ("byte", 4))\
+			READJBASIC(NIFbyte, BT2, SZ, RT)\
+		else if (_ta->Value.Equals ("unsigned short", 14))\
+			READJBASIC(NIFushort, BT2, SZ, RT)\
+		else if (_ta->Value.Equals ("short", 5))\
+			READJBASIC(NIFshort, BT2, SZ, RT)\
+		else {\
+			ERR("R: can't handle that jagged array type: "\
+			<< "\"" << std::string (_ta->Value.buf, _ta->Value.len) << "\"")\
+			return;\
+		}\
+	}
 				if (ta->Value.Equals ("unsigned int", 12) ||
 					ta->Value.Equals ("IndexString", 11)) {
-					READ(NIFuint, 4*i1, UInt, i1)
+					if (i2j) READJBASICALL(NIFuint, 4, UInt)
+					else READ(NIFuint, 4*i1*i2, UInt, i1*i2)
 				} else
 				if (ta->Value.Equals ("int", 3) ||
 					ta->Value.Equals ("*", 1) ||
 					ta->Value.Equals ("Ref", 3)) {
-					READ(NIFint, 4*i1, Int, i1)
+					if (i2j) READJBASICALL(NIFint, 4, Int)
+					else READ(NIFint, 4*i1*i2, Int, i1*i2)
 				} else
 				if (ta->Value.Equals ("byte", 4)) {
-					READ(NIFbyte, 1*i1, Byte, i1)
+					if (i2j) READJBASICALL(NIFbyte, 1, Byte)
+					else READ(NIFbyte, 1*i1*i2, Byte, i1*i2)
 				} else
 				if (ta->Value.Equals ("unsigned short", 14)) {
-					READ(NIFushort, 2*i1, UShort, i1)
+					DETAILEDLOG = 0;
+					if (i2j) READJBASICALL(NIFushort, 2, UShort)
+					else READ(NIFushort, 2*i1*i2, UShort, i1*i2)
+					DETAILEDLOG = 1;
 				} else
 				if (ta->Value.Equals ("short", 5)) {
-					READ(NIFshort, 2*i1, Short, i1)
+					DETAILEDLOG = 0;
+					if (i2j) READJBASICALL(NIFshort, 2, Short)
+					else READ(NIFshort, 2*i1*i2, Short, i1*i2)
+					DETAILEDLOG = 1;
 				} else
 				if (ta->Value.Equals ("float", 5)) {
-					READ(NIFfloat, 4*i1, Float, i1)
+					DETAILEDLOG = 0;
+					if (i2j) READJBASICALL(NIFfloat, 4, Float)
+					else READ(NIFfloat, 4*i1*i2, Float, i1*i2)
+					DETAILEDLOG = 1;
 				} else
 				if (ta->Value.Equals ("bool", 4)) {
 					// A boolean; 32-bit from 4.0.0.2, and 8-bit from 4.1.0.1 on.
 					if (nVersion > 0x04010001)
-						READ(NIFbyte, 1*i1, Byte, i1)
+						READ(NIFbyte, 1*i1*i2, Byte, i1*i2)
 					else
-						READ(NIFint, 4*i1, Int, i1)
+						READ(NIFint, 4*i1*i2, Int, i1*i2)
 				} else
 					ERR("R: " << SFIELD(tname, fname) << ": *** Unknown basic type"
 					<< " (" << std::string (ta->Value.buf, ta->Value.len) << ")")
@@ -682,10 +897,44 @@ namespace NifLib
 				}
 				AddField (field, NULL, 0);
 				//INFO ("Field #" << flist.Count () - 1)
-				for (int idx = 0; idx < i1; idx++)// 1d array
-					ReadObject (s, tt);
+				if (!i2j)
+					for (int idx = 0; idx < i1 * i2; idx++)// 1d array
+						ReadObject (s, tt);
+				else {// jagged not basic type
+					INFO("R: *** jagged not basic type")
+					NifLib::Tag *tag = i2j->Tag;
+					NifLib::Attr *ta = tag->AttrById (ATYPE);
+#define READJ(BT)\
+	{\
+		BT *lengths = (BT *)&(i2j->Value.buf[0]);\
+		for (int idx = 0; idx < i1; idx++)\
+			for (int j = 0; j < (int)lengths[idx]; j++)\
+					ReadObject (s, tt);\
+	}
+					// supported types for array length:
+					if (ta->Value.Equals ("unsigned int", 12))
+						READJ(NIFuint)
+					else if (ta->Value.Equals ("int", 3))
+						READJ(NIFint)
+					else if (ta->Value.Equals ("byte", 4))
+						READJ(NIFbyte)
+					else if (ta->Value.Equals ("unsigned short", 14))
+						READJ(NIFushort)
+					else if (ta->Value.Equals ("short", 5))
+						READJ(NIFshort)
+					else {
+						ERR("R: can't handle that jagged array type")
+						return;
+					}
+				}// else i2j
+			}// not basic type
+			if (ARG && argstack.Count () > 0 ) {
+				argstack.RemoveLast ();
 			}
 		}
+#undef READJ
+#undef READJBASICALL
+#undef READJBASIC
 #undef READ
 #undef DEC
 #undef HEX
@@ -704,9 +953,14 @@ namespace NifLib
 
 			INFO("R: Header")
 			ReadObject (s, t);
+			argstack.Clear ();
+			NifLib::Field *uv = FFBackwards (ANAME, "User Version", 12);
+			if (uv)
+				nUserVersion = uv->AsNIFuint ();
 #define HEX(N) std::setw (N) << std::setfill ('0') << std::hex << std::uppercase
 #define DEC std::dec
 			INFO("FP :" << HEX(8) << pos << DEC)
+			//return;
 			if (nVersion < 0x030300D) {
 				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
 			}
@@ -776,9 +1030,13 @@ namespace NifLib
 						ERR("Unknown block")
 						return;
 					}
-					//ReadObject (s, t);
-				}
-			}
+					ReadObject (s, t);
+					argstack.Clear ();
+				}// for
+				NifLib::Tag *tfooter = Find (TCOMPOUND, ANAME, "Footer", 6);
+				if (tfooter)
+					ReadObject (s, tfooter);
+			}//
 			else {
 				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
 			}
