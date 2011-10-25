@@ -49,7 +49,8 @@ namespace NifLib
 	{
 		NifLib::Field *f = new NifLib::Field();
 		f->Tag = field;
-		f->Value.CopyFrom (buf, bl);
+		if (buf && bl > 0)
+			f->Value.CopyFrom (buf, bl);
 		flist.Add (f);
 	}
 
@@ -480,8 +481,7 @@ namespace NifLib
 		// handle "inherit"
 		NifLib::Attr *p = t->AttrById (AINHERIT);
 		if (p) {
-			NifLib::Tag *tp;
-			tp = Find (TCOMPOUND, ANAME, p->Value.buf, p->Value.len);
+			NifLib::Tag *tp = Find (TCOMPOUND, ANAME, p->Value.buf, p->Value.len);
 			if (!tp)
 				tp = Find (TNIOBJECT, ANAME, p->Value.buf, p->Value.len);
 			if (!tp) {
@@ -556,26 +556,26 @@ namespace NifLib
 			NIFint i1 = 1;// 1d size
 			NifLib::Attr *tarr1 = field->AttrById (AARR1);
 			if (tarr1) {
-				INFO(" - has arr1")
+				//INFO(" - has arr1")
 				int x;
 				for (x = 0; x < tarr1->Value.len; x++)
 					if (tarr1->Value.buf[x] < '0' ||
 						tarr1->Value.buf[x] > '9' )
 						break;
 				if (x == tarr1->Value.len) {
-					INFO(" - has arr1 const")
+					//INFO(" - has arr1 const")
 					i1 = str2<NIFint> (std::string (tarr1->Value.buf, tarr1->Value.len));
 				}
 				else {// not a const int
 					NifLib::Field *v =
 						FFBackwards(ANAME, tarr1->Value.buf, tarr1->Value.len);
 					if (v) {
-						INFO(" - has arr1 field")
-						PrintBlockB (v->Value.buf, v->Value.len, 16);
+						//INFO(" - has arr1 field")
+						//PrintBlockB (v->Value.buf, v->Value.len, 16);
 						i1 = v->AsNIFuint ();
 					}
 					else {// not a field
-						INFO(" - has arr1 expression")
+						//INFO(" - has arr1 expression")
 						i1 = Evaluate (tarr1);
 						INFO("*R (arr1): \""
 							<< std::string (tarr1->Value.buf, tarr1->Value.len) << "\":"
