@@ -38,6 +38,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iomanip>
 #include <sstream>
 
+// Returns (b - a) in microseconds
+long
+time_interval(struct timeval *a, struct timeval *b)
+{
+	return ( (b->tv_sec - a->tv_sec) * 1000000 ) + (b->tv_usec - a->tv_usec);
+}
+
 void *
 NifAlloc(size_t size)
 {

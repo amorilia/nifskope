@@ -35,7 +35,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cstdlib>
 #include <string.h>
-
+#include <sys/time.h>
 /*
 *	Core tags - the ones that form structures and types.
 *	Make sure (length(TAGS[i % 2 == 0])) == (length(TAGS[i+1]) - 2).
@@ -97,10 +97,12 @@ int const ATTRL[] =
 #define AARR1 2
 #define AARR2 3
 #define ACOND 5
+#define ADEFAULT 7
 #define AINHERIT 8
 #define ANAME 10
 #define ANIFLIBTYPE 11
 #define ASTORAGE 14
+#define ATEMPLATE 15
 #define ATYPE 16
 #define AUSERVER 17
 #define AVER1 19
@@ -126,6 +128,9 @@ const int OPBL[] = {0, 2, 2};
 #define EVAL_TYPE_UNKNOWN -1
 #define EVAL_TYPE_VERSION 1
 #define EVAL_TYPE_UINT 2
+
+// Returns (b - a) in microseconds
+long time_interval(struct timeval *a, struct timeval *b);
 
 inline int
 AttrId(const char *buf, int bl)

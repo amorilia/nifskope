@@ -41,6 +41,7 @@ namespace NifLib
 		Id = -1;
 		Name = -1;
 		Parent = NULL;
+		FixedSize = 0;
 	}
 
 	bool

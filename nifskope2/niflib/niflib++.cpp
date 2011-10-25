@@ -53,13 +53,6 @@ public:
 	NifLib::List< TreeNode<T> > Nodes;
 };
 
-// Returns (b - a) in microseconds
-long
-time_interval(struct timeval *a, struct timeval *b)
-{
-	return ( (b->tv_sec - a->tv_sec) * 1000000 ) + (b->tv_usec - a->tv_usec);
-}
-
 int
 main(int argc, char **argv)
 {
@@ -67,11 +60,14 @@ main(int argc, char **argv)
 	gettimeofday (&tstart, NULL);
 	NifLib::Compiler p("nif.xml");
 	gettimeofday (&tstop, NULL);
-	INFO("loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
+	INFO("XML loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 
 	//p.SaveFile ("nif3.xml");
-	//p.Build ();
+	p.Build ();
+	gettimeofday (&tstart, NULL);
 	p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
+	gettimeofday (&tstop, NULL);
+	INFO("nif loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 
 	// reading works
 	/*NifStream test ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif", 1024*1024);

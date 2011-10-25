@@ -45,6 +45,7 @@ namespace NifLib
 		Tag();
 		int Id;// sequential id initialized in order of reading from the XML
 		int Name;// reference to tag name
+		int FixedSize;// > 0 when calculated and possible
 		Buffer Value;// XML document value - a free form text for UIs
 		NifLib::Tag *Parent;
 		NifLib::List<NifLib::Attr *> Attr;

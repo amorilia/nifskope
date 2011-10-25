@@ -61,6 +61,14 @@ namespace NifLib
 			aa >> k;
 			return k;
 		}
+		inline bool IsUInt(const char *buf, int len)
+		{
+			int x;
+			for (x = 0; x < len; x++)
+				if (buf[x] < '0' || buf[x] > '9' )
+					return false;
+			return true;
+		}
 		int Evaluate(NifLib::Attr* cond);
 		int EvalDeduceType(const char *val, int len);
 		int EvaluateL2(NifLib::List<NIFuint> &l2);
@@ -72,7 +80,15 @@ namespace NifLib
 		NifLib::Field *FFBackwards(int attrid, const char *val, int len);
 		int	FFBackwardsIdx(int attrid, const char *val, int len);
 
+		/*
+		*	Read one object from the .nif
+		*/
 		void ReadObject(NifStream &s, NifLib::Tag *t);
+
+		/*
+		*	Return size in bytes of Tag "type" if that type is basic
+		*/
+		//int GetBasicTypeSize(NifLib::Attr *type);
 	public:
 		Compiler(const char *fname);
 		~Compiler();

@@ -44,14 +44,31 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifLib
 {
+struct timeval ta1, tb1; int c1 = 0; long s1 = 0;
+struct timeval ta2, tb2; int c2 = 0; long s2 = 0;
+struct timeval ta3, tb3; int c3 = 0; long s3 = 0;
+struct timeval ta4, tb4; int c4 = 0; long s4 = 0;
+struct timeval ta5, tb5; int c5 = 0; long s5 = 0;
+#define A(N)\
+{gettimeofday (&ta##N, NULL);\
+c##N++;}
+
+#define B(N)\
+{gettimeofday (&tb##N, NULL);\
+s##N += time_interval (&ta##N, &tb##N) / (1000);}
+
+#define STDSTR(BUF) std::string (BUF.buf, BUF.len)
+
 	void
 	Compiler::AddField(NifLib::Tag *field, char *buf, int bl)
 	{
+		A(1)
 		NifLib::Field *f = new NifLib::Field();
 		f->Tag = field;
 		if (buf && bl > 0)
 			f->Value.CopyFrom (buf, bl);
 		flist.Add (f);
+		B(1)
 	}
 
 	/*
@@ -88,6 +105,7 @@ namespace NifLib
 	int
 	Compiler::Evaluate(NifLib::Attr* cond)
 	{
+		A(2)
 		//INFO(std::dec)
 		/*NifLib::Attr testcond;
 		NifLib::Attr *cond = &testcond;
@@ -101,6 +119,7 @@ namespace NifLib
 		char *buf = (char *)NifAlloc (cond->Value.len);
 		if (!buf) {
 			ERR("Compiler::Evaluate: Out of memory")
+			B(2)
 			return 0;
 		}
 		int len = cond->Value.len;
@@ -260,16 +279,10 @@ namespace NifLib
 				if (arg && !lf) {
 					//INFO ("E arg: " << "\""
 					//	<< std::string (arg->Value.buf, arg->Value.len) << "\"")
-					int x;
-					for (x = 0; x < arg->Value.len; x++)// TODO: IsInt
-						if (arg->Value.buf[x] < '0' ||
-							arg->Value.buf[x] > '9' )
-							break;
-					if (x == arg->Value.len) {
+					if (IsUInt (arg->Value.buf, arg->Value.len)) {
 						litem = str2<NIFint> (std::string (arg->Value.buf, arg->Value.len));
 						lt = EVAL_TYPE_UINT;
-					}
-					else {
+					} else {
 						lf = FFBackwards (ANAME, arg->Value.buf, arg->Value.len);
 						if (!lf) {
 							//INFO("E: lf not found")
@@ -341,7 +354,7 @@ namespace NifLib
 						}
 					}
 				} else {
-					INFO("E: Operand combination not supported yet")
+					//INFO("E: Operand combination not supported yet")
 				}
 				l2.Add (5);
 				l2.Add (tmp);
@@ -375,25 +388,31 @@ namespace NifLib
 		if (l2.Count () <= 0) {// a field probably
 			NifLib::Field *v =
 				FFBackwards(ANAME, cond->Value.buf, cond->Value.len);
-			if (v)
+			if (v) {
+				B(2)
 				return (int)v->AsNIFuint ();
-			else {
-				INFO("E: *** can't evaluate that")
+			} else {
+				//INFO("E: *** can't evaluate that")
+				B(2)
 				return 0;// the above is not necessary an error - return false
 			}
 		}
 
-		if (!bc && l2.Count () > 1) // no brackets
+		if (!bc && l2.Count () > 1) { // no brackets
+			B(2)
 			return l2[1];
+		}
 
 		// pass 3 - brackets
 		// TODO: cache queries
+		B(2)
 		return EvaluateL2 (l2);
 	}
 
 	int
 	Compiler::EvalDeduceType(const char *val, int len)
 	{
+		A(3)
 		//PrintBlockA (val, len);
 		int i, pc = 0, dc = 0;
 		for (i = 0; i < len; i++)
@@ -401,11 +420,19 @@ namespace NifLib
 				pc++;
 			else if (val[i] >= '0' && val[i] <= '9')
 				dc++;
-			else return EVAL_TYPE_UNKNOWN;
-		if (pc && dc)
+			else {
+				B(3)
+				return EVAL_TYPE_UNKNOWN;
+			}
+		if (pc && dc) {
+			B(3)
 			return EVAL_TYPE_VERSION;
-		if (dc)
+		}
+		if (dc) {
+			B(3)
 			return EVAL_TYPE_UINT;
+		}
+		B(3)
 		return EVAL_TYPE_UNKNOWN;
 	}
 
@@ -420,9 +447,12 @@ namespace NifLib
 	int
 	Compiler::EvaluateL2(NifLib::List<NIFuint> &l2)
 	{
+		A(4)
 		//INFO("--")
-		if (l2.Count () < 2)
+		if (l2.Count () < 2) {
+			B(4)
 			throw "EvaluateL2: invalid argument";
+		}
 		int i, k;
 		int c1 = 0, c2 = 0, c3 = 0;
 		/*INFO ("l2: " << l2.Count ())
@@ -492,24 +522,33 @@ namespace NifLib
 			if (c1 == 0 && c2 == 0 && c3 == 0) {
 				// nothing is changed and no result
 				ERR("EvaluateL2 wrong expression")
+				B(4)
 				return 0;
 			}
-			else
+			else {
+				B(4)
 				return EvaluateL2 (t2);
-		} else
+			}
+		} else {
+			B(4)
 			return t2[1];
+		}
 	}
 
 	NifLib::Field *
 	Compiler::FFBackwards(int attrid, const char *val, int len)
 	{
+		A(5)
 		int i;
 		for (i = flist.Count () - 1; i > -1; i--) {
 			NifLib::Tag *t = flist[i]->Tag;
 			NifLib::Attr *a = t->AttrById (attrid);
-			if (a && a->Value.Equals(val, len))
+			if (a && a->Value.Equals(val, len)) {
+				B(5)
 				return flist[i];
+			}
 		}
+		B(5)
 		return NULL;
 	}
 
@@ -531,7 +570,7 @@ namespace NifLib
 	{
 		nVersion = 0;
 		nUserVersion = 0;
-		DETAILEDLOG = 1;
+		DETAILEDLOG = 0;
 	}
 
 	Compiler::~Compiler()
@@ -604,7 +643,6 @@ namespace NifLib
 #define READ(BT, BYTES, RT, CNT)\
 {\
 	if (CNT > 0 && BYTES > 0) {\
-		long posb = pos;\
 		BT *buf;\
 		buf = (BT *)NifAlloc (BYTES);\
 		if (!buf) {\
@@ -617,15 +655,18 @@ namespace NifLib
 			NifRelease (buf);\
 			return;\
 		}\
-		if (DETAILEDLOG)\
-		INFO("R "#BT"(" << CNT << ")(" << HEX(8) << posb << DEC\
-			<< "): " << SFIELD(tname, fname) << ": \"" << DEC << (int)buf[0]\
-			<< " " << HEX(2*((BYTES)/(CNT))) << (int)buf[0] << "\"" << DEC)\
 		AddField (field, (char *)&buf[0], BYTES);\
 		pos += rr;\
 		NifRelease (buf);\
 	}\
 }
+		/*
+		long posb = pos;\
+		if (DETAILEDLOG)\
+		INFO("R "#BT"(" << CNT << ")(" << HEX(8) << posb << DEC\
+			<< "): " << SFIELD(tname, fname) << ": \"" << DEC << (int)buf[0]\
+			<< " " << HEX(2*((BYTES)/(CNT))) << (int)buf[0] << "\"" << DEC)\*/
+
 		for (int i = 0; i < t->Tags.Count (); i++) {// its kinda CS:IP :)
 			NifLib::Tag *field = t->Tags[i];// a field
 			NifLib::Attr *ftype = field->AttrById (ATYPE);// field type
@@ -637,7 +678,7 @@ namespace NifLib
 				return;
 			}
 			if (!V12Check (field)) {// "ver1" and "ver2" checks
-				INFO("R: " << SFIELD(tname, fname)	<< ": *** V12Check")
+				//INFO("R: " << SFIELD(tname, fname)	<< ": *** V12Check")
 				continue;
 			}
 			NifLib::Attr *userver = field->AttrById (AUSERVER);
@@ -645,7 +686,7 @@ namespace NifLib
 				NIFuint uv =
 					str2<NIFint> (std::string (userver->Value.buf, userver->Value.len));
 				if (uv != nUserVersion) {
-					INFO("R: " << SFIELD(tname, fname)	<< ": *** userver check")
+					//INFO("R: " << SFIELD(tname, fname)	<< ": *** userver check")
 					continue;
 				}
 			}
@@ -658,9 +699,9 @@ namespace NifLib
 			NifLib::Attr *tcond = field->AttrById (ACOND);
 			if (tcond) {
 				int eval_result = Evaluate (tcond);
-				INFO("*R cond:" << "\""
-					<< std::string (tcond->Value.buf, tcond->Value.len) << "\": "
-					<< eval_result)
+				//INFO("*R cond:" << "\""
+				//	<< std::string (tcond->Value.buf, tcond->Value.len) << "\": "
+				//	<< eval_result)
 				if (!eval_result)
 					continue;
 			}
@@ -668,9 +709,9 @@ namespace NifLib
 			NifLib::Attr *vcond = field->AttrById (AVERCOND);
 			if (vcond) {
 				int eval_result = Evaluate (vcond);
-				INFO("*R vercond:" << "\""
-					<< std::string (vcond->Value.buf, vcond->Value.len) << "\": "
-					<< eval_result)
+				//INFO("*R vercond:" << "\""
+				//	<< std::string (vcond->Value.buf, vcond->Value.len) << "\": "
+				//	<< eval_result)
 				if (!eval_result)
 					continue;
 			}
@@ -681,12 +722,7 @@ namespace NifLib
 			NifLib::Attr *tarr1 = field->AttrById (AARR1);
 			if (tarr1) {
 				//INFO(" - has arr1")
-				int x;
-				for (x = 0; x < tarr1->Value.len; x++)
-					if (tarr1->Value.buf[x] < '0' ||
-						tarr1->Value.buf[x] > '9' )
-						break;
-				if (x == tarr1->Value.len) {
+				if (IsUInt (tarr1->Value.buf, tarr1->Value.len)) {
 					//INFO(" - has arr1 const")
 					i1 = str2<NIFint> (std::string (tarr1->Value.buf, tarr1->Value.len));
 				}
@@ -701,9 +737,9 @@ namespace NifLib
 					else {// not a field
 						//INFO(" - has arr1 expression")
 						i1 = Evaluate (tarr1);
-						INFO("*R (arr1): \""
-							<< std::string (tarr1->Value.buf, tarr1->Value.len) << "\":"
-							<< i1)
+						//INFO("*R (arr1): \""
+						//	<< std::string (tarr1->Value.buf, tarr1->Value.len) << "\":"
+						//	<< i1)
 						if (i1 <= 0) {
 							ERR("R: can't determine arr1 contents")
 							return;
@@ -719,12 +755,7 @@ namespace NifLib
 			NifLib::Attr *tarr2 = field->AttrById (AARR2);
 			if (tarr2) {
 				//INFO(" - has arr2")
-				int x;
-				for (x = 0; x < tarr2->Value.len; x++)
-					if (tarr2->Value.buf[x] < '0' ||
-						tarr2->Value.buf[x] > '9' )
-						break;
-				if (x == tarr2->Value.len) {
+				if (IsUInt (tarr2->Value.buf, tarr2->Value.len)) {
 					//INFO(" - has arr2 const")
 					i2 = str2<NIFint> (std::string (tarr2->Value.buf, tarr2->Value.len));
 				}
@@ -738,19 +769,19 @@ namespace NifLib
 						NifLib::Attr *varr1 = vtag->AttrById (AARR1);
 						if (varr1) {
 							i2j = v;// jagged
-							INFO("R: *** jagged array")
+							//INFO("R: *** jagged array")
 						}
 						else {
 							i2 = v->AsNIFuint ();// 2d
-							INFO("R: *** 2d array")
+							//INFO("R: *** 2d array")
 						}
 					}
 					else {// not a field
 						//INFO(" - has arr2 expression")
 						i2 = Evaluate (tarr2);
-						INFO("*R (arr2): \""
-							<< std::string (tarr2->Value.buf, tarr2->Value.len) << "\":"
-							<< i2)
+						//INFO("*R (arr2): \""
+						//	<< std::string (tarr2->Value.buf, tarr2->Value.len) << "\":"
+						//	<< i2)
 						if (i2 <= 0) {
 							ERR("R: can't determine arr2 contents")
 							return;
@@ -795,8 +826,8 @@ namespace NifLib
 					NIFint rr = s.ReadCharCond (&buf[0], i1, '\n');
 					if (rr <= i1) {
 						//PrintBlockB (&buf[0], rr, 16);
-						INFO("R hstr(" << rr << "): " << SFIELD(tname, fname)
-							<< ": \"" << std::string (&buf[0], rr - 1) << "\"" << DEC)
+						//INFO("R hstr(" << rr << "): " << SFIELD(tname, fname)
+						//	<< ": \"" << std::string (&buf[0], rr - 1) << "\"" << DEC)
 						AddField (field, &buf[0], rr);
 					} else {// file format not supported
 						ERR("R: ReadCharCond failed")
@@ -859,22 +890,22 @@ namespace NifLib
 					else READ(NIFbyte, 1*i1*i2, Byte, i1*i2)
 				} else
 				if (ta->Value.Equals ("unsigned short", 14)) {
-					DETAILEDLOG = 0;
+					//DETAILEDLOG = 0;
 					if (i2j) READJBASICALL(NIFushort, 2, UShort)
 					else READ(NIFushort, 2*i1*i2, UShort, i1*i2)
-					DETAILEDLOG = 1;
+					//DETAILEDLOG = 1;
 				} else
 				if (ta->Value.Equals ("short", 5)) {
-					DETAILEDLOG = 0;
+					//DETAILEDLOG = 0;
 					if (i2j) READJBASICALL(NIFshort, 2, Short)
 					else READ(NIFshort, 2*i1*i2, Short, i1*i2)
-					DETAILEDLOG = 1;
+					//DETAILEDLOG = 1;
 				} else
 				if (ta->Value.Equals ("float", 5)) {
-					DETAILEDLOG = 0;
+					//DETAILEDLOG = 0;
 					if (i2j) READJBASICALL(NIFfloat, 4, Float)
 					else READ(NIFfloat, 4*i1*i2, Float, i1*i2)
-					DETAILEDLOG = 1;
+					//DETAILEDLOG = 1;
 				} else
 				if (ta->Value.Equals ("bool", 4)) {
 					// A boolean; 32-bit from 4.0.0.2, and 8-bit from 4.1.0.1 on.
@@ -886,8 +917,10 @@ namespace NifLib
 					ERR("R: " << SFIELD(tname, fname) << ": *** Unknown basic type"
 					<< " (" << std::string (ta->Value.buf, ta->Value.len) << ")")
 			} else {// if (tt) {// *** its a basic type
-				INFO("R: " << SFIELD(tname, fname) << ": *** not basic"
-				<< " (" << std::string (ftype->Value.buf, ftype->Value.len) << ")")
+				//if (i1*i2 > 1)
+				//	INFO("R: (" << i1 * i2 << ")" << SFIELD(tname, fname))
+				//INFO("R: " << SFIELD(tname, fname) << ": *** not basic"
+				//<< " (" << std::string (ftype->Value.buf, ftype->Value.len) << ")")
 				tt = Find (TCOMPOUND, ANAME, ftype->Value.buf, ftype->Value.len);
 				if (!tt)
 					tt = Find (TNIOBJECT, ANAME, ftype->Value.buf, ftype->Value.len);
@@ -897,11 +930,15 @@ namespace NifLib
 				}
 				AddField (field, NULL, 0);
 				//INFO ("Field #" << flist.Count () - 1)
-				if (!i2j)
-					for (int idx = 0; idx < i1 * i2; idx++)// 1d array
-						ReadObject (s, tt);
+				if (!i2j) {
+					if (tt->FixedSize > 0)
+						READ(NIFbyte, tt->FixedSize * i1 * i2, Byte, tt->FixedSize * i1 * i2)
+					else
+						for (int idx = 0; idx < i1 * i2; idx++)// 1d array
+							ReadObject (s, tt);
+				}
 				else {// jagged not basic type
-					INFO("R: *** jagged not basic type")
+					//INFO("R: *** jagged not basic type")
 					NifLib::Tag *tag = i2j->Tag;
 					NifLib::Attr *ta = tag->AttrById (ATYPE);
 #define READJ(BT)\
@@ -946,12 +983,12 @@ namespace NifLib
 	{
 		NifLib::Tag *t = Find (TCOMPOUND, ANAME, "Header", 6);
 		if (t) {
-			INFO("Found header structure")
+			//INFO("Found header structure")
 			pos = 0;
 			NifStream s(fname, 1*1024*1024);
 			INFO("Opened \"" << fname << "\"")
 
-			INFO("R: Header")
+			//INFO("R: Header")
 			ReadObject (s, t);
 			argstack.Clear ();
 			NifLib::Field *uv = FFBackwards (ANAME, "User Version", 12);
@@ -959,7 +996,7 @@ namespace NifLib
 				nUserVersion = uv->AsNIFuint ();
 #define HEX(N) std::setw (N) << std::setfill ('0') << std::hex << std::uppercase
 #define DEC std::dec
-			INFO("FP :" << HEX(8) << pos << DEC)
+			//INFO("FP :" << HEX(8) << pos << DEC)
 			//return;
 			if (nVersion < 0x030300D) {
 				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
@@ -983,14 +1020,14 @@ namespace NifLib
 				}
 				NIFushort *block_type_index = (NIFushort *)&(f->Value.buf[0]);
 				int bti_len = f->Value.len / 2;
-				INFO("Block Type Index len: " << bti_len)
+				//INFO("Block Type Index len: " << bti_len)
 				f = FFBackwards (ANAME, "Num Block Types", 15);
 				if (!f) {
 					ERR("\"Num Block Types\" lookup failed")
 					return;
 				}
 				int num_block_types = (int)f->AsNIFuint ();
-				INFO("Num Block Types: " << num_block_types)
+				//INFO("Num Block Types: " << num_block_types)
 				int btIdx = FFBackwardsIdx (ANAME, "Block Types", 11);
 				if (btIdx < 0) {
 					ERR("\"Block Types\" lookup failed")
@@ -1006,7 +1043,7 @@ namespace NifLib
 						return;
 					}
 					int bt = block_type_index[i];
-					INFO("block type is: " << bt)
+					//INFO("block type is: " << bt)
 					if (bt < 0 || bt >= num_block_types) {
 						ERR("Assertion failed: invald block type: " << bt)
 						return;
@@ -1021,8 +1058,8 @@ namespace NifLib
 						ERR("Invalid block name field")
 						return;
 					}
-					INFO("Block #" << i
-						<< " \"" << std::string (f->Value.buf, f->Value.len) << "\"")
+					//INFO("Block #" << i
+					//	<< " \"" << std::string (f->Value.buf, f->Value.len) << "\"")
 					t = Find (TCOMPOUND, ANAME, f->Value.buf, f->Value.len);
 					if (!t)
 						t = Find (TNIOBJECT, ANAME, f->Value.buf, f->Value.len);
@@ -1036,6 +1073,12 @@ namespace NifLib
 				NifLib::Tag *tfooter = Find (TCOMPOUND, ANAME, "Footer", 6);
 				if (tfooter)
 					ReadObject (s, tfooter);
+				INFO("FP :" << HEX(8) << pos << DEC)
+				INFO("c: " << c1 << ", s: " << s1 << " ms AddField ()")
+				INFO("c: " << c2 << ", s: " << s2 << " ms Evaluate ()")
+				INFO("c: " << c3 << ", s: " << s3 << " ms EvalDeduceType ()")
+				INFO("c: " << c4 << ", s: " << s4 << " ms EvaluateL2 ()")
+				INFO("c: " << c5 << ", s: " << s5 << " ms FFBackwards ()")
 			}//
 			else {
 				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
@@ -1086,23 +1129,259 @@ namespace NifLib
 	void
 	Compiler::Build()
 	{
-		std::map<std::string, int (Compiler::*) (NifStream *, char *)> r;
+		int i, j;
+		// calculate basic types fixed size
+		// calculate enum types fixed size
+		// calculate bitlflags types fixed size
+		INFO("BUILD: 'basic'")
+		for (i = 0; i < objs[TBASIC]->Count (); i++) {
+			NifLib::Tag *t = (*objs[TBASIC])[i];
+			NifLib::Attr *ta = t->AttrById (ANIFLIBTYPE);// type attribute
+			if (!ta) {
+				ERR("BUILD: 'basic' without 'niflibtype'")
+				continue;
+			}
+			NifLib::Attr *tn = t->AttrById (ANAME);
+			if (!tn) {
+				ERR("BUILD: 'basic' without 'name'")
+				continue;
+			}
+			if (ta->Value.Equals ("unsigned int", 12) ||
+				ta->Value.Equals ("IndexString", 11) ||
+				ta->Value.Equals ("int", 3) ||
+				ta->Value.Equals ("*", 1) ||
+				ta->Value.Equals ("Ref", 3) ||
+				ta->Value.Equals ("float", 5))
+				t->FixedSize = 4;
+			else if ( ta->Value.Equals ("unsigned short", 14) ||
+				ta->Value.Equals ("short", 5))
+				t->FixedSize = 2;
+			else if (ta->Value.Equals ("byte", 4))
+				t->FixedSize = 1;
+			else {
+				INFO("BUILD: 'basic' \""
+					<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\""
+					<< " has dynamic size")
+			}
+		}
+		INFO("BUILD: 'enum'")
+		for (i = 0; i < objs[TENUM]->Count (); i++) {
+			NifLib::Tag *t = (*objs[TENUM])[i];
+			NifLib::Attr *ta = t->AttrById (ASTORAGE);// type attribute
+			if (!ta) {
+				ERR("BUILD: 'enum' without 'storage'")
+				continue;
+			}
+			NifLib::Attr *tn = t->AttrById (ANAME);
+			if (!tn) {
+				ERR("BUILD: 'enum' without 'name'")
+				continue;
+			}
+			NifLib::Tag *btag = Find(TBASIC, ANAME, ta->Value.buf, ta->Value.len);
+			if (!btag) {
+				ERR("BUILD: 'enum' with no 'basic' 'storage'")
+				continue;
+			}
+			t->FixedSize = btag->FixedSize;
+			if (t->FixedSize <= 0) {
+				INFO("BUILD: 'enum' \""
+					<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\""
+					<< " has dynamic size")
+			}
+		}
+		INFO("BUILD: 'bitflags'")
+		for (i = 0; i < objs[TBITFLAGS]->Count (); i++) {
+			NifLib::Tag *t = (*objs[TBITFLAGS])[i];
+			NifLib::Attr *ta = t->AttrById (ASTORAGE);// type attribute
+			if (!ta) {
+				ERR("BUILD: 'bitflags' without 'storage'")
+				continue;
+			}
+			NifLib::Attr *tn = t->AttrById (ANAME);
+			if (!tn) {
+				ERR("BUILD: 'bitflags' without 'name'")
+				continue;
+			}
+			NifLib::Tag *btag = Find(TBASIC, ANAME, ta->Value.buf, ta->Value.len);
+			if (!btag) {
+				ERR("BUILD: 'bitflags' with no 'basic' 'storage'")
+				continue;
+			}
+			t->FixedSize = btag->FixedSize;
+			if (t->FixedSize <= 0) {
+				INFO("BUILD: 'bitflags' \""
+					<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\""
+					<< " has dynamic size")
+			}
+		}
+		INFO("BUILD: 'compound'")
+		// calculate structure sizes where possible
+		for (i = 0; i < objs[TCOMPOUND]->Count (); i++) {
+			NifLib::Tag *t = (*objs[TCOMPOUND])[i];
+			NifLib::Attr *tname = t->AttrById (ANAME);
+			if (!tname) {
+				ERR("BUILD: 'compound' without 'name'")
+				continue;
+			}
+			t->FixedSize = 0;
+			int fs = 0;
+			for (j = 0; j < t->Tags.Count (); j++) {// compound fields
+				NifLib::Tag *t1 = t->Tags[j];
+				NifLib::Attr *name = t1->AttrById (ANAME);
+				NifLib::Attr *type = t1->AttrById (ATYPE);
+				NifLib::Attr *def = t1->AttrById (ADEFAULT);
+				NifLib::Attr *ttemplate = t1->AttrById (ATEMPLATE);
+				NifLib::Attr *arr1 = t1->AttrById (AARR1);// handle when its const
+				int arr1v = 1;
+				if (arr1) {
+					if (IsUInt (arr1->Value.buf, arr1->Value.len))
+						arr1v =
+							str2<NIFint> (std::string (arr1->Value.buf, arr1->Value.len));
+				}
+				if (name && type) {
+					if (def) {// allow 'name', 'type' and 'default'
+						if (t1->Attr.Count () != 3)
+							break;
+					} else if (ttemplate) {// allow 'name', 'type' and 'template'
+						if (t1->Attr.Count () != 3)
+							break;
+					} else if (arr1 && arr1v > 1) {// allow 'name', 'type' and const 'arr1'
+						if (t1->Attr.Count () != 3)
+							break;
+					} else {// allow 'name' and 'type'
+						if (t1->Attr.Count () != 2)
+							break;
+					}
+				}
+				NifLib::Tag *tt =
+					Find(TBASIC, ANAME, type->Value.buf, type->Value.len);
+				if (!tt)
+					tt = Find(TENUM, ANAME, type->Value.buf, type->Value.len);
+				if (!tt)
+					tt = Find(TBITFLAGS, ANAME, type->Value.buf, type->Value.len);
+				if (!tt)
+					tt = Find(TCOMPOUND, ANAME, type->Value.buf, type->Value.len);
+				if (!tt)
+					break;
+				if (tt->FixedSize <= 0)
+					break;
+				else
+					fs += tt->FixedSize * arr1v;
+			}
+			if (j != t->Tags.Count ())
+				continue;
+			INFO("BUILD: 'compound' \""
+				<< STDSTR(tname->Value) << "\""
+				<< " has fixed size: " << fs)
+			t->FixedSize = fs;
+		}
+
+		INFO("BUILD: 'niobject'")
+		// calculate structure sizes where possible
+		for (i = 0; i < objs[TNIOBJECT]->Count (); i++) {
+			NifLib::Tag *t = (*objs[TNIOBJECT])[i];
+			// check if empty
+			if (t->Tags.Count () <= 0)
+				continue;
+			// check if parent(s) are empty too
+			NifLib::Attr *tinh = t->AttrById (AINHERIT);
+			int tagcount = 0;
+			//int non_fixed = 0;
+			//int psize = 0;
+			while (tinh) {
+				NifLib::Tag *p = Find (TNIOBJECT, ANAME, tinh->Value.buf, tinh->Value.len);
+				if (!p) {
+					ERR("BUILD: 'niobject' missing parent: "
+					<< "\"" << STDSTR(tinh->Value) << "\"")
+					break;
+				}
+				tagcount += p->Tags.Count ();
+				/*if (p->Tags.Count () > 0) {// parent has fields
+					non_fixed = (p->FixedSize <= 0);// parent has no fixed size
+					if (non_fixed)
+						break;
+					psize += p->FixedSize;
+				} see below *** */
+				tinh = p->AttrById (AINHERIT);
+			}
+			if (tagcount > 0/* && non_fixed*/)
+				// has parent(s) with fields and one of them is with non-fixed size
+				continue;
+			// *** works but useless for now, so
+			// allow those with no parent(s) field(s) for reading
+			//if (psize)
+			//	INFO("BUILD: 'niobject', parent size: " << psize)
+
+			NifLib::Attr *tname = t->AttrById (ANAME);
+			if (!tname) {
+				ERR("BUILD: 'niobject' without 'name'")
+				continue;
+			}
+			t->FixedSize = 0;
+			int fs = 0;
+			for (j = 0; j < t->Tags.Count (); j++) {// compound fields
+				NifLib::Tag *t1 = t->Tags[j];
+				NifLib::Attr *name = t1->AttrById (ANAME);
+				NifLib::Attr *type = t1->AttrById (ATYPE);
+				NifLib::Attr *def = t1->AttrById (ADEFAULT);
+				NifLib::Attr *ttemplate = t1->AttrById (ATEMPLATE);
+				NifLib::Attr *arr1 = t1->AttrById (AARR1);// handle when its const
+				int arr1v = 1;
+				if (arr1) {
+					if (IsUInt (arr1->Value.buf, arr1->Value.len))
+						arr1v =
+							str2<NIFint> (std::string (arr1->Value.buf, arr1->Value.len));
+				}
+				if (name && type) {
+					if (def) {// allow 'name', 'type' and 'default'
+						if (t1->Attr.Count () != 3)
+							break;
+					} else if (ttemplate) {// allow 'name', 'type' and 'template'
+						if (t1->Attr.Count () != 3)
+							break;
+					} else if (arr1 && arr1v > 1) {// allow 'name', 'type' and const 'arr1'
+						if (t1->Attr.Count () != 3)
+							break;
+					} else {// allow 'name' and 'type'
+						if (t1->Attr.Count () != 2)
+							break;
+					}
+				}
+				NifLib::Tag *tt =
+					Find(TBASIC, ANAME, type->Value.buf, type->Value.len);
+				if (!tt)
+					tt = Find(TENUM, ANAME, type->Value.buf, type->Value.len);
+				if (!tt)
+					tt = Find(TBITFLAGS, ANAME, type->Value.buf, type->Value.len);
+				if (!tt)
+					tt = Find(TCOMPOUND, ANAME, type->Value.buf, type->Value.len);
+				if (!tt)
+					break;
+				if (tt->FixedSize <= 0)
+					break;
+				else
+					fs += tt->FixedSize * arr1v;
+			}
+			if (j != t->Tags.Count ())
+				continue;
+			if (!tinh)
+			INFO("BUILD: 'niobject' \""
+				<< STDSTR(tname->Value) << "\""
+				<< " has fixed size: " << fs
+				<< ", tagcount = " << tagcount)
+			else
+			INFO("BUILD: 'niobject' "
+				<< "\"" << STDSTR(tname->Value) << "\":"
+				<< "\"" << STDSTR(tinh->Value) << "\""
+				<< " has fixed size: " << fs
+				<< ", tagcount = " << tagcount)
+			t->FixedSize = fs;
+		}
+		return;
+		/*std::map<std::string, int (Compiler::*) (NifStream *, char *)> r;
 		r["foo"] = &Compiler::Read_bool;
 		int (Compiler::*f) (NifStream *, char *)  = r["foo"];
-		(this->*f)(NULL, NULL);
-
-		for (int i = 0; i < objs[TBASIC]->Count (); i++) {
-			NifLib::Tag *t = (*objs[TBASIC])[i];
-			INFO(TagOpener (TBASIC) << "("
-				<< "Name: " << t->Name << ", "
-				<< "Id: " << t->Id << ", "
-				<< "Attributes: " << t->Attr.Count ())
-			for (int j = 0; j < t->Attr.Count (); j++)
-				INFO("\t"
-					<< "Name: " << AttrText(t->Attr[j]->Name) << ", "
-					<< "Id: " << t->Attr[j]->Id << ", "
-					<< "Value: " << std::string (t->Attr[j]->Value.buf, t->Attr[j]->Value.len))
-		}
+		(this->*f)(NULL, NULL);*/
 	}
 
 	int
@@ -1111,4 +1390,7 @@ namespace NifLib
 		INFO("hi")
 		return 1;
 	}
+
+#undef STDSTR
+
 }
