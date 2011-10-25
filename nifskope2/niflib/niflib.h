@@ -96,6 +96,7 @@ int const ATTRL[] =
 #define AARR1 2
 #define AARR2 3
 #define ACOND 5
+#define AINHERIT 8
 #define ANAME 10
 #define ANIFLIBTYPE 11
 #define ASTORAGE 14

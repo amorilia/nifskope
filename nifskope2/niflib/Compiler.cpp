@@ -122,7 +122,7 @@ namespace NifLib
 				buf[j++] = cond->Value.buf[i];
 		}
 		len = j;
-		//INFO("E p1: \"" << std::string (buf, len) << "\"")
+		INFO("E p1: \"" << std::string (buf, len) << "\"")
 
 		// pass2
 		// "(User Version == 10) || (User Version == 11)"
@@ -312,7 +312,7 @@ namespace NifLib
 	*	Works with: uint, EVAL_OPB_OR, EVAL_OPB_AND and "!"
 	*	Example: "((1)&&(!((0)&&(1))))"
 	*	Note: "(Has Normals) && (TSpace Flag & 240)", so
-	*		  here we'll recieve something like:
+	*		  here we'll receive something like:
 	*		  "(1)&&(240)"
 	*/
 	int
@@ -410,6 +410,19 @@ namespace NifLib
 		return NULL;
 	}
 
+	int
+	Compiler::FFBackwardsIdx(int attrid, const char *val, int len)
+	{
+		int i;
+		for (i = flist.Count () - 1; i > -1; i--) {
+			NifLib::Tag *t = flist[i]->Tag;
+			NifLib::Attr *a = t->AttrById (attrid);
+			if (a && a->Value.Equals(val, len))
+				return i;
+		}
+		return -1;
+	}
+
 	Compiler::Compiler(const char *fname)
 		: Parser (fname)
 	{
@@ -458,6 +471,26 @@ namespace NifLib
 			return;
 		}
 		NifLib::Attr *tname = t->AttrById (ANAME);
+		if (!tname) {
+			ERR("R: A tag should have a name")
+			return;
+		}
+		INFO("Reading \""
+			<< std::string (tname->Value.buf, tname->Value.len) << "\"")
+		// handle "inherit"
+		NifLib::Attr *p = t->AttrById (AINHERIT);
+		if (p) {
+			NifLib::Tag *tp;
+			tp = Find (TCOMPOUND, ANAME, p->Value.buf, p->Value.len);
+			if (!tp)
+				tp = Find (TNIOBJECT, ANAME, p->Value.buf, p->Value.len);
+			if (!tp) {
+				ERR("Unknown parent block for \""
+					<< std::string (tname->Value.buf, tname->Value.len) << "\"")
+				return;
+			}
+			ReadObject (s, tp);
+		}
 #define SFIELD(L1, L2)\
 	"\"" << std::string (L1->Value.buf, L1->Value.len)\
 	<< "." << std::string (L2->Value.buf, L2->Value.len) << "\""
@@ -465,23 +498,25 @@ namespace NifLib
 #define DEC std::dec
 #define READ(BT, BYTES, RT, CNT)\
 {\
-	BT *buf;\
-	buf = (BT *)NifAlloc (BYTES);\
-	if (!buf) {\
-		ERR("Out of memory")\
-		return;\
-	}\
-	NIFint rr = s.Read##RT (&buf[0], CNT);\
-	if (rr != BYTES) {\
-		ERR("ReadUInt failed")\
+	if (CNT > 0 && BYTES > 0) {\
+		BT *buf;\
+		buf = (BT *)NifAlloc (BYTES);\
+		if (!buf) {\
+			ERR("Out of memory")\
+			return;\
+		}\
+		NIFint rr = s.Read##RT (&buf[0], CNT);\
+		if (rr != BYTES) {\
+			ERR("ReadUInt failed")\
+			NifRelease (buf);\
+			return;\
+		}\
+		INFO("R "#BT"(" << CNT << "): " << SFIELD(tname, fname) << ": \""\
+			<< DEC << (int)buf[0] << " " << HEX(2*(BYTES/CNT)) << (int)buf[0] << "\"" << DEC)\
+		AddField (field, (char *)&buf[0], BYTES);\
+		pos += rr;\
 		NifRelease (buf);\
-		return;\
 	}\
-	INFO("R "#BT"(" << CNT << "): " << SFIELD(tname, fname) << ": \""\
-		<< DEC << (int)buf[0] << " " << HEX(2*(BYTES/CNT)) << (int)buf[0] << "\"" << DEC)\
-	AddField (field, (char *)&buf[0], BYTES);\
-	pos += rr;\
-	NifRelease (buf);\
 }
 		for (int i = 0; i < t->Tags.Count (); i++) {// its kinda CS:IP :)
 			NifLib::Tag *field = t->Tags[i];// a field
@@ -521,20 +556,26 @@ namespace NifLib
 			NIFint i1 = 1;// 1d size
 			NifLib::Attr *tarr1 = field->AttrById (AARR1);
 			if (tarr1) {
-				//INFO(" - has arr1")
+				INFO(" - has arr1")
 				int x;
 				for (x = 0; x < tarr1->Value.len; x++)
 					if (tarr1->Value.buf[x] < '0' ||
 						tarr1->Value.buf[x] > '9' )
 						break;
-				if (x == tarr1->Value.len)
+				if (x == tarr1->Value.len) {
+					INFO(" - has arr1 const")
 					i1 = str2<NIFint> (std::string (tarr1->Value.buf, tarr1->Value.len));
+				}
 				else {// not a const int
 					NifLib::Field *v =
 						FFBackwards(ANAME, tarr1->Value.buf, tarr1->Value.len);
-					if (v)
+					if (v) {
+						INFO(" - has arr1 field")
+						PrintBlockB (v->Value.buf, v->Value.len, 16);
 						i1 = v->AsNIFuint ();
+					}
 					else {// not a field
+						INFO(" - has arr1 expression")
 						i1 = Evaluate (tarr1);
 						INFO("*R (arr1): \""
 							<< std::string (tarr1->Value.buf, tarr1->Value.len) << "\":"
@@ -639,6 +680,8 @@ namespace NifLib
 					ERR("R: Uknown tag")
 					return;// can not continue - its sequential file format
 				}
+				AddField (field, NULL, 0);
+				//INFO ("Field #" << flist.Count () - 1)
 				for (int idx = 0; idx < i1; idx++)// 1d array
 					ReadObject (s, tt);
 			}
@@ -664,6 +707,81 @@ namespace NifLib
 #define HEX(N) std::setw (N) << std::setfill ('0') << std::hex << std::uppercase
 #define DEC std::dec
 			INFO("FP :" << HEX(8) << pos << DEC)
+			if (nVersion < 0x030300D) {
+				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
+			}
+			else if (nVersion < 0x05000001) {
+				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
+			}
+			else if (nVersion > 0x0A000100/*"10.0.1.0"*/) {
+				NifLib::Field *f = FFBackwards (ANAME, "Num Blocks", 10);
+				if (!f) {
+					ERR("\"Num Blocks\" lookup failed")
+					return;
+				}
+				int i;
+				int num_blocks = (int)f->AsNIFuint ();
+				INFO("Num Blocks: " << num_blocks)
+				f = FFBackwards (ANAME, "Block Type Index", 16);
+				if (!f) {
+					ERR("\"Block Type Index\" lookup failed")
+					return;
+				}
+				NIFushort *block_type_index = (NIFushort *)&(f->Value.buf[0]);
+				int bti_len = f->Value.len / 2;
+				INFO("Block Type Index len: " << bti_len)
+				f = FFBackwards (ANAME, "Num Block Types", 15);
+				if (!f) {
+					ERR("\"Num Block Types\" lookup failed")
+					return;
+				}
+				int num_block_types = (int)f->AsNIFuint ();
+				INFO("Num Block Types: " << num_block_types)
+				int btIdx = FFBackwardsIdx (ANAME, "Block Types", 11);
+				if (btIdx < 0) {
+					ERR("\"Block Types\" lookup failed")
+					return;
+				}
+				for (i = 0; i < num_blocks; i++) {
+					if (nVersion >= 0x05000001 && nVersion <= 0x0A01006A) {
+						INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
+						return;
+					}
+					if (i < 0 || i >= bti_len) {
+						ERR("Assertion failed: i can not be outside bti")
+						return;
+					}
+					int bt = block_type_index[i];
+					INFO("block type is: " << bt)
+					if (bt < 0 || bt >= num_block_types) {
+						ERR("Assertion failed: invald block type: " << bt)
+						return;
+					}
+					int fbname_idx = btIdx + (2 * (bt + 1));
+					if (fbname_idx < 0 || fbname_idx >= flist.Count ()) {
+						ERR("Assertion failed: invald block name field index: " << bt)
+						return;
+					}
+					f = flist[fbname_idx];
+					if (!f) {
+						ERR("Invalid block name field")
+						return;
+					}
+					INFO("Block #" << i
+						<< " \"" << std::string (f->Value.buf, f->Value.len) << "\"")
+					t = Find (TCOMPOUND, ANAME, f->Value.buf, f->Value.len);
+					if (!t)
+						t = Find (TNIOBJECT, ANAME, f->Value.buf, f->Value.len);
+					if (!t) {
+						ERR("Unknown block")
+						return;
+					}
+					//ReadObject (s, t);
+				}
+			}
+			else {
+				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
+			}
 #undef DEC
 #undef HEX
 		}

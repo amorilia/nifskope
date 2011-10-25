@@ -68,6 +68,7 @@ namespace NifLib
 		*	Returns NULL when not found.
 		*/
 		NifLib::Field *FFBackwards(int attrid, const char *val, int len);
+		int	FFBackwardsIdx(int attrid, const char *val, int len);
 
 		void ReadObject(NifStream &s, NifLib::Tag *t);
 	public:
