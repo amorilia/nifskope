@@ -45,8 +45,6 @@ namespace NifLib
 		Buffer Value;
 		NifLib::Tag *Tag;
 		NIFuint AsNIFuint();
-		int ArrSize;
-		int ArrItemSize;
 	};
 }
 
