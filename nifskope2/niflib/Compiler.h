@@ -41,6 +41,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Field.h"
 #include <string>
 #include <sstream>
+#include <map>
 
 namespace NifLib
 {
@@ -50,9 +51,35 @@ namespace NifLib
 		int pos;
 		NifLib::List<NifLib::Attr *> argstack;
 		NifLib::List<NifLib::Field *> flist;
+
+		/*
+		*	A "view" for the ANAME attribute - fast lookup by ANAME.
+		*	"FFBackwards" returns the last in the list and
+		*	"AddField" adds newest field index there, so
+		*	"FFBackwards" always returns the first found by that ANAME
+		*	from flist.Count () - 1 backwards (towards 0).
+		*	That is required because of AINHERIT. A field in "derived"
+		*	may depend on a field in "parent" or "parent" "parent", etc.
+		*	so instead of tracing back AINHERIT in a complex tree-like
+		*	structures, I use a "view" to a "list" thus effectively
+		*	detaching the core data container structure from "algorithms".
+		*/
+		std::map<std::string, NifLib::List<int> *> fview_aname;
+
 		NIFuint nVersion, nUserVersion;// global nif file variable(s)
 		int	Read_bool (NifStream *s, char *b);
+
 		void AddField(NifLib::Tag *field, char *buf, int bl);
+
+		/*
+		*	Starts from current count-1 and scans untill the first field.
+		*	Returns NULL when not found.
+		*/
+		NifLib::Field *FFBackwards(const char *val, int len);
+		int	FFBackwardsIdx(int attrid, const char *val, int len);
+
+		bool V12Check(NifLib::Tag *field);
+		NifLib::Tag *Find(int tagid, int attrid, const char *attrvalue, int len);
 		template <typename T> static T str2(const std::string &val)
 		{
 			std::stringstream aa;
@@ -72,13 +99,6 @@ namespace NifLib
 		int Evaluate(NifLib::Attr* cond);
 		int EvalDeduceType(const char *val, int len);
 		int EvaluateL2(NifLib::List<NIFuint> &l2);
-
-		/*
-		*	Starts from current count-1 and scans untill the first field.
-		*	Returns NULL when not found.
-		*/
-		NifLib::Field *FFBackwards(int attrid, const char *val, int len);
-		int	FFBackwardsIdx(int attrid, const char *val, int len);
 
 		/*
 		*	Return TBASIC for that ATYPE attribute if there is TBASIC
@@ -101,9 +121,9 @@ namespace NifLib
 		~Compiler();
 
 		static NIFuint HeaderString2Version(const char *buf, int bl);
+
 		void ReadNif(const char *fname);
-		bool V12Check(NifLib::Tag *field);
-		NifLib::Tag *Find(int tagid, int attrid, const char *attrvalue, int len);
+		void WriteNif(const char *fname);
 
 		void Build();
 	};

@@ -70,6 +70,8 @@ main(int argc, char **argv)
 	gettimeofday (&tstop, NULL);
 	INFO("nif loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 
+	p.WriteNif ("aaa.nif");
+
 	// reading works
 	/*NifStream test ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif", 1024*1024);
 
