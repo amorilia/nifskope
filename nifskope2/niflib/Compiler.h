@@ -81,14 +81,21 @@ namespace NifLib
 		int	FFBackwardsIdx(int attrid, const char *val, int len);
 
 		/*
+		*	Return TBASIC for that ATYPE attribute if there is TBASIC
+		*	reachable for it.
+		*/
+		NifLib::Tag *GetBasicType(NifLib::Attr *type);
+
+		/*
+		*	Initialise AARR attribute. Set *i2j to the array field
+		*	if any, to indicate jagged array
+		*/
+		NIFint InitArr(NifLib::Attr *aarr, NifLib::Field **i2j);
+
+		/*
 		*	Read one object from the .nif
 		*/
 		void ReadObject(NifStream &s, NifLib::Tag *t);
-
-		/*
-		*	Return size in bytes of Tag "type" if that type is basic
-		*/
-		//int GetBasicTypeSize(NifLib::Attr *type);
 	public:
 		Compiler(const char *fname);
 		~Compiler();

@@ -608,6 +608,58 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		return r;
 	}
 
+	/*
+	*	Return TBASIC for that ATYPE attribute if there is TBASIC
+	*	reachable for it.
+	*/
+	NifLib::Tag *
+	Compiler::GetBasicType(NifLib::Attr *type)
+	{
+		NifLib::Tag *tag = Find (TBASIC, ANAME, type->Value.buf, type->Value.len);
+		if (!tag) {// try find out if its TENUM
+			tag = Find (TENUM, ANAME, type->Value.buf, type->Value.len);
+			if (tag) {
+				NifLib::Attr *t2 = tag->AttrById (ASTORAGE);
+				tag = Find (TBASIC, ANAME, t2->Value.buf, t2->Value.len);
+			}
+		}
+		if (!tag) {// try find out if its TBITFLAGS
+			tag = Find (TBITFLAGS, ANAME, type->Value.buf, type->Value.len);
+			if (tag) {
+				NifLib::Attr *t2 = tag->AttrById (ASTORAGE);
+				tag = Find (TBASIC, ANAME, t2->Value.buf, t2->Value.len);
+			}
+		}
+		return tag;
+	}
+
+	/*
+	*	Initialise AARR attribute. Set *i2j to an array field,
+	*	if any, to indicate jagged array
+	*/
+	NIFint
+	Compiler::InitArr(NifLib::Attr *arr, NifLib::Field **i2j)
+	{
+		NIFint result = 1;
+		if (arr) {
+			if (IsUInt (arr->Value.buf, arr->Value.len))
+				result = str2<NIFint> (std::string (arr->Value.buf, arr->Value.len));
+			else {// not a const int
+				NifLib::Field *v =
+					FFBackwards (ANAME, arr->Value.buf, arr->Value.len);
+				if (v) {// a field
+					if (v->Tag->AttrById (AARR1))
+						*i2j = v;// jagged - v is an array field
+					else
+						result = v->AsNIFuint ();// can be 0
+				}
+				else // an expression
+					result = Evaluate (arr);// TODO: error handling
+			}
+		}
+		return result;
+	}
+
 	void
 	Compiler::ReadObject(NifStream &s, NifLib::Tag *t)
 	{
@@ -651,7 +703,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		}\
 		NIFint rr = s.Read##RT (&buf[0], CNT);\
 		if (rr != BYTES) {\
-			ERR("ReadUInt failed")\
+			ERR("Read##RT failed")\
 			NifRelease (buf);\
 			return;\
 		}\
@@ -660,24 +712,21 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		NifRelease (buf);\
 	}\
 }
-		/*
-		long posb = pos;\
+		/*long posb = pos;\
+		...
 		if (DETAILEDLOG)\
-		INFO("R "#BT"(" << CNT << ")(" << HEX(8) << posb << DEC\
-			<< "): " << SFIELD(tname, fname) << ": \"" << DEC << (int)buf[0]\
-			<< " " << HEX(2*((BYTES)/(CNT))) << (int)buf[0] << "\"" << DEC)\*/
-
+			INFO("R "#BT"(" << CNT << ")(" << HEX(8) << posb << DEC\
+				<< "): " << SFIELD(tname, fname) << ": \"" << DEC << (int)buf[0]\
+				<< " " << HEX(2*((BYTES)/(CNT))) << (int)buf[0] << "\"" << DEC)\*/
 		for (int i = 0; i < t->Tags.Count (); i++) {// its kinda CS:IP :)
 			NifLib::Tag *field = t->Tags[i];// a field
 			NifLib::Attr *ftype = field->AttrById (ATYPE);// field type
 			NifLib::Attr *fname = field->AttrById (ANAME);// field name
-
-			// critical checks
 			if (!ftype) {// field must have a type
-				INFO("R: Unknown type for l2 tag in l1 tag #" << t->Id)
+				INFO("R: Unknown type for L2 tag in L1 tag #" << t->Id)
 				return;
 			}
-			if (!V12Check (field)) {// "ver1" and "ver2" checks
+			if (!V12Check (field)) {// "AVER1" "AVER2"
 				//INFO("R: " << SFIELD(tname, fname)	<< ": *** V12Check")
 				continue;
 			}
@@ -690,22 +739,18 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 					continue;
 				}
 			}
-
-			// ARG
 			NifLib::Attr *ARG = field->AttrById (AARG);
 			if (ARG)
 				argstack.Add (ARG);
-
-			NifLib::Attr *tcond = field->AttrById (ACOND);
-			if (tcond) {
-				int eval_result = Evaluate (tcond);
+			NifLib::Attr *acond = field->AttrById (ACOND);
+			if (acond) {
+				int eval_result = Evaluate (acond);
 				//INFO("*R cond:" << "\""
 				//	<< std::string (tcond->Value.buf, tcond->Value.len) << "\": "
 				//	<< eval_result)
 				if (!eval_result)
 					continue;
 			}
-
 			NifLib::Attr *vcond = field->AttrById (AVERCOND);
 			if (vcond) {
 				int eval_result = Evaluate (vcond);
@@ -715,137 +760,58 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				if (!eval_result)
 					continue;
 			}
-
-			// init 1d array
-			// can be const uint, field, expression
-			NIFint i1 = 1;// 1d size
-			NifLib::Attr *tarr1 = field->AttrById (AARR1);
-			if (tarr1) {
-				//INFO(" - has arr1")
-				if (IsUInt (tarr1->Value.buf, tarr1->Value.len)) {
-					//INFO(" - has arr1 const")
-					i1 = str2<NIFint> (std::string (tarr1->Value.buf, tarr1->Value.len));
-				}
-				else {// not a const int
-					NifLib::Field *v =
-						FFBackwards (ANAME, tarr1->Value.buf, tarr1->Value.len);
-					if (v) {
-						//INFO(" - has arr1 field")
-						//PrintBlockB (v->Value.buf, v->Value.len, 16);
-						i1 = v->AsNIFuint ();
-					}
-					else {// not a field
-						//INFO(" - has arr1 expression")
-						i1 = Evaluate (tarr1);
-						//INFO("*R (arr1): \""
-						//	<< std::string (tarr1->Value.buf, tarr1->Value.len) << "\":"
-						//	<< i1)
-						if (i1 <= 0) {
-							ERR("R: can't determine arr1 contents")
-							return;
-						}
-					}
-				}
-			}// if (tarr1)
-
-			// arr2:
-			// can be const, field, field what is an array (jagged)
-			NIFint i2 = 1;// 2d size
 			NifLib::Field *i2j = NULL;
-			NifLib::Attr *tarr2 = field->AttrById (AARR2);
-			if (tarr2) {
-				//INFO(" - has arr2")
-				if (IsUInt (tarr2->Value.buf, tarr2->Value.len)) {
-					//INFO(" - has arr2 const")
-					i2 = str2<NIFint> (std::string (tarr2->Value.buf, tarr2->Value.len));
-				}
-				else {// not a const int
-					NifLib::Field *v =
-						FFBackwards (ANAME, tarr2->Value.buf, tarr2->Value.len);
-					if (v) {// a field
-						//INFO(" - has arr2 field")
-						//PrintBlockB (v->Value.buf, v->Value.len, 16);
-						NifLib::Tag *vtag = v->Tag;
-						NifLib::Attr *varr1 = vtag->AttrById (AARR1);
-						if (varr1) {
-							i2j = v;// jagged
-							//INFO("R: *** jagged array")
-						}
-						else {
-							i2 = v->AsNIFuint ();// 2d
-							//INFO("R: *** 2d array")
-						}
-					}
-					else {// not a field
-						//INFO(" - has arr2 expression")
-						i2 = Evaluate (tarr2);
-						//INFO("*R (arr2): \""
-						//	<< std::string (tarr2->Value.buf, tarr2->Value.len) << "\":"
-						//	<< i2)
-						if (i2 <= 0) {
-							ERR("R: can't determine arr2 contents")
-							return;
-						}
-					}
-				}
-			}// if (tarr2)
-
-			// TODO:arr3:
+			// AARR1
+			// can be const uint, field, expression
+			NIFint i1 = InitArr (field->AttrById (AARR1), &i2j);// 1d size
+			if (i1 <= 0)
+				continue;// nothing to read
+			// AARR1
+			// can be const, field, field what is an array (jagged)
+			NIFint i2 = InitArr (field->AttrById (AARR2), &i2j);// 1d size
+			if (i2 <= 0)
+				continue;// nothing to read
+			// TODO:AARR3
 			// can be const
-
-			NifLib::Tag *tt = Find (TBASIC, ANAME, ftype->Value.buf, ftype->Value.len);
-			if (!tt) {// try find out if its 'enum'
-				tt = Find (TENUM, ANAME, ftype->Value.buf, ftype->Value.len);
-				if (tt) {
-					NifLib::Attr *estorage = tt->AttrById (ASTORAGE);
-					tt = Find (TBASIC, ANAME, estorage->Value.buf, estorage->Value.len);
-				}
-			}
-			if (!tt) {// try find out if its 'bitflags'
-				tt = Find (TBITFLAGS, ANAME, ftype->Value.buf, ftype->Value.len);
-				if (tt) {
-					NifLib::Attr *bfstorage = tt->AttrById (ASTORAGE);
-					tt = Find (TBASIC, ANAME, bfstorage->Value.buf, bfstorage->Value.len);
-				}
-			}
-			if (tt) {// *** its a basic type
+			NIFint izise = i1 * i2;// fixed array size
+			NifLib::Tag *tt = GetBasicType (ftype);
+			if (tt) {// its a TBASIC type
 				NifLib::Attr *ta = tt->AttrById (ANIFLIBTYPE);
-				// <add name="Header String" type="HeaderString">
-				// *** read basic type "HeaderString" mapped to our code here:
-				//     it has no attribute description in the XML so its
-				//     behaviour is hard-coded
+				// behaviour is hard-coded
 				if (ta->Value.Equals ("HeaderString", 12) ||
 					ta->Value.Equals ("LineString", 10)) {
-					i1 = 1024;// max length
-					NIFchar *buf;
-					buf = (NIFchar *)NifAlloc (1*i1);
-					if (!buf) {
-						ERR("R: Out of memory")
-						return;
-					}
-					NIFint rr = s.ReadCharCond (&buf[0], i1, '\n');
-					if (rr <= i1) {
-						//PrintBlockB (&buf[0], rr, 16);
-						//INFO("R hstr(" << rr << "): " << SFIELD(tname, fname)
-						//	<< ": \"" << std::string (&buf[0], rr - 1) << "\"" << DEC)
+					// A variable length string that ends with a newline character (0x0A)
+					const int MAX = 1024;// max length
+					NIFchar buf[MAX];
+					NIFint rr = s.ReadCharCond (&buf[0], MAX, '\n');
+					if (rr <= MAX) {
 						AddField (field, &buf[0], rr);
 					} else {// file format not supported
 						ERR("R: ReadCharCond failed")
-						NifRelease (buf);
 						return;
 					}
-					// TODO: see to it that Build() turns those to NIFuint
 					nVersion = HeaderString2Version (&buf[0], rr - 1);
 					pos += rr;
-					NifRelease (buf);
 				} else
-#define READJBASIC(BT, BT2, SZ, RT)\
+#define READJBASIC(BT, SZ)\
 	{\
 		BT *lengths = (BT *)&(i2j->Value.buf[0]);\
 		for (int idx = 0; idx < (int)i1; idx++)\
-			READ(BT2, SZ*(int)lengths[idx], RT, (int)lengths[idx])\
+			READ(NIFbyte, SZ*(int)lengths[idx], Byte, SZ*(int)lengths[idx])\
 	}
-#define READJBASICALL(BT2, SZ, RT)\
+#define READJNONBASIC(BT, SZ)\
+	{\
+		BT *lengths = (BT *)&(i2j->Value.buf[0]);\
+		for (int idx = 0; idx < i1; idx++) {\
+			if (SZ > 0)\
+				READ(NIFbyte, SZ * (int)lengths[idx], Byte, SZ * (int)lengths[idx])\
+			else {\
+				for (int j = 0; j < (int)lengths[idx]; j++)\
+					ReadObject (s, tt);\
+			}\
+		}\
+	}
+#define READJBASICALL(SZ, RPROC)\
 	{\
 		NifLib::Tag *_tag = i2j->Tag;\
 		NifLib::Attr *_ta1 = _tag->AttrById (ATYPE);\
@@ -859,118 +825,63 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			return;\
 		}\
 		else if (_ta->Value.Equals ("unsigned int", 12))\
-			READJBASIC(NIFuint, BT2, SZ, RT)\
+			RPROC(NIFuint, SZ)\
 		else if (_ta->Value.Equals ("int", 3))\
-			READJBASIC(NIFint, BT2, SZ, RT)\
+			RPROC(NIFint, SZ)\
 		else if (_ta->Value.Equals ("byte", 4))\
-			READJBASIC(NIFbyte, BT2, SZ, RT)\
+			RPROC(NIFbyte, SZ)\
 		else if (_ta->Value.Equals ("unsigned short", 14))\
-			READJBASIC(NIFushort, BT2, SZ, RT)\
+			RPROC(NIFushort, SZ)\
 		else if (_ta->Value.Equals ("short", 5))\
-			READJBASIC(NIFshort, BT2, SZ, RT)\
+			RPROC(NIFshort, SZ)\
 		else {\
 			ERR("R: can't handle that jagged array type: "\
 			<< "\"" << std::string (_ta->Value.buf, _ta->Value.len) << "\"")\
 			return;\
 		}\
 	}
-				if (ta->Value.Equals ("unsigned int", 12) ||
-					ta->Value.Equals ("IndexString", 11)) {
-					if (i2j) READJBASICALL(NIFuint, 4, UInt)
-					else READ(NIFuint, 4*i1*i2, UInt, i1*i2)
-				} else
-				if (ta->Value.Equals ("int", 3) ||
-					ta->Value.Equals ("*", 1) ||
-					ta->Value.Equals ("Ref", 3)) {
-					if (i2j) READJBASICALL(NIFint, 4, Int)
-					else READ(NIFint, 4*i1*i2, Int, i1*i2)
-				} else
-				if (ta->Value.Equals ("byte", 4)) {
-					if (i2j) READJBASICALL(NIFbyte, 1, Byte)
-					else READ(NIFbyte, 1*i1*i2, Byte, i1*i2)
-				} else
-				if (ta->Value.Equals ("unsigned short", 14)) {
-					//DETAILEDLOG = 0;
-					if (i2j) READJBASICALL(NIFushort, 2, UShort)
-					else READ(NIFushort, 2*i1*i2, UShort, i1*i2)
-					//DETAILEDLOG = 1;
-				} else
-				if (ta->Value.Equals ("short", 5)) {
-					//DETAILEDLOG = 0;
-					if (i2j) READJBASICALL(NIFshort, 2, Short)
-					else READ(NIFshort, 2*i1*i2, Short, i1*i2)
-					//DETAILEDLOG = 1;
-				} else
-				if (ta->Value.Equals ("float", 5)) {
-					//DETAILEDLOG = 0;
-					if (i2j) READJBASICALL(NIFfloat, 4, Float)
-					else READ(NIFfloat, 4*i1*i2, Float, i1*i2)
-					//DETAILEDLOG = 1;
-				} else
+				// behaviour is hard-coded
 				if (ta->Value.Equals ("bool", 4)) {
 					// A boolean; 32-bit from 4.0.0.2, and 8-bit from 4.1.0.1 on.
 					if (nVersion > 0x04010001)
-						READ(NIFbyte, 1*i1*i2, Byte, i1*i2)
+						READ(NIFbyte, 1*izise, Byte, izise)
 					else
-						READ(NIFint, 4*i1*i2, Int, i1*i2)
+						READ(NIFint, 4*izise, Int, izise)
 				} else
+				if (tt->FixedSize > 0) {
+					if (i2j)
+						READJBASICALL(tt->FixedSize, READJBASIC)
+					else
+						READ(NIFbyte, tt->FixedSize * izise, Byte, tt->FixedSize * izise)
+				}
+				else
 					ERR("R: " << SFIELD(tname, fname) << ": *** Unknown basic type"
 					<< " (" << std::string (ta->Value.buf, ta->Value.len) << ")")
-			} else {// if (tt) {// *** its a basic type
-				//if (i1*i2 > 1)
-				//	INFO("R: (" << i1 * i2 << ")" << SFIELD(tname, fname))
-				//INFO("R: " << SFIELD(tname, fname) << ": *** not basic"
-				//<< " (" << std::string (ftype->Value.buf, ftype->Value.len) << ")")
+			} else {// 'tt'is not a basic type
 				tt = Find (TCOMPOUND, ANAME, ftype->Value.buf, ftype->Value.len);
-				if (!tt)
+				if (!tt) // it is not compund
 					tt = Find (TNIOBJECT, ANAME, ftype->Value.buf, ftype->Value.len);
-				if (!tt) {
+				if (!tt) { // it is not anything "known"
 					ERR("R: Uknown tag")
 					return;// can not continue - its sequential file format
 				}
-				AddField (field, NULL, 0);
-				//INFO ("Field #" << flist.Count () - 1)
+				AddField (field, NULL, 0); // struct start
 				if (!i2j) {
 					if (tt->FixedSize > 0)
-						READ(NIFbyte, tt->FixedSize * i1 * i2, Byte, tt->FixedSize * i1 * i2)
+						READ(NIFbyte, tt->FixedSize * izise, Byte, tt->FixedSize * izise)
 					else
-						for (int idx = 0; idx < i1 * i2; idx++)// 1d array
+						for (int idx = 0; idx < izise; idx++)// 1d array
 							ReadObject (s, tt);
 				}
-				else {// jagged not basic type
-					//INFO("R: *** jagged not basic type")
-					NifLib::Tag *tag = i2j->Tag;
-					NifLib::Attr *ta = tag->AttrById (ATYPE);
-#define READJ(BT)\
-	{\
-		BT *lengths = (BT *)&(i2j->Value.buf[0]);\
-		for (int idx = 0; idx < i1; idx++)\
-			for (int j = 0; j < (int)lengths[idx]; j++)\
-					ReadObject (s, tt);\
-	}
-					// supported types for array length:
-					if (ta->Value.Equals ("unsigned int", 12))
-						READJ(NIFuint)
-					else if (ta->Value.Equals ("int", 3))
-						READJ(NIFint)
-					else if (ta->Value.Equals ("byte", 4))
-						READJ(NIFbyte)
-					else if (ta->Value.Equals ("unsigned short", 14))
-						READJ(NIFushort)
-					else if (ta->Value.Equals ("short", 5))
-						READJ(NIFshort)
-					else {
-						ERR("R: can't handle that jagged array type")
-						return;
-					}
-				}// else i2j
+				else // jagged array of basic type (lengths) of non-basic type
+					READJBASICALL(tt->FixedSize, READJNONBASIC)
 			}// not basic type
 			if (ARG && argstack.Count () > 0 ) {
 				argstack.RemoveLast ();
 			}
 		}
-#undef READJ
 #undef READJBASICALL
+#undef READJNONBASIC
 #undef READJBASIC
 #undef READ
 #undef DEC

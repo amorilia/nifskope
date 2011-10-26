@@ -87,12 +87,12 @@ PrintBlockB(const char *buf, int len, int col)
 	int i;
 	std::stringstream d;
 #define FMT std::setw (2) << std::setfill ('0') << std::hex << std::uppercase
-	d << FMT << (int)buf[0];
+	d << FMT << (int)(unsigned char)buf[0];
 	for (i = 1; i < len; i++)
 		if ((i+1) % col)
-			d << ' ' << FMT << (int)buf[i];
+			d << ' ' << FMT << (int)(unsigned char)buf[i];
 		else
-			d << ' ' << FMT << (int)buf[i] << std::endl;
+			d << ' ' << FMT << (int)(unsigned char)buf[i] << std::endl;
 	INFO("\"" << d.str () << "\"")
 #undef FMT
 }

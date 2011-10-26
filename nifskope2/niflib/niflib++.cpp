@@ -64,6 +64,7 @@ main(int argc, char **argv)
 
 	//p.SaveFile ("nif3.xml");
 	p.Build ();
+
 	gettimeofday (&tstart, NULL);
 	p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
 	gettimeofday (&tstop, NULL);
