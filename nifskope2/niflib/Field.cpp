@@ -31,6 +31,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***** END LICENCE BLOCK *****/
 
 #include "Field.h"
+#include <string>
+#include <sstream>
+#include "Compiler.h"
+#include "Attr.h"
+#include "niflib.h"
 
 namespace NifLib
 {
@@ -45,5 +50,48 @@ namespace NifLib
 			return *(NIFushort *)(&Value.buf[0]);
 		else
 			return *(NIFuint *)(&Value.buf[0]);
+	}
+
+	std::string
+	Field::AsString(Compiler *typesprovider)
+	{
+		if (Value.len <= 0)
+			return "[EMPTY]";
+		NifLib::Attr *atype = Tag->AttrById (ATYPE);
+		NifLib::Tag *btype = typesprovider->GetBasicType (atype);
+		std::stringstream result;
+		if (btype) {
+			NifLib::Attr *_ta = btype->AttrById (ANIFLIBTYPE);
+			if (!_ta)
+				result << "[UNKNOWN]";
+			else if (_ta->Value.Equals ("HeaderString", 12) ||
+				_ta->Value.Equals ("LineString", 10))
+				result << std::string (Value.buf, Value.len - 1);
+			else if (_ta->Value.Equals ("unsigned int", 12))
+				result << (unsigned int)*(unsigned int *)&Value.buf[0];
+			else if (_ta->Value.Equals ("Ref", 3))
+				result << "Ref:" << (int)*(int *)&Value.buf[0];
+			else if (_ta->Value.Equals ("*", 1))
+				result << "*:" << (int)*(int *)&Value.buf[0];
+			else if (_ta->Value.Equals ("int", 3))
+				result << (int)*(int *)&Value.buf[0];
+			else if (_ta->Value.Equals ("byte", 4)) {
+				if (atype->Value.Equals ("char", 4))
+				result << std::string (Value.buf, Value.len);
+				else
+				result << (int)*(unsigned char *)&Value.buf[0];
+			}
+			else if (_ta->Value.Equals ("unsigned short", 14))
+				result << (unsigned short)*(unsigned short *)&Value.buf[0];
+			else if (_ta->Value.Equals ("short", 5))
+				result << (short)*(short *)&Value.buf[0];
+			else if (_ta->Value.Equals ("bool", 4))
+				result << StreamBlockB (Value.buf, Value.len, Value.len + 1);
+			else if (_ta->Value.Equals ("float", 5))
+				result << (float)*(float *)&Value.buf[0];
+			else result << std::string (_ta->Value.buf, _ta->Value.len);
+		} else
+			result << "[" << std::string (atype->Value.buf, atype->Value.len) << "]";
+		return result.str ();
 	}
 }

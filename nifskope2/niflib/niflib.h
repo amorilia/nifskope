@@ -206,6 +206,11 @@ void PrintBlockA(const char *buf, int len);
 void PrintBlockB(const char *buf, int len, int col);
 
 /*
+*	debug: print "len" from "buf" as Bytes in "col"-umns
+*/
+std::string StreamBlockB(const char *buf, int len, int col);
+
+/*
 *	debug: write "buf" "len" bytes to file named "fname"
 */
 void WriteToFile(const char *buf, int len, const char *fname);

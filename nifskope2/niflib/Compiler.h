@@ -49,8 +49,14 @@ namespace NifLib
 	{
 		int DETAILEDLOG;
 		int pos;
+		int blockIndex;
 		NifLib::List<NifLib::Attr *> argstack;
+		NifLib::Attr *TEMPLATE;
 		NifLib::List<NifLib::Field *> flist;
+
+		NifLib::Field *fVersion;
+		NifLib::Field *fUserVersion;
+		NifLib::Field *fUserVersion2;
 
 		/*
 		*	A "view" for the ANAME attribute - fast lookup by ANAME.
@@ -66,7 +72,7 @@ namespace NifLib
 		*/
 		std::map<std::string, NifLib::List<int> *> fview_aname;
 
-		NIFuint nVersion, nUserVersion;// global nif file variable(s)
+		NIFuint nVersion, nUserVersion, nUserVersion2;// global nif file variable(s)
 		int	Read_bool (NifStream *s, char *b);
 
 		void AddField(NifLib::Tag *field, char *buf, int bl);
@@ -76,7 +82,13 @@ namespace NifLib
 		*	Returns NULL when not found.
 		*/
 		NifLib::Field *FFBackwards(const char *val, int len);
+		NifLib::Field *FFVersion(const char *val, int len);
 		int	FFBackwardsIdx(int attrid, const char *val, int len);
+
+		/*
+		*	Clear the view. Use before each block read.
+		*/
+		void Reset_FieldViewAName();
 
 		bool V12Check(NifLib::Tag *field);
 		NifLib::Tag *Find(int tagid, int attrid, const char *attrvalue, int len);
@@ -90,6 +102,8 @@ namespace NifLib
 		}
 		inline bool IsUInt(const char *buf, int len)
 		{
+			if (len <= 0)
+				return false;
 			int x;
 			for (x = 0; x < len; x++)
 				if (buf[x] < '0' || buf[x] > '9' )
@@ -101,12 +115,6 @@ namespace NifLib
 		int EvaluateL2(NifLib::List<NIFuint> &l2);
 
 		/*
-		*	Return TBASIC for that ATYPE attribute if there is TBASIC
-		*	reachable for it.
-		*/
-		NifLib::Tag *GetBasicType(NifLib::Attr *type);
-
-		/*
 		*	Initialise AARR attribute. Set *i2j to the array field
 		*	if any, to indicate jagged array
 		*/
@@ -115,17 +123,26 @@ namespace NifLib
 		/*
 		*	Read one object from the .nif
 		*/
-		void ReadObject(NifStream &s, NifLib::Tag *t);
+		int ReadObject(NifStream &s, NifLib::Tag *t);
 	public:
 		Compiler(const char *fname);
 		~Compiler();
+		void Reset();
 
 		static NIFuint HeaderString2Version(const char *buf, int bl);
 
-		void ReadNif(const char *fname);
+		/*
+		*	Return TBASIC for that ATYPE attribute if there is TBASIC
+		*	reachable for it.
+		*/
+		NifLib::Tag *GetBasicType(NifLib::Attr *type);
+
+		int ReadNif(const char *fname);
 		void WriteNif(const char *fname);
 
 		void Build();
+
+		void DbgPrintFields();
 	};
 }
 

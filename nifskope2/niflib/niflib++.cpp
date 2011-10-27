@@ -46,6 +46,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Compiler.h"
 #include "List.h"
 
+#include <fstream>
+#include <sstream>
+
 template <typename T> class TreeNode
 {
 public:
@@ -63,28 +66,49 @@ main(int argc, char **argv)
 	INFO("XML loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 
 	//p.SaveFile ("nif3.xml");
+	int r = 0;
 	p.Build ();
-
 	gettimeofday (&tstart, NULL);
-	p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
+	r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
 	gettimeofday (&tstop, NULL);
-	INFO("nif loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
+	if (r) {
+		INFO("nif loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
+		p.WriteNif ("aaa.nif");
+	} else {
+		INFO("ReadNif failed")
+		p.DbgPrintFields ();
+	}
 
-	p.WriteNif ("aaa.nif");
-
-	// reading works
-	/*NifStream test ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif", 1024*1024);
-
-	char buf;
+	/*const char *pfix = "/mnt/archive/rain/temp/nif/";
+	std::string line;
+	std::ifstream myf("flist.txt");
 	int cnt = 0;
-	struct timeval tstart, tstop;
-	gettimeofday (&tstart, NULL);
-	while (test.ReadChar(&buf, 1) == 1) cnt++;
-	gettimeofday (&tstop, NULL);
-	long ttaken = time_interval (&tstart, &tstop) / (1000*1000);
-	INFO("time: " << time_interval (&tstart, &tstop) / (1000) << "ms")
-	INFO("chars/second: " << (cnt/(ttaken ? ttaken : 1)))
-	INFO(cnt << " chars where read")*/
+	if ( myf.is_open() ) {
+		p.Build ();
+		while ( myf.good() ) {
+			getline (myf, line);
+			if (!myf.eof() && line.length() > 0) {
+				int i, l = line.length();
+				const char *buf = line.c_str();
+				const char *ext = ".NIF";
+				for (i = l - 4; i < l; i++) {
+					char t = buf[i] < 'A' + 32 ? buf[i] : buf[i] - 32;
+					if (ext[i - (l - 4)] != t)
+						break;
+				}
+				if (i != l)
+					continue;
+				std::stringstream fname;
+				fname << std::string (pfix) << line;
+				cnt++;
+				INFO(cnt << ":\"" << fname.str () << "\"");
+				if (!p.ReadNif (fname.str ().c_str ())) {
+					INFO ("files done: " << cnt)
+					break;
+				}
+			}
+		}
+	}*/
 
 	return EXIT_SUCCESS;
 }

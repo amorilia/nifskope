@@ -98,6 +98,29 @@ PrintBlockB(const char *buf, int len, int col)
 }
 
 /*
+*	debug: print "len" from "buf" as Bytes in "col"-umns
+*/
+std::string
+StreamBlockB(const char *buf, int len, int col)
+{
+	if (len <= 0) {
+		//INFO("StreamBlockB: empty, len = " << len)
+		return "";
+	}
+	int i;
+	std::stringstream d;
+#define FMT std::setw (2) << std::setfill ('0') << std::hex << std::uppercase
+	d << FMT << (int)(unsigned char)buf[0];
+	for (i = 1; i < len; i++)
+		if ((i+1) % col)
+			d << ' ' << FMT << (int)(unsigned char)buf[i];
+		else
+			d << ' ' << FMT << (int)(unsigned char)buf[i] << std::endl;
+	return d.str ();
+#undef FMT
+}
+
+/*
 *	debug: write "buf" "len" bytes to file named "fname"
 */
 void

@@ -36,15 +36,19 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Buffer.h"
 #include "Tag.h"
 #include "niff.h"
+#include <string>
 
 namespace NifLib
 {
+	class Compiler;
 	class Field
 	{
 	public:
 		Buffer Value;
 		NifLib::Tag *Tag;
+		int BlockIndex;
 		NIFuint AsNIFuint();
+		std::string AsString(Compiler *typesprovider);
 	};
 }
 

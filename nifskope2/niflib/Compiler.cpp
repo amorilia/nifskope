@@ -70,6 +70,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 	{
 		A(1)
 		NifLib::Field *f = new NifLib::Field();
+		f->BlockIndex = blockIndex;
 		f->Tag = field;
 		if (buf && bl > 0)
 			f->Value.CopyFrom (buf, bl);
@@ -104,6 +105,24 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			B(5)
 			return flist[(*lst)[lst->Count () - 1]];
 		}
+	}
+
+	/*
+	*	FindField Version. Special proc to look for "Version",
+	*	"User Version" and "User Version 2" since they're the only
+	*	two fields that are not in the block currently being read
+	*	except for TCOMPOUND "Header".
+	*/
+	NifLib::Field *
+	Compiler::FFVersion(const char *val, int len)
+	{
+		if (len == 14 && !strncmp (val, "User Version 2", 14))
+			return fUserVersion2;
+		else if (len == 12 && !strncmp (val, "User Version", 12))
+			return fUserVersion;
+		else if (len == 7 && !strncmp (val, "Version", 7))
+			return fVersion;
+		else return NULL;
 	}
 
 	int
@@ -267,10 +286,10 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		for (i = 0; i < len; i++) {
 			op = EVAL_OP_NONE;
 			opb = EVAL_OPB_NONE;
-			lt = EVAL_TYPE_UNKNOWN; if(lt);
+			lt = EVAL_TYPE_UNKNOWN;
 			rt = EVAL_TYPE_UNKNOWN;
-			lbuf = NULL; if(lbuf);
-			llen = 0; if(llen);
+			lbuf = NULL;
+			llen = 0;
 			rbuf = NULL;
 			rlen = 0;
 			if (buf[i] == '!' && i < (len -1) && buf[i + 1] != '=') {
@@ -321,12 +340,15 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 							while (++k < i)
 								if (buf[k] > ' ')
 									break;
-							lt = EvalDeduceType (&buf[k], j - k + 1);
-							if (lt == EVAL_TYPE_UNKNOWN)
-								lf = FFBackwards (&buf[k], j - k + 1);
-							//lbuf = &buf[k];
-							//llen = j - k + 1;
-							//INFO("E lo: \"" << std::string (&buf[k], j - k + 1) << "\"")
+							llen = j - k + 1;
+							lbuf = &buf[k];
+							lt = EvalDeduceType (lbuf, llen);
+							if (lt == EVAL_TYPE_UNKNOWN) {
+								lf = FFBackwards (lbuf, llen);
+								if (!lf)
+									lf = FFVersion (lbuf, llen);
+							}
+							//INFO("E lo: \"" << std::string (lbuf, llen) << "\"")
 							break;
 						}
 				// r_operand: scan -> non-empty..)
@@ -342,13 +364,13 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 							while (--k > i + OPL[op])
 								if (buf[k] > ' ')
 									break;
-							rt = EvalDeduceType (&buf[j], k - j + 1);
-							if (rt == EVAL_TYPE_UNKNOWN)
-								rf = FFBackwards (&buf[j], k - j + 1);
-							rbuf = &buf[j];
 							rlen = k - j + 1;
+							rbuf = &buf[j];
+							rt = EvalDeduceType (rbuf, rlen);
+							if (rt == EVAL_TYPE_UNKNOWN)
+								rf = FFBackwards (rbuf, rlen);
 							i = j + rlen - 1;// -1 for the ')'
-							//INFO("E ro: \"" << std::string (&buf[j], k - j + 1) << "\"")
+							//INFO("E ro: \"" << std::string (rbuf, rlen) << "\"")
 							break;
 						}
 				// evaluate
@@ -639,16 +661,44 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 	{
 		nVersion = 0;
 		nUserVersion = 0;
+		nUserVersion2 = 0;
 		DETAILEDLOG = 0;
+		blockIndex = 0;
+		TEMPLATE = NULL;
+		fVersion = NULL;
+		fUserVersion = NULL;
+		fUserVersion2 = NULL;
 	}
 
 	Compiler::~Compiler()
 	{
+		Reset ();
+	}
+
+	void
+	Compiler::Reset()
+	{
+		nVersion = 0;
+		nUserVersion = 0;
+		nUserVersion2 = 0;
+		DETAILEDLOG = 0;
+		blockIndex = 0;
+		TEMPLATE = NULL;
+		fVersion = NULL;
+		fUserVersion = NULL;
+		fUserVersion2 = NULL;
 		int i;
 		for (i = 0; i < flist.Count (); i++)
 			delete flist[i];
 		flist.Clear ();
 
+		Reset_FieldViewAName ();
+		argstack.Clear ();
+	}
+
+	void
+	Compiler::Reset_FieldViewAName()
+	{
 		std::map<std::string, NifLib::List<int> *>::iterator it;
 		for (it = fview_aname.begin (); it != fview_aname.end (); it++) {
 			NifLib::List<int> *lst = it->second;
@@ -724,6 +774,8 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		A(8)
 		NIFint result = 1;
 		if (arr) {
+			//INFO ("Query InitArr for \"" << std::string (arr->Value.buf, arr->Value.len) << "\"")
+			//PrintBlockA (arr->Value.buf, arr->Value.len);
 			if (IsUInt (arr->Value.buf, arr->Value.len))
 				result = str2<NIFint> (std::string (arr->Value.buf, arr->Value.len));
 			else {// not a const int
@@ -743,20 +795,20 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		return result;
 	}
 
-	void
+	int
 	Compiler::ReadObject(NifStream &s, NifLib::Tag *t)
 	{
 		A(9)
 		if (!t) {
 			ERR("R: Missing tag")
 			B(9)
-			return;
+			return 0;
 		}
 		NifLib::Attr *tname = t->AttrById (ANAME);
 		if (!tname) {
 			ERR("R: A tag should have a name")
 			B(9)
-			return;
+			return 0;
 		}
 		/*INFO("Reading \""
 			<< std::string (tname->Value.buf, tname->Value.len) << "\"")*/
@@ -770,10 +822,13 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				ERR("Unknown parent block for \""
 					<< std::string (tname->Value.buf, tname->Value.len) << "\"")
 				B(9)
-				return;
+				return 0;
 			}
 			B(9)
-			ReadObject (s, tp);
+			if (!ReadObject (s, tp)) {
+				B(9)
+				return 0;
+			}
 			A(9)
 		}
 #define SFIELD(L1, L2)\
@@ -787,28 +842,22 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		BT *buf;\
 		buf = (BT *)NifAlloc (BYTES);\
 		if (!buf) {\
-			ERR("Out of memory")\
+			ERR("READ: Out of memory")\
 			B(9)\
-			return;\
+			return 0;\
 		}\
 		NIFint rr = s.Read##RT (&buf[0], CNT);\
 		if (rr != BYTES) {\
 			ERR("Read##RT failed")\
 			NifRelease (buf);\
 			B(9)\
-			return;\
+			return 0;\
 		}\
 		AddField (field, (char *)&buf[0], BYTES);\
 		pos += rr;\
 		NifRelease (buf);\
 	}\
 }
-		/*long posb = pos;\
-		...
-		if (DETAILEDLOG)\
-			INFO("R "#BT"(" << CNT << ")(" << HEX(8) << posb << DEC\
-				<< "): " << SFIELD(tname, fname) << ": \"" << DEC << (int)buf[0]\
-				<< " " << HEX(2*((BYTES)/(CNT))) << (int)buf[0] << "\"" << DEC)\*/
 		for (int i = 0; i < t->Tags.Count (); i++) {// its kinda CS:IP :)
 			NifLib::Tag *field = t->Tags[i];// a field
 			NifLib::Attr *ftype = field->AttrById (ATYPE);// field type
@@ -816,7 +865,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			if (!ftype) {// field must have a type
 				INFO("R: Unknown type for L2 tag in L1 tag #" << t->Id)
 				B(9)
-				return;
+				return 0;
 			}
 			if (!V12Check (field)) {// "AVER1" "AVER2"
 				//INFO("R: " << SFIELD(tname, fname)	<< ": *** V12Check")
@@ -827,18 +876,22 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				NIFuint uv =
 					str2<NIFint> (std::string (userver->Value.buf, userver->Value.len));
 				if (uv != nUserVersion) {
-					//INFO("R: " << SFIELD(tname, fname)	<< ": *** userver check")
+					//INFO("R: " << SFIELD(tname, fname) << ": *** userver check")
 					continue;
 				}
 			}
+			// TODO: check if argstack can be avoided
 			NifLib::Attr *ARG = field->AttrById (AARG);
 			if (ARG)
 				argstack.Add (ARG);
+			NifLib::Attr *tmp = field->AttrById (ATEMPLATE);
+			if (tmp && !tmp->Value.Equals ("TEMPLATE", 8))
+				TEMPLATE = tmp;// keep last template type
 			NifLib::Attr *acond = field->AttrById (ACOND);
 			if (acond) {
 				int eval_result = Evaluate (acond);
 				//INFO("*R cond:" << "\""
-				//	<< std::string (tcond->Value.buf, tcond->Value.len) << "\": "
+				//	<< STDSTR(acond->Value) << "\": "
 				//	<< eval_result)
 				if (!eval_result)
 					continue;
@@ -847,7 +900,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			if (vcond) {
 				int eval_result = Evaluate (vcond);
 				//INFO("*R vercond:" << "\""
-				//	<< std::string (vcond->Value.buf, vcond->Value.len) << "\": "
+				//	<< STDSTR (vcond->Value) << "\": "
 				//	<< eval_result)
 				if (!eval_result)
 					continue;
@@ -866,6 +919,19 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			// TODO:AARR3
 			// can be const
 			NIFint izise = i1 * i2;// fixed array size
+
+			// type="TEMPLATE"
+			if (ftype->Value.Equals ("TEMPLATE", 8)) {
+				if (TEMPLATE) {
+					//INFO("TQ: " << STDSTR(TEMPLATE->Value))
+					ftype = TEMPLATE;
+				}
+				else {
+					ERR("TQ: uknown")
+					return 0;
+				}
+			}
+
 			NifLib::Tag *tt = GetBasicType (ftype);
 			if (tt) {// its a TBASIC type
 				NifLib::Attr *ta = tt->AttrById (ANIFLIBTYPE);
@@ -881,7 +947,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 					} else {// file format not supported
 						ERR("R: ReadCharCond failed")
 						B(9)
-						return;
+						return 0;
 					}
 					nVersion = HeaderString2Version (&buf[0], rr - 1);
 					pos += rr;
@@ -906,24 +972,14 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			for (int idx = 0; idx < i1; idx++) {\
 				for (int j = 0; j < (int)lengths[idx]; j++) {\
 					B(9)\
-					ReadObject (s, tt);\
+					if (!ReadObject (s, tt)) {\
+						B(9)\
+						return 0;\
+					}\
 					A(9)\
 				}\
 			}\
 	}
-/*
-		for (int idx = 0; idx < i1; idx++) {\
-			if (SZ > 0)\
-				READ(NIFbyte, SZ * (int)lengths[idx], Byte, SZ * (int)lengths[idx])\
-			else {\
-				for (int j = 0; j < (int)lengths[idx]; j++) {\
-					B(9)\
-					ReadObject (s, tt);\
-					A(9)\
-				}\
-			}\
-		}\
-*/
 #define READJBASICALL(SZ, RPROC)\
 	{\
 		NifLib::Tag *_tag = i2j->Tag;\
@@ -936,7 +992,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			ERR("R: cant't handle non basic types jagged array lengths: "\
 			<< "\"" << std::string (_ta1->Value.buf, _ta1->Value.len) << "\"")\
 			B(9)\
-			return;\
+			return 0;\
 		}\
 		else if (_ta->Value.Equals ("unsigned int", 12))\
 			RPROC(NIFuint, SZ)\
@@ -952,7 +1008,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			ERR("R: can't handle that jagged array type: "\
 			<< "\"" << std::string (_ta->Value.buf, _ta->Value.len) << "\"")\
 			B(9)\
-			return;\
+			return 0;\
 		}\
 	}
 				// behaviour is hard-coded
@@ -979,7 +1035,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				if (!tt) { // it is not anything "known"
 					ERR("R: Uknown tag")
 					B(9)
-					return;// can not continue - its sequential file format
+					return 0;// can not continue - its sequential file format
 				}
 				AddField (field, NULL, 0); // struct marker
 				if (!i2j) {
@@ -988,7 +1044,10 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 					else
 						for (int idx = 0; idx < izise; idx++) {// 1d/2d/3d array
 							B(9)
-							ReadObject (s, tt);
+							if (!ReadObject (s, tt)) {
+								B(9)
+								return 0;
+							}
 							A(9)
 						}
 				}
@@ -998,7 +1057,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			if (ARG && argstack.Count () > 0 ) {
 				argstack.RemoveLast ();
 			}
-		}
+		}// for
 #undef READJBASICALL
 #undef READJNONBASIC
 #undef READJBASIC
@@ -1007,11 +1066,13 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 #undef HEX
 #undef SFIELD
 		B(9)
+		return 1;
 	}
 
-	void
+	int
 	Compiler::ReadNif(const char *fname)
 	{
+		Reset ();
 		NifLib::Tag *t = Find (TCOMPOUND, ANAME, "Header", 6);
 		if (t) {
 			//INFO("Found header structure")
@@ -1020,26 +1081,39 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			INFO("Opened \"" << fname << "\"")
 
 			//INFO("R: Header")
-			ReadObject (s, t);
+			blockIndex = -1;
+			if (!ReadObject (s, t))
+				return 0;
 			argstack.Clear ();
-			NifLib::Field *uv = FFBackwards ("User Version", 12);
-			if (uv)
-				nUserVersion = uv->AsNIFuint ();
+			fUserVersion = FFBackwards ("User Version", 12);
+			if (fUserVersion)
+				nUserVersion = fUserVersion->AsNIFuint ();
+			fVersion = FFBackwards ("Version", 7);
+			if (!fVersion) {
+				ERR("Version is missing from header")
+				return 0;
+			}
+			fUserVersion2 = FFBackwards ("User Version 2", 14);
 #define HEX(N) std::setw (N) << std::setfill ('0') << std::hex << std::uppercase
 #define DEC std::dec
+			INFO ("v: "
+				<< HEX(8) << nVersion << DEC << ", uv: "
+				<< nUserVersion << ", uv2: " << nUserVersion2)
 			//INFO("FP :" << HEX(8) << pos << DEC)
 			//return;
 			if (nVersion < 0x030300D) {
 				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
+				return 0;
 			}
 			else if (nVersion < 0x05000001) {
 				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
+				return 0;
 			}
 			else if (nVersion > 0x0A000100/*"10.0.1.0"*/) {
 				NifLib::Field *f = FFBackwards ("Num Blocks", 10);
 				if (!f) {
 					ERR("\"Num Blocks\" lookup failed")
-					return;
+					return 0;
 				}
 				int i;
 				int num_blocks = (int)f->AsNIFuint ();
@@ -1047,7 +1121,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				f = FFBackwards ("Block Type Index", 16);
 				if (!f) {
 					ERR("\"Block Type Index\" lookup failed")
-					return;
+					return 0;
 				}
 				NIFushort *block_type_index = (NIFushort *)&(f->Value.buf[0]);
 				int bti_len = f->Value.len / 2;
@@ -1055,55 +1129,66 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				f = FFBackwards ("Num Block Types", 15);
 				if (!f) {
 					ERR("\"Num Block Types\" lookup failed")
-					return;
+					return 0;
 				}
 				int num_block_types = (int)f->AsNIFuint ();
 				//INFO("Num Block Types: " << num_block_types)
 				int btIdx = FFBackwardsIdx (ANAME, "Block Types", 11);
 				if (btIdx < 0) {
 					ERR("\"Block Types\" lookup failed")
-					return;
+					return 0;
 				}
 				for (i = 0; i < num_blocks; i++) {
 					if (nVersion >= 0x05000001 && nVersion <= 0x0A01006A) {
 						INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
-						return;
+						return 0;
 					}
 					if (i < 0 || i >= bti_len) {
 						ERR("Assertion failed: i can not be outside bti")
-						return;
+						return 0;
 					}
 					int bt = block_type_index[i];
 					//INFO("block type is: " << bt)
 					if (bt < 0 || bt >= num_block_types) {
 						ERR("Assertion failed: invald block type: " << bt)
-						return;
+						return 0;
 					}
 					int fbname_idx = btIdx + (2 * (bt + 1));
 					if (fbname_idx < 0 || fbname_idx >= flist.Count ()) {
 						ERR("Assertion failed: invald block name field index: " << bt)
-						return;
+						return 0;
 					}
 					f = flist[fbname_idx];
 					if (!f) {
 						ERR("Invalid block name field")
-						return;
+						return 0;
 					}
-					//INFO("Block #" << i
-					//	<< " \"" << std::string (f->Value.buf, f->Value.len) << "\"")
+					//INFO("Block #" << i	<< " \"" << STDSTR (f->Value) << "\"")
 					t = Find (TCOMPOUND, ANAME, f->Value.buf, f->Value.len);
 					if (!t)
 						t = Find (TNIOBJECT, ANAME, f->Value.buf, f->Value.len);
 					if (!t) {
 						ERR("Unknown block")
-						return;
+						return 0;
 					}
-					ReadObject (s, t);
+
+					Reset_FieldViewAName ();
+					blockIndex = i;
+					if (!ReadObject (s, t))
+						return 0;
 					argstack.Clear ();
+
 				}// for
 				NifLib::Tag *tfooter = Find (TCOMPOUND, ANAME, "Footer", 6);
-				if (tfooter)
-					ReadObject (s, tfooter);
+				if (tfooter) {
+
+					Reset_FieldViewAName ();
+					blockIndex++;
+					if (!ReadObject (s, tfooter))
+						return 0;
+					argstack.Clear ();
+
+				}
 				INFO("FP :" << HEX(8) << pos << DEC)
 				INFO("c: " << c1 << ", s: " << s1 << " ms AddField ()")
 				INFO("c: " << c2 << ", s: " << s2 << " ms Evaluate ()")
@@ -1119,10 +1204,12 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			}//
 			else {
 				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
+				return 0;
 			}
 #undef DEC
 #undef HEX
 		}
+		return 1;
 	}
 
 	void
@@ -1167,7 +1254,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		// calculate basic types fixed size
 		// calculate enum types fixed size
 		// calculate bitlflags types fixed size
-		INFO("BUILD: 'basic'")
+		//INFO("BUILD: 'basic'")
 		for (i = 0; i < objs[TBASIC]->Count (); i++) {
 			NifLib::Tag *t = (*objs[TBASIC])[i];
 			NifLib::Attr *ta = t->AttrById (ANIFLIBTYPE);// type attribute
@@ -1193,12 +1280,12 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			else if (ta->Value.Equals ("byte", 4))
 				t->FixedSize = 1;
 			else {
-				INFO("BUILD: 'basic' \""
-					<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\""
-					<< " has dynamic size")
+				//INFO("BUILD: 'basic' \""
+				//	<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\""
+				//	<< " has dynamic size")
 			}
 		}
-		INFO("BUILD: 'enum'")
+		//INFO("BUILD: 'enum'")
 		for (i = 0; i < objs[TENUM]->Count (); i++) {
 			NifLib::Tag *t = (*objs[TENUM])[i];
 			NifLib::Attr *ta = t->AttrById (ASTORAGE);// type attribute
@@ -1218,12 +1305,12 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			}
 			t->FixedSize = btag->FixedSize;
 			if (t->FixedSize <= 0) {
-				INFO("BUILD: 'enum' \""
-					<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\""
-					<< " has dynamic size")
+				//INFO("BUILD: 'enum' \""
+				//	<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\""
+				//	<< " has dynamic size")
 			}
 		}
-		INFO("BUILD: 'bitflags'")
+		//INFO("BUILD: 'bitflags'")
 		for (i = 0; i < objs[TBITFLAGS]->Count (); i++) {
 			NifLib::Tag *t = (*objs[TBITFLAGS])[i];
 			NifLib::Attr *ta = t->AttrById (ASTORAGE);// type attribute
@@ -1243,12 +1330,12 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			}
 			t->FixedSize = btag->FixedSize;
 			if (t->FixedSize <= 0) {
-				INFO("BUILD: 'bitflags' \""
-					<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\""
-					<< " has dynamic size")
+				//INFO("BUILD: 'bitflags' \""
+				//	<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\""
+				//	<< " has dynamic size")
 			}
 		}
-		INFO("BUILD: 'compound'")
+		//INFO("BUILD: 'compound'")
 		// calculate structure sizes where possible
 		for (i = 0; i < objs[TCOMPOUND]->Count (); i++) {
 			NifLib::Tag *t = (*objs[TCOMPOUND])[i];
@@ -1304,13 +1391,13 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			}
 			if (j != t->Tags.Count ())
 				continue;
-			INFO("BUILD: 'compound' \""
-				<< STDSTR(tname->Value) << "\""
-				<< " has fixed size: " << fs)
+			//INFO("BUILD: 'compound' \""
+			//	<< STDSTR(tname->Value) << "\""
+			//	<< " has fixed size: " << fs)
 			t->FixedSize = fs;
 		}
 
-		INFO("BUILD: 'niobject'")
+		//INFO("BUILD: 'niobject'")
 		// calculate structure sizes where possible
 		for (i = 0; i < objs[TNIOBJECT]->Count (); i++) {
 			NifLib::Tag *t = (*objs[TNIOBJECT])[i];
@@ -1398,7 +1485,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			}
 			if (j != t->Tags.Count ())
 				continue;
-			if (!tinh)
+			/*if (!tinh)
 			INFO("BUILD: 'niobject' \""
 				<< STDSTR(tname->Value) << "\""
 				<< " has fixed size: " << fs
@@ -1408,7 +1495,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				<< "\"" << STDSTR(tname->Value) << "\":"
 				<< "\"" << STDSTR(tinh->Value) << "\""
 				<< " has fixed size: " << fs
-				<< ", parent(s) tagcount = " << tagcount)
+				<< ", parent(s) tagcount = " << tagcount)*/
 			t->FixedSize = fs;
 		}
 		return;
@@ -1423,6 +1510,30 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 	{
 		INFO("hi")
 		return 1;
+	}
+
+	void
+	Compiler::DbgPrintFields()
+	{
+		for (int i = 0; i < flist.Count (); i++) {
+			NifLib::Field *f = flist[i];
+			NifLib::Tag *t = f->Tag;
+			NifLib::Attr *tname = t->AttrById (ANAME);
+			NifLib::Tag *p = t->Parent;
+			NifLib::Attr *pname = NULL;
+			if (p)
+				pname = p->AttrById (ANAME);
+			if (!pname)
+				INFO(
+				"f:\"NULL." << STDSTR(tname->Value) << "\": "
+				<< f->Value.len << " \"" << f->AsString (this) << "\"")
+			else {
+				INFO(
+				"f #" << f->BlockIndex << ":\"" << STDSTR(pname->Value) << "."
+				<< STDSTR(tname->Value) << "\": "
+				<< f->Value.len << " \"" << f->AsString (this) << "\"")
+			}
+		}
 	}
 
 #undef STDSTR
