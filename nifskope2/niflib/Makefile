@@ -3,7 +3,7 @@ CC       = g++
 CXXFLAGS = -g -Wfatal-errors -Wall
 CPPFLAGS =
 CFLAGS   =
-LDFLAGS  =
+LDFLAGS  = -lssl
 APP      = niflib++
 
 WORK_DIR = .

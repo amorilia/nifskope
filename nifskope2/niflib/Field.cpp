@@ -58,6 +58,8 @@ namespace NifLib
 		if (Value.len <= 0)
 			return "[EMPTY]";
 		NifLib::Attr *atype = Tag->AttrById (ATYPE);
+		if (!atype)
+			atype = Tag->AttrById (ANIFLIBTYPE);
 		NifLib::Tag *btype = typesprovider->GetBasicType (atype);
 		std::stringstream result;
 		if (btype) {
@@ -67,7 +69,8 @@ namespace NifLib
 			else if (_ta->Value.Equals ("HeaderString", 12) ||
 				_ta->Value.Equals ("LineString", 10))
 				result << std::string (Value.buf, Value.len - 1);
-			else if (_ta->Value.Equals ("unsigned int", 12))
+			else if (_ta->Value.Equals ("unsigned int", 12)||
+				_ta->Value.Equals ("IndexString", 11))
 				result << (unsigned int)*(unsigned int *)&Value.buf[0];
 			else if (_ta->Value.Equals ("Ref", 3))
 				result << "Ref:" << (int)*(int *)&Value.buf[0];
@@ -89,7 +92,7 @@ namespace NifLib
 				result << StreamBlockB (Value.buf, Value.len, Value.len + 1);
 			else if (_ta->Value.Equals ("float", 5))
 				result << (float)*(float *)&Value.buf[0];
-			else result << std::string (_ta->Value.buf, _ta->Value.len);
+			else result << "[" << std::string (_ta->Value.buf, _ta->Value.len) << "]";
 		} else
 			result << "[" << std::string (atype->Value.buf, atype->Value.len) << "]";
 		return result.str ();

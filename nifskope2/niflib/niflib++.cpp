@@ -49,6 +49,47 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 #include <sstream>
 
+#include <openssl/md5.h>
+int
+md5offile(const char *fname, unsigned char *md5_result)
+{
+	MD5_CTX md5_ctx;
+	MD5_Init (&md5_ctx);
+	const int max = 1*1024*1024;
+	char fbuf[max];
+	FILE *fh = fopen (fname, "r");
+	if (fh) {
+		int rr;
+		while ((rr = fread (&fbuf[0], 1, max, fh)) > 0)
+			MD5_Update (&md5_ctx, &fbuf[0], rr);
+		MD5_Final (&md5_result[0], &md5_ctx);
+		fclose (fh);
+		return 1;
+	}
+	return 0;
+}
+
+int
+md5filesareequal(const char *fname1, const char *fname2)
+{
+	unsigned char md5_result_a[MD5_DIGEST_LENGTH];
+	unsigned char md5_result_b[MD5_DIGEST_LENGTH];
+	int a = md5offile (fname1, &md5_result_a[0]);
+	if (!a) {
+		ERR("md5offile failed for \"" << fname1 << "\"")
+		return 0;
+	}
+	int b = md5offile (fname2, &md5_result_b[0]);
+	if (!b) {
+		ERR("md5offile failed for \"" << fname2 << "\"")
+		return 0;
+	}
+	return !strncmp (
+		(char *)&md5_result_a[0],
+		(char *)&md5_result_b[0],
+		MD5_DIGEST_LENGTH);
+}
+
 template <typename T> class TreeNode
 {
 public:
@@ -66,20 +107,29 @@ main(int argc, char **argv)
 	INFO("XML loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 
 	//p.SaveFile ("nif3.xml");
-	int r = 0;
+	/*int r = 0;
 	p.Build ();
 	gettimeofday (&tstart, NULL);
+	//r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
+	try {
 	r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
+	} catch (...) {
+		ERR("ReadNif: An exception was thrown")
+	}
 	gettimeofday (&tstop, NULL);
 	if (r) {
 		INFO("nif loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 		p.WriteNif ("aaa.nif");
+		if (!md5filesareequal (
+			"../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif",
+			"aaa.nif"))
+		p.DbgPrintFields ();
 	} else {
 		INFO("ReadNif failed")
 		p.DbgPrintFields ();
-	}
+	}*/
 
-	/*const char *pfix = "/mnt/archive/rain/temp/nif/";
+	const char *pfix = "/mnt/archive/rain/temp/nif/";
 	std::string line;
 	std::ifstream myf("flist.txt");
 	int cnt = 0;
@@ -98,6 +148,8 @@ main(int argc, char **argv)
 				}
 				if (i != l)
 					continue;
+				if (l > 3 && !NifLib::Parser::StartsWith ("tes3", 4, buf, 4))
+					continue;
 				std::stringstream fname;
 				fname << std::string (pfix) << line;
 				cnt++;
@@ -105,10 +157,17 @@ main(int argc, char **argv)
 				if (!p.ReadNif (fname.str ().c_str ())) {
 					INFO ("files done: " << cnt)
 					break;
+				} else {// it was read, write it and md5sum compare it to the original
+					p.WriteNif ("aaa.nif");
+					if (!md5filesareequal (fname.str ().c_str () , "aaa.nif")) {
+						ERR ("read differs written")
+						INFO ("files done: " << cnt)
+						break;
+					}
 				}
 			}
 		}
-	}*/
+	}
 
 	return EXIT_SUCCESS;
 }

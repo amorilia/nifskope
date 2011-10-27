@@ -48,9 +48,10 @@ namespace NifLib
 	class Compiler: public Parser
 	{
 		int DETAILEDLOG;
-		int pos;
+		int POS;
 		int blockIndex;
-		NifLib::List<NifLib::Attr *> argstack;
+		//NifLib::List<NifLib::Attr *> argstack;
+		NifLib::Attr *ARG;
 		NifLib::Attr *TEMPLATE;
 		NifLib::List<NifLib::Field *> flist;
 
@@ -124,6 +125,7 @@ namespace NifLib
 		*	Read one object from the .nif
 		*/
 		int ReadObject(NifStream &s, NifLib::Tag *t);
+		int ReadNifBlock(int i, NifStream &s, const char *n, int nlen);
 	public:
 		Compiler(const char *fname);
 		~Compiler();

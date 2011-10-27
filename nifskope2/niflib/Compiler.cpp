@@ -222,6 +222,19 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 	Compiler::Evaluate(NifLib::Attr* cond)
 	{
 		A(2)
+
+		/*{ // "ARG" case
+			//NifLib::Attr *arg = NULL;
+			//if (argstack.Count () > 0 ) {
+				//arg = argstack[argstack.Count () - 1];
+				if (ARG && cond->Value.Equals ("ARG", 3)) {
+					NifLib::Field *v = FFBackwards (ARG->Value.buf, ARG->Value.len);
+					if (v)
+						return (int)v->AsNIFuint ();
+				}
+			//}
+		}*/
+
 		//INFO(std::dec)
 		/*NifLib::Attr testcond;
 		NifLib::Attr *cond = &testcond;
@@ -232,34 +245,60 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		// "Version", "User Version" and "User Version 2"
 		// can become fields
 		// TODO: compile those - not need to evaluate them each time
-		char *buf = (char *)NifAlloc (cond->Value.len);
+		/*char *buf = (char *)NifAlloc (cond->Value.len);
+		if (!buf) {
+			ERR("Compiler::Evaluate: Out of memory")
+			B(2)
+			return 0;
+		}*/
+		int len = cond->Value.len;
+		std::stringstream buf1;
+		
+		// pass1
+		// - "&amp; to &", "&lt; to <", "&gt; to >"
+		// TODO: replace ARG
+		int i;//, j = 0;
+		for (i = 0; i < len; i++) {
+			if (Parser::StartsWith ("&amp;", 5, &(cond->Value.buf[i]), len - i)) {
+				//buf[j++] = '&';
+				buf1 << '&';
+				i += 4;
+			} else
+			if (Parser::StartsWith ("&lt;", 4, &(cond->Value.buf[i]), len - i)) {
+				//buf[j++] = '<';
+				buf1 << '<';
+				i += 3;
+			} else
+			if (Parser::StartsWith ("&gt;", 4, &(cond->Value.buf[i]), len - i)) {
+				//buf[j++] = '>';
+				buf1 << '>';
+				i += 3;
+			} else
+			if (Parser::StartsWith ("ARG", 3, &(cond->Value.buf[i]), len - i)) {
+				if (ARG) {
+					buf1 << std::string (ARG->Value.buf, ARG->Value.len);
+				} else {
+					ERR("E: ARG in text, but not as a field")
+					return 0;
+				}
+				i += 2;
+			} else
+				//buf[j++] = cond->Value.buf[i];
+				buf1 << cond->Value.buf[i];
+		}
+		std::string buf1s = buf1.str ();
+		len = buf1s.length ();
+		const char *buf = buf1s.c_str ();
+		/*char *buf = (char *)NifAlloc (len);
 		if (!buf) {
 			ERR("Compiler::Evaluate: Out of memory")
 			B(2)
 			return 0;
 		}
-		int len = cond->Value.len;
-		
-		// pass1
-		// - "&amp; to &", "&lt; to <", "&gt; to >"
-		int i, j = 0;
-		for (i = 0; i < len; i++) {
-			if (Parser::StartsWith ("&amp;", 5, &(cond->Value.buf[i]), len - i)) {
-				buf[j++] = '&';
-				i += 4;
-			} else
-			if (Parser::StartsWith ("&lt;", 4, &(cond->Value.buf[i]), len - i)) {
-				buf[j++] = '<';
-				i += 3;
-			} else
-			if (Parser::StartsWith ("&gt;", 4, &(cond->Value.buf[i]), len - i)) {
-				buf[j++] = '>';
-				i += 3;
-			} else
-				buf[j++] = cond->Value.buf[i];
-		}
-		len = j;
-		//INFO("E p1: \"" << std::string (buf, len) << "\"")
+		memcpy (buf, srcbuf, len);*/
+		//len = j;
+		//INFO("Block #" << blockIndex
+		//	<< ", E p1: \"" << std::string (buf, len) << "\"")
 
 		// pass2
 		// "(User Version == 10) || (User Version == 11)"
@@ -278,9 +317,9 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		int op = EVAL_OP_NONE;
 		int opb = EVAL_OPB_NONE;
 		int lt = EVAL_TYPE_UNKNOWN, rt = EVAL_TYPE_UNKNOWN;
-		char *lbuf = NULL;
+		const char *lbuf = NULL;
 		int llen = 0;
-		char *rbuf = NULL;
+		const char *rbuf = NULL;
 		int rlen = 0;
 		NifLib::List<NIFuint> l2;
 		for (i = 0; i < len; i++) {
@@ -392,25 +431,29 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 					//INFO("E: EVAL_TYPE_UINT")
 					litem = str2<NIFuint> (std::string (lbuf, llen));
 				}
-				NifLib::Attr* arg = NULL;
-				if (argstack.Count () > 0 ) {
-					arg = argstack[argstack.Count () - 1];
+				//NifLib::Attr* arg = NULL;
+				//if (argstack.Count () > 0 ) {
+					//arg = argstack[argstack.Count () - 1];
 					//argstack.RemoveLast ();
-				}
-				if (arg && !lf) {
+				//}
+				//if (ARG)
+				//	INFO ("Block #" << blockIndex << ", ARG: " << STDSTR(ARG->Value))
+				//else
+				//	INFO ("Block #" << blockIndex << ", ARG: null")
+				/*if (ARG && !lf) {
 					//INFO ("E arg: " << "\""
 					//	<< std::string (arg->Value.buf, arg->Value.len) << "\"")
-					if (IsUInt (arg->Value.buf, arg->Value.len)) {
-						litem = str2<NIFint> (std::string (arg->Value.buf, arg->Value.len));
+					if (IsUInt (ARG->Value.buf, ARG->Value.len)) {
+						litem = str2<NIFint> (std::string (ARG->Value.buf, ARG->Value.len));
 						lt = EVAL_TYPE_UINT;
 					} else {
-						lf = FFBackwards (arg->Value.buf, arg->Value.len);
+						lf = FFBackwards (ARG->Value.buf, ARG->Value.len);
 						if (!lf) {
 							//INFO("E: lf not found")
 						}
 						lt = EVAL_TYPE_UNKNOWN;
 					}
-				}
+				}*/
 				/*if (lf) INFO("E: L: [" << "f," << lt << "]")
 				else INFO("E: L: [" << " ," << lt << "]")
 				if (rf) INFO("E: R: [" << "f," << rt << "]")
@@ -504,20 +547,31 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 					l2.Insert ((2 * (i + 1))+1, val);
 				} //else INFO("E: field not found")
 			}
-		NifRelease (buf);
 
 		if (l2.Count () <= 0) {// a field probably - "Has Faces" for example
 			NifLib::Field *v =
-				FFBackwards(cond->Value.buf, cond->Value.len);
+				FFBackwards(buf, len);
 			if (v) {
 				B(2)
+				//NifRelease (buf);
 				return (int)v->AsNIFuint ();
 			} else {
+				/*NifLib::Attr* arg = NULL;
+				if (argstack.Count () > 0 ) {
+					arg = argstack[argstack.Count () - 1];
+					if (arg && cond->Value.Equals ("ARG", 3) ) {
+						v = FFBackwards (arg->Value.buf, arg->Value.len);
+						if (v)
+							return (int)v->AsNIFuint ();
+					}
+				}*/
 				//INFO("E: *** can't evaluate that")
 				B(2)
+				//NifRelease (buf);
 				return 0;// the above is not necessary an error - return false
 			}
 		}
+		//NifRelease (buf);
 
 		if (!bc && l2.Count () > 1) { // no brackets
 			B(2)
@@ -684,6 +738,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		DETAILEDLOG = 0;
 		blockIndex = 0;
 		TEMPLATE = NULL;
+		ARG = NULL;
 		fVersion = NULL;
 		fUserVersion = NULL;
 		fUserVersion2 = NULL;
@@ -693,7 +748,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 		flist.Clear ();
 
 		Reset_FieldViewAName ();
-		argstack.Clear ();
+		//argstack.Clear ();
 	}
 
 	void
@@ -787,8 +842,12 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 					else
 						result = v->AsNIFuint ();// can be 0
 				}
-				else // an expression
+				else {// an expression
 					result = Evaluate (arr);// TODO: error handling
+					//INFO("Block #" << blockIndex
+					//	<< ", InitArr expression: \"" << STDSTR(arr->Value) << "\""
+					//	<< ", result: " << result)
+				}
 			}
 		}
 		B(8)
@@ -854,11 +913,13 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			return 0;\
 		}\
 		AddField (field, (char *)&buf[0], BYTES);\
-		pos += rr;\
+		POS += rr;\
 		NifRelease (buf);\
 	}\
 }
+		NifLib::Attr *ARGsentinel = NULL;
 		for (int i = 0; i < t->Tags.Count (); i++) {// its kinda CS:IP :)
+			if (ARGsentinel) ARG = ARGsentinel;
 			NifLib::Tag *field = t->Tags[i];// a field
 			NifLib::Attr *ftype = field->AttrById (ATYPE);// field type
 			NifLib::Attr *fname = field->AttrById (ANAME);// field name
@@ -881,10 +942,16 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				}
 			}
 			// TODO: check if argstack can be avoided
-			NifLib::Attr *ARG = field->AttrById (AARG);
-			if (ARG)
-				argstack.Add (ARG);
-			NifLib::Attr *tmp = field->AttrById (ATEMPLATE);
+			NifLib::Attr *tmp = field->AttrById (AARG);
+			ARGsentinel = ARG;
+			if (tmp) {
+				ARG = field->AttrById (AARG);
+			//if (ARG)
+			//	INFO("Block #" << blockIndex << ", ARG: \"" << STDSTR (ARG->Value) << "\"")
+			}
+				//argstack.Add (ARG);
+			//}
+			tmp = field->AttrById (ATEMPLATE);
 			if (tmp && !tmp->Value.Equals ("TEMPLATE", 8))
 				TEMPLATE = tmp;// keep last template type
 			NifLib::Attr *acond = field->AttrById (ACOND);
@@ -950,7 +1017,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 						return 0;
 					}
 					nVersion = HeaderString2Version (&buf[0], rr - 1);
-					pos += rr;
+					POS += rr;
 				} else
 #define READJBASIC(BT, SZ)\
 	{\
@@ -1054,9 +1121,10 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				else // jagged array of basic type (lengths) of non-basic type
 					READJBASICALL(tt->FixedSize, READJNONBASIC)
 			}// not basic type
-			if (ARG && argstack.Count () > 0 ) {
+			//ARG = NULL;
+			/*if (ARG && argstack.Count () > 0 ) {
 				argstack.RemoveLast ();
-			}
+			}*/
 		}// for
 #undef READJBASICALL
 #undef READJNONBASIC
@@ -1070,13 +1138,33 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 	}
 
 	int
+	Compiler::ReadNifBlock(int i, NifStream &s, const char *name, int nlen)
+	{
+		NifLib::Tag *t = Find (TCOMPOUND, ANAME, name, nlen);
+		if (!t) {
+			t = Find (TNIOBJECT, ANAME, name, nlen);
+			if (!t) {
+				ERR("Unknown block")
+				return 0;
+			}
+		}
+
+		Reset_FieldViewAName ();
+		blockIndex = i;
+		if (!ReadObject (s, t))
+			return 0;
+		ARG = NULL;
+		return 1;
+	}
+
+	int
 	Compiler::ReadNif(const char *fname)
 	{
 		Reset ();
 		NifLib::Tag *t = Find (TCOMPOUND, ANAME, "Header", 6);
 		if (t) {
 			//INFO("Found header structure")
-			pos = 0;
+			POS = 0;
 			NifStream s(fname, 1*1024*1024);
 			INFO("Opened \"" << fname << "\"")
 
@@ -1084,7 +1172,8 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 			blockIndex = -1;
 			if (!ReadObject (s, t))
 				return 0;
-			argstack.Clear ();
+			ARG = NULL;
+			//argstack.Clear ();
 			fUserVersion = FFBackwards ("User Version", 12);
 			if (fUserVersion)
 				nUserVersion = fUserVersion->AsNIFuint ();
@@ -1094,6 +1183,8 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				return 0;
 			}
 			fUserVersion2 = FFBackwards ("User Version 2", 14);
+			if (fUserVersion2)
+				nUserVersion2 = fUserVersion2->AsNIFuint ();
 #define HEX(N) std::setw (N) << std::setfill ('0') << std::hex << std::uppercase
 #define DEC std::dec
 			INFO ("v: "
@@ -1101,23 +1192,59 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				<< nUserVersion << ", uv2: " << nUserVersion2)
 			//INFO("FP :" << HEX(8) << pos << DEC)
 			//return;
+
+			int i;
+			NifLib::Field *f = FFBackwards ("Num Blocks", 10);
+			if (!f) {
+				ERR("\"Num Blocks\" lookup failed")
+				return 0;
+			}
+			int num_blocks = (int)f->AsNIFuint ();
+			INFO("Num Blocks: " << num_blocks)
+
 			if (nVersion < 0x030300D) {
 				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
 				return 0;
 			}
 			else if (nVersion < 0x05000001) {
-				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
-				return 0;
+				NifLib::Tag *t1 = Find (TBASIC, ANAME, "uint", 4);
+				NifLib::Tag *t2 = Find (TBASIC, ANAME, "char", 4);
+				for (i = 0; i < num_blocks; i++) {
+					int slen;
+					if (s.ReadInt(&slen, 1) == 4 && slen > 0) {
+						POS += 4;
+						char *bname = (char *)NifAlloc (slen);
+						if (!bname)
+							return 0;
+						if (s.ReadChar (bname, slen) == slen) {
+							POS += slen;
+							AddField (t1, (char *)&slen, 4);
+							AddField (t2, bname, slen);
+							if (!ReadNifBlock(i, s, bname, slen)) {
+								NifRelease (bname);
+								return 0;// block read failed
+							}
+						} else {
+							NifRelease (bname);
+							return 0;// block name read file
+						}
+						NifRelease (bname);
+					} else
+						return 0;// block name length read failed
+				}
+				// those seem to have footer too
+				NifLib::Tag *tfooter = Find (TCOMPOUND, ANAME, "Footer", 6);
+				if (tfooter) {
+
+					Reset_FieldViewAName ();
+					blockIndex++;
+					if (!ReadObject (s, tfooter))
+						return 0;
+					ARG = NULL; //argstack.Clear ();
+
+				}
 			}
 			else if (nVersion > 0x0A000100/*"10.0.1.0"*/) {
-				NifLib::Field *f = FFBackwards ("Num Blocks", 10);
-				if (!f) {
-					ERR("\"Num Blocks\" lookup failed")
-					return 0;
-				}
-				int i;
-				int num_blocks = (int)f->AsNIFuint ();
-				INFO("Num Blocks: " << num_blocks)
 				f = FFBackwards ("Block Type Index", 16);
 				if (!f) {
 					ERR("\"Block Type Index\" lookup failed")
@@ -1176,7 +1303,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 					blockIndex = i;
 					if (!ReadObject (s, t))
 						return 0;
-					argstack.Clear ();
+					ARG = NULL;//argstack.Clear ();
 
 				}// for
 				NifLib::Tag *tfooter = Find (TCOMPOUND, ANAME, "Footer", 6);
@@ -1186,28 +1313,28 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 					blockIndex++;
 					if (!ReadObject (s, tfooter))
 						return 0;
-					argstack.Clear ();
+					ARG = NULL; //argstack.Clear ();
 
 				}
-				INFO("FP :" << HEX(8) << pos << DEC)
-				INFO("c: " << c1 << ", s: " << s1 << " ms AddField ()")
-				INFO("c: " << c2 << ", s: " << s2 << " ms Evaluate ()")
-				INFO("c: " << c3 << ", s: " << s3 << " ms EvalDeduceType ()")
-				INFO("c: " << c4 << ", s: " << s4 << " ms EvaluateL2 ()")
-				INFO("c: " << c5 << ", s: " << s5 << " ms FFBackwards ()")
-				INFO("c: " << c6 << ", s: " << s6 << " ms HeaderString2Version ()")
-				INFO("c: " << c7 << ", s: " << s7 << " ms GetBasicType ()")
-				INFO("c: " << c8 << ", s: " << s8 << " ms InitArr ()")
-				INFO("c: " << c9 << ", s: " << s9 << " ms ReadObject ()")
-				INFO("c: " << c10 << ", s: " << s10 << " ms V12Check ()")
-				INFO("c: " << c11 << ", s: " << s11 << " ms Find ()")
 			}//
 			else {
 				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
 				return 0;
 			}
+			INFO("FP :" << HEX(8) << POS << DEC)
 #undef DEC
 #undef HEX
+			INFO("c: " << c1 << ", s: " << s1 << " ms AddField ()")
+			INFO("c: " << c2 << ", s: " << s2 << " ms Evaluate ()")
+			INFO("c: " << c3 << ", s: " << s3 << " ms EvalDeduceType ()")
+			INFO("c: " << c4 << ", s: " << s4 << " ms EvaluateL2 ()")
+			INFO("c: " << c5 << ", s: " << s5 << " ms FFBackwards ()")
+			INFO("c: " << c6 << ", s: " << s6 << " ms HeaderString2Version ()")
+			INFO("c: " << c7 << ", s: " << s7 << " ms GetBasicType ()")
+			INFO("c: " << c8 << ", s: " << s8 << " ms InitArr ()")
+			INFO("c: " << c9 << ", s: " << s9 << " ms ReadObject ()")
+			INFO("c: " << c10 << ", s: " << s10 << " ms V12Check ()")
+			INFO("c: " << c11 << ", s: " << s11 << " ms Find ()")
 		}
 		return 1;
 	}
