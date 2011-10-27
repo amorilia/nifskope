@@ -417,10 +417,10 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				// can be const or field, as field it can be a template
 				NIFuint ritem;
 				if (rt == EVAL_TYPE_VERSION) {
-					//INFO("E: EVAL_TYPE_VERSION")
+					//INFO("ER: EVAL_TYPE_VERSION")
 					ritem = HeaderString2Version (rbuf, rlen);
 				} else if (rt == EVAL_TYPE_UINT) {
-					//INFO("E: EVAL_TYPE_UINT")
+					//INFO("ER: EVAL_TYPE_UINT")
 					ritem = str2<NIFuint> (std::string (rbuf, rlen));
 				}
 				NIFuint litem;
@@ -496,8 +496,11 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 							INFO("E: Type mishmash: "
 								<< lf->Value.len << " > " << 4)
 						} else {
+							//INFO ("lf: " << StreamBlockB (lf->Value.buf, lf->Value.len,
+							//	lf->Value.len + 1) << ", ritem: " << ritem)
 							if (op == EVAL_OP_EQU)
-								tmp = lf->Value.Equals ((const char *)&ritem, lf->Value.len);
+								tmp = lf->AsNIFuint () == ritem;
+								/*tmp = lf->Value.Equals ((const char *)&ritem, lf->Value.len);*/
 							else if (op == EVAL_OP_GTEQU)
 								tmp = lf->AsNIFuint () >= ritem;
 							else if (op == EVAL_OP_GT)
@@ -541,11 +544,11 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 				//INFO("E: field in brackets, no op: " << std::string (&buf[pos], length))
 				NifLib::Field *f = FFBackwards (&buf[pos], length);
 				if (f) {
-					//INFO("E: field found")
+					//INFO("E: field found: " << f->AsNIFuint ())
 					NIFuint val = f->AsNIFuint ();
 					l2.Insert ((2 * (i + 1)), 5);
 					l2.Insert ((2 * (i + 1))+1, val);
-				} //else INFO("E: field not found")
+				}// else INFO("E: field not found")
 			}
 
 		if (l2.Count () <= 0) {// a field probably - "Has Faces" for example
