@@ -117,8 +117,8 @@ namespace NifSkopeQt4
 		if (fileName == NULL)
 			return;
 		// Model part of the handler
-		App->File.FileName = fileName.toStdString();
-		App->File.Load();
+		App->File.FileName = fileName.toStdString ();
+		App->File.Load ();
 	}
 
 	MainWindow::MainWindow()

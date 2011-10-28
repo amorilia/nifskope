@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <nifskope.h>
 #include "Qt4MainWindow.h"
+#include "Qt4OGRE3D.h"
 
 namespace NifSkopeQt4
 {
@@ -76,11 +77,14 @@ namespace NifSkopeQt4
 		// create main window and pass the control to it
 		NifSkopeQt4::MainWindow mainWindow;
 		mainWindow.App = this;
-		QWidget centralWidget;
+		NifSkope::Qt4OGRE3D centralWidget;
+		
 		mainWindow.setCentralWidget (&centralWidget);
 		mainWindow.setWindowTitle (
 			QApplication::translate("windowlayout", NS_VERSION));
 		mainWindow.show();
+
+		centralWidget.go ();
 		return app.exec();
 	}
 

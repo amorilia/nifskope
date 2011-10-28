@@ -2,10 +2,12 @@ CC       = g++
 MOC	     = $(QTDIR)/bin/moc
 QT4INC   = ${QTDIR}/include
 QTINCS   = -I$(QT4INC) -I$(QT4INC)/Qt -I$(QT4INC)/QtCore
-CXXFLAGS = -g -frtti -Wfatal-errors -Wall -DNIFSKOPE_QT $(QTINCS) -I.
+OGREINC  = -I$(OGRE_ROOT)/include/OGRE
+OPTNS    = -DNIFSKOPE_QT -DNIFSKOPE_X -DNIFSKOPE_OGRE_GL
+CXXFLAGS = -g -frtti -Wfatal-errors -Wall $(OPTNS) $(QTINCS) $(OGREINC) -I.
 CPPFLAGS =
 CFLAGS   =
-LDFLAGS  = -L${QTDIR}/lib -lQtGui
+LDFLAGS  = -L${QTDIR}/lib -L${OGRE_ROOT}/lib -lQtGui -lX11 -lOgreMain
 APP      = nifskope
 
 WORK_DIR = .
