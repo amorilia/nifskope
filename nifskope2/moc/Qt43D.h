@@ -34,10 +34,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __QT43D_H__
 
 #include <QtGui>
+#include <QGLWidget>
 
 namespace NifSkope
 {
-	class Qt43D: public QWidget
+	class Qt43D: public QGLWidget
 	{
 	public:
 		Qt43D(QWidget *parent = NULL);

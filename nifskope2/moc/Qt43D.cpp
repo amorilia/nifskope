@@ -35,7 +35,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace NifSkope
 {
 	Qt43D::Qt43D(QWidget *)
-		: QWidget (NULL)
+		: QGLWidget ()
 	{
 		setAttribute(Qt::WA_PaintOnScreen, true);
 		setAttribute(Qt::WA_NoSystemBackground, true);

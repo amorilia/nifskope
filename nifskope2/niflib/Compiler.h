@@ -33,6 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __COMPILER_H__
 #define __COMPILER_H__
 
+#include "niflib.h"
 #include "Parser.h"
 #include "niff.h"
 #include "Tag.h"
@@ -58,6 +59,9 @@ namespace NifLib
 		NifLib::Field *fVersion;
 		NifLib::Field *fUserVersion;
 		NifLib::Field *fUserVersion2;
+
+		std::map<std::string, NIFuint> strversion_cache;
+		std::map<std::string, int> tagnames_cache[TAGS_NUML1];
 
 		/*
 		*	A "view" for the ANAME attribute - fast lookup by ANAME.
@@ -92,7 +96,7 @@ namespace NifLib
 		void Reset_FieldViewAName();
 
 		bool V12Check(NifLib::Tag *field);
-		NifLib::Tag *Find(int tagid, int attrid, const char *attrvalue, int len);
+		NifLib::Tag *Find(int tagid, const char *attrvalue, int len);
 		template <typename T> static T str2(const std::string &val)
 		{
 			std::stringstream aa;
@@ -131,7 +135,7 @@ namespace NifLib
 		~Compiler();
 		void Reset();
 
-		static NIFuint HeaderString2Version(const char *buf, int bl);
+		NIFuint HeaderString2Version(const char *buf, int bl);
 
 		/*
 		*	Return TBASIC for that ATYPE attribute if there is TBASIC

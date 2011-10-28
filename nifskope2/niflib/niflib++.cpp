@@ -112,7 +112,7 @@ main(int argc, char **argv)
 	gettimeofday (&tstart, NULL);
 	//r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
 	try {
-	r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
+	r = p.ReadNif ("/mnt/archive/rain/temp/nif/fo3_bsa/dlc04/effects/mansionfx/dlc04mansionwindows01.nif");
 	} catch (...) {
 		ERR("ReadNif: An exception was thrown")
 	}
@@ -121,7 +121,7 @@ main(int argc, char **argv)
 		INFO("nif loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 		p.WriteNif ("aaa.nif");
 		if (!md5filesareequal (
-			"../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif",
+			"/mnt/archive/rain/temp/nif/fo3_bsa/dlc04/effects/mansionfx/dlc04mansionwindows01.nif",
 			"aaa.nif"))
 		p.DbgPrintFields ();
 	} else {
@@ -131,7 +131,7 @@ main(int argc, char **argv)
 
 	const char *pfix = "/mnt/archive/rain/temp/nif/";
 	std::string line;
-	std::ifstream myf("flist.txt");
+	std::ifstream myf("flist_nif.txt");
 	int cnt = 0;
 	if ( myf.is_open() ) {
 		p.Build ();
@@ -148,8 +148,8 @@ main(int argc, char **argv)
 				}
 				if (i != l)
 					continue;
-				if (l > 3 && !NifLib::Parser::StartsWith ("tes4", 4, buf, 4))
-					continue;
+				//if (l > 3 && !NifLib::Parser::StartsWith ("fonv", 4, buf, 4))
+				//	continue;
 				std::stringstream fname;
 				fname << std::string (pfix) << line;
 				cnt++;
