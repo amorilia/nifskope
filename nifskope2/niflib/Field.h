@@ -44,8 +44,8 @@ namespace NifLib
 	class Field
 	{
 	public:
-		Buffer Value;
-		NifLib::Tag *Tag;
+		Buffer Value;		// value
+		NifLib::Tag *Tag;	// type
 		int BlockIndex;
 		NIFuint AsNIFuint();
 		std::string AsString(Compiler *typesprovider);

@@ -1268,10 +1268,14 @@ s##N += time_interval (&ta##N, &tb##N) / (1000);}
 					ERR("\"Block Types\" lookup failed")
 					return 0;
 				}
+				NifLib::Tag *tz = Find (TBASIC, ANAME, "uint", 4);
 				for (i = 0; i < num_blocks; i++) {
 					if (nVersion >= 0x05000001 && nVersion <= 0x0A01006A) {
-						INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
-						return 0;
+						uint zero;
+						if (s.ReadUInt(&zero, 1) == 4 && zero == 0)
+							AddField (tz, (char *)&zero, 4);
+						else
+							return 0;
 					}
 					if (i < 0 || i >= bti_len) {
 						ERR("Assertion failed: i can not be outside bti")
