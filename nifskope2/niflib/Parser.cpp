@@ -115,6 +115,7 @@ namespace NifLib
 			Tokenize (tmp, dst, 0, TAGS_NUML1);
 			NifRelease (tmp);
 		}
+		allok = 1;
 	}
 
 	/*
@@ -204,13 +205,13 @@ namespace NifLib
 			currentL1 = NULL;
 		} else {
 			if (!currentL1) {
-				INFO("Parent tag not found")
+				INFO("Owner tag not found")
 				delete t;
 				return 0;
 			}
 			currentL1->Tags.Add (t);// subtags should always be sequential
 			t->Id = currentL1->Tags.Count () - 1;
-			t->Parent = currentL1;
+			t->Owner = currentL1;
 		}
 		// parse attributes and add them
 		// < attr="val" >cmnt
@@ -294,6 +295,7 @@ namespace NifLib
 
 	Parser::Parser(const char *fname)
 	{
+		allok = 0;
 		gid = 0;
 		currentL1 = NULL;
 		objs.SetLength (TAGS_NUML1);
@@ -313,6 +315,12 @@ namespace NifLib
 			}
 			objs.Clear ();
 		}
+	}
+
+	int
+	Parser::Loaded()
+	{
+		return allok;
 	}
 
 	/*

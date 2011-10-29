@@ -48,13 +48,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 
 #define NS_ALREADYTHERE "The item already exists"
-#define INFO(MSG)\
+
+#define NSINFO(MSG)\
 {\
-	std::clog << MSG << std::endl;\
+	std::cout << MSG << std::endl;\
 }
-#define ERR(MSG)\
+
+#define NSERR(MSG)\
 {\
-	std::cerr << "Error: " << MSG << std::endl;\
+	std::cout << "Error: " << MSG << std::endl;\
 }
 
 #endif /*__NIFSKOPE_H__*/

@@ -30,49 +30,22 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#ifndef __QT4OGRE3D_H__
-#define __QT4OGRE3D_H__
-
-#include "Qt43D.h"
-
-// 2.add OGRE
-#include <OgreRoot.h>
-#include <OgreCamera.h>
-#include <OgreSceneManager.h>
-#include <OgreRenderWindow.h>
-
-#include <OgreLogManager.h>
-#include <OgreViewport.h>
-#include <OgreEntity.h>
-#include <OgreWindowEventUtilities.h>
-#include <OgrePlugin.h>
+#ifndef __IEVENT_H__
+#define __IEVENT_H__
 
 #include "ICommand.h"
-#include "IEvent.h"
+#include <map>
 
 namespace NifSkope
 {
-	class Qt4OGRE3D: public Qt43D
+	class IEvent: ICommand
 	{
-		ICommand *handleNifLoaded;
-	private:
-		int ready;
+		std::map<ICommand *, int> items;
 	public:
-		//static Qt4OGRE3D * create();
-		Qt4OGRE3D(void);
-		virtual ~Qt4OGRE3D(void);
-		bool go();
-		void resizeEvent(QResizeEvent *p);
-		void paintEvent(QPaintEvent *p);
-
-		// handlers
-		void LoadNif(IEvent *sender);
-	protected:
-		Ogre::Root *mRoot;
-		Ogre::Camera *mCam;
-		Ogre::SceneManager *mScn;
-		Ogre::RenderWindow *mWin;
+		void Subscribe(ICommand *cmd);
+		void Unsubscribe(ICommand *cmd);
+		virtual void Exec(IEvent *sender);
 	};
 }
 
-#endif /*__QT4OGRE3D_H__*/
+#endif /*__IEVENT_H__*/

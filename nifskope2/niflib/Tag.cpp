@@ -40,7 +40,7 @@ namespace NifLib
 	{
 		Id = -1;
 		Name = -1;
-		Parent = NULL;
+		Owner = NULL;
 		FixedSize = 0;
 	}
 

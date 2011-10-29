@@ -35,6 +35,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "nifskope.h"
 #include <sstream>
 
+#include "nifskope.h"
+
 namespace NifSkope
 {
 	FileIO::FileIO()
@@ -67,6 +69,12 @@ namespace NifSkope
 		fmt_load[1] = tmp.str();
 	}
 
+	FileIO::~FileIO()
+	{
+		if (NifFile)
+			delete NifFile;
+	}
+
 	std::string
 	FileIO::GetLoadFormats(std::string pairSeparator, std::string listSeparator)
 	{
@@ -84,6 +92,25 @@ namespace NifSkope
 	void
 	FileIO::Load()
 	{
-		INFO("Loading \"" << FileName << "\"")
+		NSINFO("Loading \"" << FileName << "\"")
+
+		if (!NifFile) {
+			NifLib::Compiler *tmp = new NifLib::Compiler ("niflib/nif.xml");
+			if (tmp->Loaded ()) {
+				NifFile = tmp;
+				NifFile->Build ();
+			}
+		}
+		if (NifFile) {
+			try {
+				if (!NifFile->ReadNif (FileName.c_str ())) {
+					NSERR("ReadNif: failed")
+					return;
+				}
+			} catch (...)
+				NSERR("ReadNif: An exception was thrown")
+			OnLoad.Exec (NULL);
+			NSINFO("ReadNif: done")
+		}
 	}
 }

@@ -31,13 +31,39 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***** END LICENCE BLOCK *****/
 
 #include "Qt4OGRE3D.h"
+#include "nifskope.h"
 
 #ifdef NIFSKOPE_X
 #include <X11/Xlib.h>
 #endif /* NIFSKOPE_X */
 
+// niflib
+#include "Compiler.h"
+
+// OGRE
+#include <OgreSceneNode.h>
+#include <OgreManualObject.h>
+
 namespace NifSkope
 {
+	class NifLoaded: public ICommand // event
+	{
+		Qt4OGRE3D *obj;
+		NifLoaded()
+		{
+		}
+		// TODO: the others ...
+	public:
+		NifLoaded(Qt4OGRE3D *owner)
+		{
+			obj = owner;
+		}
+		virtual void Exec(IEvent *sender)// handler
+		{
+			obj->LoadNif (sender);
+		}
+	};
+
 	Qt4OGRE3D::Qt4OGRE3D(void)
 		: Qt43D (NULL)
 		,ready(0), mRoot(0), mCam(0), mScn(0), mWin(0)
@@ -52,6 +78,10 @@ namespace NifSkope
 	bool
 	Qt4OGRE3D::go()
 	{
+		// attach to events from the model
+		handleNifLoaded = new NifLoaded (this);
+		App->File.OnLoad.Subscribe (handleNifLoaded);
+
 		mRoot = new Ogre::Root("", "", "NifSkopeOgre3D.log");
 		// A list of required plugins - it will not run without them
 		Ogre::StringVector required_plugins;
@@ -73,7 +103,7 @@ namespace NifSkope
 			mRoot->loadPlugin(*j + Ogre::String("_d"));
 #else
 			mRoot->loadPlugin(*j);
-#endif;
+#endif
 		}
 		// Check if the required plugins are installed and ready for use
 		// If not: exit the application
@@ -264,5 +294,120 @@ namespace NifSkope
 		//if(mWin->isClosed())	{
 		//	return false;
 		//}
+	}
+
+	void
+	Qt4OGRE3D::LoadNif(IEvent *sender)
+	{
+		/*Ogre::Light* l1 = mScn->createLight("L1");
+		l1->setType (Ogre::Light::LT_SPOTLIGHT);
+		l1->setDiffuseColour (0, 0, 1.0);
+		l1->setSpecularColour (0, 0, 1.0);
+		l1->setDirection (Ogre::Vector3 (0, 0, 0));
+		l1->setPosition (Ogre::Vector3 (0, 0, 5));*/
+
+    	// Set ambient light
+    	mScn->setAmbientLight (Ogre::ColourValue (0.0, 0.0, 0.0));
+		// Create a light
+    	Ogre::Light* l = mScn->createLight ("MainLight");
+    	l->setPosition (20, 80, 50);
+
+		//mCam->SetPolygonMode (PM_WIREFRAME);// in my camera
+
+		NifLib::Compiler *nif = App->File.NifFile;
+		for (int i = 0; i < nif->FCount (); i++) {
+			NifLib::Field *f = (*nif)[i];
+			//NiTriStripsData
+			NifLib::Tag *ft = f->BlockTag;
+			if (!ft)
+				continue;// field has no block type - its ok
+			NifLib::Attr *tname = ft->AttrById (ANAME);
+			if (!tname)
+				continue;// a tag has no "name" - error
+			int block = f->BlockIndex;
+			if (tname->Value.Equals ("NiTriStripsData", 15)) {
+				int vnum = 0, sl = 0;
+				NIFfloat *v = NULL, *n = NULL, *uv = NULL;
+				NIFushort *s = NULL;
+				NIFushort *si = NULL;
+			while (block == f->BlockIndex && ++i < nif->FCount ()) {
+				//NSINFO ("found NiTriStripsData at #" << f->BlockIndex)
+				ft = f->Tag;
+				tname = ft->AttrById (ANAME);
+				// need to find a few things:
+				// +NiGeometryData
+				//  "Vertices" type="Vector3" arr1="Num Vertices" cond="Has Vertices"
+				//  "Normals" type="Vector3" arr1="Num Vertices" cond="Has Normals"
+				//  "UV Sets" type="TexCoord" arr1="Num UV Sets & 63" arr2="Num Vertices"
+				// +NiTriStripsData
+				//  "Num Strips" 155
+				//  "Strip Lengths" type="ushort" arr1="Num Strips"
+				//  "Points" type="ushort" arr1="Num Strips" arr2="Strip Lengths"
+				if (tname->Value.Equals ("Vertices", 8)) {
+					NSINFO ("found NiTriStripsData.Vertices at #" << f->BlockIndex)
+					vnum = f->Value.len / 4;
+					v = (NIFfloat *)&f->Value.buf[0];
+				}
+				else if (tname->Value.Equals ("Normals", 7)) {
+					NSINFO ("found NiTriStripsData.Normals at #" << f->BlockIndex)
+					n = (NIFfloat *)&f->Value.buf[0];
+				}
+				else if (tname->Value.Equals ("UV Sets", 7)) {
+					NSINFO ("found NiTriStripsData.UV Sets at #" << f->BlockIndex)
+					uv = (NIFfloat *)&f->Value.buf[0];
+				}
+				//if (tname->Value.Equals ("Num Strips", 10))
+				//	NSINFO ("found NiTriStripsData.Num Strips at #" << f->BlockIndex)
+				else if (tname->Value.Equals ("Strip Lengths", 13)) {
+					NSINFO ("found NiTriStripsData.Strip Lengths at #" << f->BlockIndex)
+					sl = f->Value.len / 2;
+					s = (NIFushort *)&f->Value.buf[0];
+				}
+				else if (tname->Value.Equals ("Points", 6)) {
+					NSINFO ("found NiTriStripsData.Points at #" << f->BlockIndex)
+					si = (NIFushort *)&f->Value.buf[0];
+					int base = 0;
+					std::stringstream objn;
+					objn << "Mesh " << block;
+					std::stringstream nn;
+					nn << "Node " << block;
+					Ogre::SceneNode *mySceneNode =
+						mScn->getRootSceneNode ()->createChildSceneNode (nn.str ());
+					mySceneNode->setScale (0.5, 0.5, 0.5);
+					Ogre::ManualObject* sm = mScn->createManualObject (objn.str ());
+					for (int m = 0; m < sl; m++) {
+						// submesh
+						/*ManualObject* sm = mScn->createManualObject ("manual");
+						sm->begin ("BaseWhiteNoLighting",
+							RenderOperation::OT_TRIANGLE_STRIP);*/
+						INFO ("m[" << m << "]=" << s[m])
+						sm->begin ("BaseWhite",
+							Ogre::RenderOperation::OT_TRIANGLE_STRIP);
+						for (int vidx = base; vidx < base + s[m]; vidx++) {
+							// faces
+							int idx = si[vidx];
+							NIFfloat *vertex = &v[3*idx];
+							NIFfloat *normal = &n[3*idx];
+							NIFfloat *tcoord = &uv[2*idx];
+							INFO("#" << vidx - base << "(("
+							<< vertex[0] << ", " << vertex[1] << ", " << vertex[2]
+							<< ") ("
+							<< normal[0] << ", " << normal[1] << ", " << normal[2]
+							<< ") ("
+							<< tcoord[0] << ", " << tcoord[1] << "))")
+							sm->position (vertex[0], vertex[1], vertex[2]);
+							sm->normal (normal[0], normal[1], normal[2]);
+							sm->textureCoord (tcoord[0], tcoord[1]);
+							//sm->index (vidx - base);
+						}
+						sm->end ();
+						base += s[m];
+					}//
+					mySceneNode->attachObject (sm);
+				}
+				f = (*nif)[i];
+			}
+			}// if "NiTriStripsData"
+		}// for each field
 	}
 }

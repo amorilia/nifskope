@@ -59,6 +59,6 @@ namespace NifSkope
 
 	NifSkopeApp::~NifSkopeApp()
 	{
-		INFO("~NifSkopeApp()")
+		NSINFO("~NifSkopeApp()")
 	}
 }

@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __QT4MAINWINDOW_H__
 
 #include <NifSkopeApp.h>
+
 #include <QtGui>
 
 namespace NifSkopeQt4
@@ -45,6 +46,7 @@ namespace NifSkopeQt4
 	public:
 		MainWindow();
 		NifSkope::NifSkopeApp *App;// TODO: init by Qt4App because of NewWindow() only
+
 	protected slots:
 		void mFileLoad();
 	};

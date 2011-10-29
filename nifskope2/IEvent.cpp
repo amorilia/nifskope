@@ -30,49 +30,31 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#ifndef __QT4OGRE3D_H__
-#define __QT4OGRE3D_H__
-
-#include "Qt43D.h"
-
-// 2.add OGRE
-#include <OgreRoot.h>
-#include <OgreCamera.h>
-#include <OgreSceneManager.h>
-#include <OgreRenderWindow.h>
-
-#include <OgreLogManager.h>
-#include <OgreViewport.h>
-#include <OgreEntity.h>
-#include <OgreWindowEventUtilities.h>
-#include <OgrePlugin.h>
-
-#include "ICommand.h"
 #include "IEvent.h"
 
 namespace NifSkope
 {
-	class Qt4OGRE3D: public Qt43D
+	void
+	IEvent::Subscribe(ICommand *cmd)
 	{
-		ICommand *handleNifLoaded;
-	private:
-		int ready;
-	public:
-		//static Qt4OGRE3D * create();
-		Qt4OGRE3D(void);
-		virtual ~Qt4OGRE3D(void);
-		bool go();
-		void resizeEvent(QResizeEvent *p);
-		void paintEvent(QPaintEvent *p);
+		if (!cmd)
+			throw this;// invalid argument
+		items[cmd] = 0;// replace
+	}
 
-		// handlers
-		void LoadNif(IEvent *sender);
-	protected:
-		Ogre::Root *mRoot;
-		Ogre::Camera *mCam;
-		Ogre::SceneManager *mScn;
-		Ogre::RenderWindow *mWin;
-	};
+	void
+	IEvent::Unsubscribe(ICommand *cmd)
+	{
+		if (!cmd)
+			throw this;// invalid argument
+		items.erase (cmd);// let it throw its errors
+	}
+
+	void
+	IEvent::Exec(IEvent *sender)
+	{
+		std::map<ICommand *, int>::iterator it;
+		for (it = items.begin (); it != items.end (); it++)
+			it->first->Exec (sender);// forward
+	}
 }
-
-#endif /*__QT4OGRE3D_H__*/

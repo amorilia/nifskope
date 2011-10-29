@@ -44,11 +44,33 @@ namespace NifLib
 	class Field
 	{
 	public:
-		Buffer Value;		// value
-		NifLib::Tag *Tag;	// type
-		int BlockIndex;
+		Field();
+		Buffer Value;			// value
+		NifLib::Tag *Tag;		// type
+		int BlockIndex;			// file block index
+		NifLib::Tag *BlockTag;	// file block tag
+		NifLib::Field *JField;	// jagged array field, if this is jagged array
 		NIFuint AsNIFuint();
 		std::string AsString(Compiler *typesprovider);
+	};
+
+	template <typename T> class FieldArrayView: public Field
+	{
+	public:
+		int Count()
+		{
+			return Value.len / sizeof(T);
+		}
+
+		T &operator[](int idx)
+		{
+			return Buf ()[idx];
+		}
+
+		T *Buf()
+		{
+			return (T *)&Value.buf[0];
+		}
 	};
 }
 

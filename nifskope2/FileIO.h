@@ -36,6 +36,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <vector>
 
+#include "IEvent.h"
+
+// niflib
+#include "Compiler.h"
+
 namespace NifSkope
 {
 	class FileIO
@@ -43,7 +48,9 @@ namespace NifSkope
 		std::vector<std::string> fmt_load;
 	public:
 		FileIO();
+		~FileIO();
 		std::string FileName;
+		NifLib::Compiler *NifFile;
 		virtual void Load();
 		std::string	GetLoadFormats(std::string pairSeparator, std::string listSeparator);
 		/*virtual void SaveAs();
@@ -51,6 +58,7 @@ namespace NifSkope
 		virtual void Export();
 		virtual void ReloadXML();// reloads nif.xml and kfm.xml
 		virtual void ReloadXMLAndNif(); // ReloadXML() + current .nif*/
+		IEvent OnLoad;
 	};
 }
 

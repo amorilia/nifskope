@@ -33,6 +33,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __QT43D_H__
 #define __QT43D_H__
 
+#include <NifSkopeApp.h>
+
+#include <QGLWidget>
+
 #include <QtGui>
 #include <QGLWidget>
 
@@ -42,9 +46,10 @@ namespace NifSkope
 	{
 	public:
 		Qt43D(QWidget *parent = NULL);
+		NifSkope::NifSkopeApp *App;
+
 		void paintEvent(QPaintEvent *p);
 		QPaintEngine *paintEngine() const;
-		//void setNif(NifModel *);
 	};
 }
 

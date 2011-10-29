@@ -51,6 +51,8 @@ namespace NifLib
 		int DETAILEDLOG;
 		int POS;
 		int blockIndex;
+		NifLib::Tag *blockTag;
+		NifLib::Field *i2j;// jagged array
 		//NifLib::List<NifLib::Attr *> argstack;
 		NifLib::Attr *ARG;
 		NifLib::Attr *TEMPLATE;
@@ -123,7 +125,7 @@ namespace NifLib
 		*	Initialise AARR attribute. Set *i2j to the array field
 		*	if any, to indicate jagged array
 		*/
-		NIFint InitArr(NifLib::Attr *aarr, NifLib::Field **i2j);
+		NIFint InitArr(NifLib::Attr *aarr);
 
 		/*
 		*	Read one object from the .nif
@@ -134,6 +136,9 @@ namespace NifLib
 		Compiler(const char *fname);
 		~Compiler();
 		void Reset();
+
+		NifLib::Field *operator[](int index);
+		int FCount();
 
 		NIFuint HeaderString2Version(const char *buf, int bl);
 

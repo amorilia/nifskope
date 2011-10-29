@@ -44,6 +44,7 @@ namespace NifLib
 		int gid; // global id
 		Buffer header;
 		Buffer footer;
+		int allok;
 
 		/*
 		*	Turn "nif.xml" into objects, grouped by "type":
@@ -64,6 +65,7 @@ namespace NifLib
 	public:
 		Parser(const char *fname);
 		~Parser();
+		int Loaded();
 		/*
 		*	Loads a file "fname" in a buffer "*buf".
 		*	Allocates "*buf" and specifies its size in "*size".

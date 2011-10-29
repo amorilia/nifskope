@@ -107,12 +107,13 @@ main(int argc, char **argv)
 	INFO("XML loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 
 	//p.SaveFile ("nif3.xml");
-	/*int r = 0;
+	int r = 0;
 	p.Build ();
 	gettimeofday (&tstart, NULL);
 	//r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
 	try {
-	r = p.ReadNif ("/mnt/archive/rain/temp/nif/fo3_bsa/dlc04/effects/mansionfx/dlc04mansionwindows01.nif");
+	//r = p.ReadNif ("/mnt/archive/rain/temp/nif/fo3_bsa/dlc04/effects/mansionfx/dlc04mansionwindows01.nif");
+	r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
 	} catch (...) {
 		ERR("ReadNif: An exception was thrown")
 	}
@@ -120,16 +121,16 @@ main(int argc, char **argv)
 	if (r) {
 		INFO("nif loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 		p.WriteNif ("aaa.nif");
-		if (!md5filesareequal (
-			"/mnt/archive/rain/temp/nif/fo3_bsa/dlc04/effects/mansionfx/dlc04mansionwindows01.nif",
-			"aaa.nif"))
+		//if (!md5filesareequal (
+			//"/mnt/archive/rain/temp/nif/fo3_bsa/dlc04/effects/mansionfx/dlc04mansionwindows01.nif",
+			//"aaa.nif"))
 		p.DbgPrintFields ();
 	} else {
 		INFO("ReadNif failed")
 		p.DbgPrintFields ();
-	}*/
+	}
 
-	const char *pfix = "/mnt/archive/rain/temp/nif/";
+	/*const char *pfix = "/mnt/archive/rain/temp/nif/";
 	std::string line;
 	std::ifstream myf("flist_nif.txt");
 	int cnt = 0;
@@ -167,7 +168,7 @@ main(int argc, char **argv)
 				}
 			}
 		}
-	}
+	}*/
 
 	return EXIT_SUCCESS;
 }

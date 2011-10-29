@@ -39,6 +39,14 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifLib
 {
+	Field::Field()
+	{
+		Tag = NULL;
+		BlockIndex = -1;
+		BlockTag = NULL;
+		JField = NULL;
+	}
+
 	NIFuint
 	Field::AsNIFuint()
 	{
@@ -84,8 +92,35 @@ namespace NifLib
 				else
 				result << (int)*(unsigned char *)&Value.buf[0];
 			}
-			else if (_ta->Value.Equals ("unsigned short", 14))
-				result << (unsigned short)*(unsigned short *)&Value.buf[0];
+			else if (_ta->Value.Equals ("unsigned short", 14)) {
+				unsigned short *buf = (unsigned short *)&Value.buf[0];
+				if (JField) {// TODO: this repeats a lot
+					// a trinagle strips index array looks like this
+					NifLib::Tag *jt = JField->Tag;
+					NifLib::Attr *jatype = Tag->AttrById (ATYPE);
+					if (!jatype)
+						jatype = jt->AttrById (ANIFLIBTYPE);
+					NifLib::Tag *jbtype = typesprovider->GetBasicType (jatype);
+					_ta = jbtype->AttrById (ANIFLIBTYPE);
+					if (_ta && _ta->Value.Equals ("unsigned short", 14)) {
+						unsigned short *len = (unsigned short *)&(JField->Value.buf[0]);
+						int lsize = JField->Value.len / 2;
+						int base = 0;
+						for (int l = 0; l < lsize; l++) {
+							result << std::endl;
+							for (int i = base; i < base + len[l]; i++)
+								result << "\t[" << i-base << "]=" << buf[i] << std::endl;
+							base += len[l];
+						}
+					}
+				} else {
+					int size = Value.len / 2;					
+					result << std::endl;
+					for (int i = 0; i < size; i++)
+						result << "\t[" << i << "]=" << buf[i] << std::endl;
+				}
+				//result << (unsigned short)*(unsigned short *)&Value.buf[0];
+			}
 			else if (_ta->Value.Equals ("short", 5))
 				result << (short)*(short *)&Value.buf[0];
 			else if (_ta->Value.Equals ("bool", 4))
@@ -93,8 +128,27 @@ namespace NifLib
 			else if (_ta->Value.Equals ("float", 5))
 				result << (float)*(float *)&Value.buf[0];
 			else result << "[" << std::string (_ta->Value.buf, _ta->Value.len) << "]";
-		} else
-			result << "[" << std::string (atype->Value.buf, atype->Value.len) << "]";
+		} else { // not a basic type
+			if (atype->Value.Equals ("Vector3", 7)) {
+				NIFfloat *buf = (NIFfloat *)&Value.buf[0];
+				int size = Value.len / 3 / 4;// "Num Vertices"
+				result << std::endl;
+				for (int i = 0; i < size; i++)
+					result << "\tv #" << i << ": ("
+						<< buf[3*i] << ", " << buf[3*i+1] << ", " << buf[3*i+2]
+						<< ")" << std::endl;
+			}
+			else if (atype->Value.Equals ("TexCoord", 8)) {
+				NIFfloat *buf = (NIFfloat *)&Value.buf[0];
+				int size = Value.len / 2 / 4;// "Num Vertices"
+				result << std::endl;
+				for (int i = 0; i < size; i++)
+					result << "\ttc #" << i << ": ("
+						<< buf[2*i] << ", " << buf[2*i+1] << ")" << std::endl;
+			}
+			else
+				result << "[" << std::string (atype->Value.buf, atype->Value.len) << "]";
+		}
 		return result.str ();
 	}
 }

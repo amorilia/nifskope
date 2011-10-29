@@ -47,7 +47,8 @@ namespace NifLib
 		int Name;// reference to tag name
 		int FixedSize;// > 0 when calculated and possible
 		Buffer Value;// XML document value - a free form text for UIs
-		NifLib::Tag *Parent;
+		//NifLib::Tag *Parent;TODO
+		NifLib::Tag *Owner;
 		NifLib::List<NifLib::Attr *> Attr;
 		NifLib::List<NifLib::Tag *> Tags;
 		bool AttrExists(int attrid);

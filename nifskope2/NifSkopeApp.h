@@ -54,7 +54,7 @@ namespace NifSkope
 		// commands - File
 		virtual int Run(int argc, char **argv);
 		virtual void NewWindow();// creates new mainwindow
-		NifSkope::FileIO File;
+		NifSkope::FileIO File;// "contract"
 		NifSkope::XMLChecker XmlChecker;
 		NifSkope::ResourceFiles ResourceFiles;
 		virtual void Quit();

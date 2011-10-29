@@ -72,6 +72,8 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		A(1)
 		NifLib::Field *f = new NifLib::Field();
 		f->BlockIndex = blockIndex;
+		f->BlockTag = blockTag;
+		f->JField = i2j;
 		f->Tag = field;
 		if (buf && bl > 0)
 			f->Value.CopyFrom (buf, bl);
@@ -661,10 +663,12 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		nUserVersion2 = 0;
 		DETAILEDLOG = 0;
 		blockIndex = 0;
+		blockTag = NULL;
 		TEMPLATE = NULL;
 		fVersion = NULL;
 		fUserVersion = NULL;
 		fUserVersion2 = NULL;
+		i2j = NULL;
 	}
 
 	Compiler::~Compiler()
@@ -683,17 +687,31 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		nUserVersion2 = 0;
 		DETAILEDLOG = 0;
 		blockIndex = 0;
+		blockTag = NULL;
 		TEMPLATE = NULL;
 		ARG = NULL;
 		fVersion = NULL;
 		fUserVersion = NULL;
 		fUserVersion2 = NULL;
+		i2j = NULL;
 		int i;
 		for (i = 0; i < flist.Count (); i++)
 			delete flist[i];
 		flist.Clear ();
 
 		Reset_FieldViewAName ();
+	}
+
+	NifLib::Field *
+	Compiler::operator[](int index)
+	{
+		return flist[index];
+	}
+
+	int
+	Compiler::FCount()
+	{
+		return flist.Count ();
 	}
 
 	void
@@ -775,7 +793,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 	*	if any, to indicate jagged array
 	*/
 	NIFint
-	Compiler::InitArr(NifLib::Attr *arr, NifLib::Field **i2j)
+	Compiler::InitArr(NifLib::Attr *arr)
 	{
 		A(8)
 		NIFint result = 1;
@@ -789,7 +807,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 					FFBackwards (arr->Value.buf, arr->Value.len);
 				if (v) {// a field
 					if (v->Tag->AttrById (AARR1))
-						*i2j = v;// jagged - v is an array field
+						i2j = v;// jagged - v is an array field
 					else
 						result = v->AsNIFuint ();// can be 0
 				}
@@ -920,15 +938,15 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 				if (!eval_result)
 					continue;
 			}
-			NifLib::Field *i2j = NULL;
+			i2j = NULL;
 			// AARR1
 			// can be const uint, field, expression
-			NIFint i1 = InitArr (field->AttrById (AARR1), &i2j);// 1d size
+			NIFint i1 = InitArr (field->AttrById (AARR1));// 1d size
 			if (i1 <= 0)
 				continue;// nothing to read
 			// AARR1
 			// can be const, field, field what is an array (jagged)
-			NIFint i2 = InitArr (field->AttrById (AARR2), &i2j);// 1d size
+			NIFint i2 = InitArr (field->AttrById (AARR2));// 1d size
 			if (i2 <= 0)
 				continue;// nothing to read
 			// TODO:AARR3
@@ -1051,7 +1069,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 					B(9)
 					return 0;// can not continue - its sequential file format
 				}
-				AddField (field, NULL, 0); // struct marker
+				//AddField (field, NULL, 0); // struct marker
 				if (!i2j) {
 					if (tt->FixedSize > 0)
 						READ(NIFbyte, tt->FixedSize * izise, Byte, tt->FixedSize * izise)
@@ -1093,6 +1111,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 
 		Reset_FieldViewAName ();
 		blockIndex = i;
+		blockTag = t;
 		if (!ReadObject (s, t))
 			return 0;
 		ARG = NULL;
@@ -1160,6 +1179,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 							return 0;
 						if (s.ReadChar (bname, slen) == slen) {
 							POS += slen;
+							blockTag = NULL;
 							AddField (t1, (char *)&slen, 4);
 							AddField (t2, bname, slen);
 							if (!ReadNifBlock(i, s, bname, slen)) {
@@ -1175,16 +1195,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 						return 0;// block name length read failed
 				}
 				// those seem to have footer too
-				NifLib::Tag *tfooter = Find (TCOMPOUND, "Footer", 6);
-				if (tfooter) {
-
-					Reset_FieldViewAName ();
-					blockIndex++;
-					if (!ReadObject (s, tfooter))
-						return 0;
-					ARG = NULL; //argstack.Clear ();
-
-				}
+				ReadNifBlock (i, s, "Footer", 6);
 			}
 			else if (nVersion > 0x0A000100/*"10.0.1.0"*/) {
 				f = FFBackwards ("Block Type Index", 16);
@@ -1202,7 +1213,8 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 				}
 				int num_block_types = (int)f->AsNIFuint ();
 				//INFO("Num Block Types: " << num_block_types)
-				int btIdx = FFBackwardsIdx (ANAME, "Block Types", 11);
+				//int btIdx = FFBackwardsIdx (ANAME, "Block Types", 11);
+				int btIdx = FFBackwardsIdx (ANAME, "Num Block Types", 15);
 				if (btIdx < 0) {
 					ERR("\"Block Types\" lookup failed")
 					return 0;
@@ -1211,8 +1223,10 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 				for (i = 0; i < num_blocks; i++) {
 					if (nVersion >= 0x05000001 && nVersion <= 0x0A01006A) {
 						uint zero;
-						if (s.ReadUInt(&zero, 1) == 4 && zero == 0)
+						if (s.ReadUInt(&zero, 1) == 4 && zero == 0) {
+							blockTag = NULL;
 							AddField (tz, (char *)&zero, 4);
+						}
 						else
 							return 0;
 					}
@@ -1238,32 +1252,8 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 					}
 					//INFO("Block #" << i	<< " \"" << STDSTR (f->Value) << "\"")
 					ReadNifBlock (i, s, f->Value.buf, f->Value.len);
-					/*t = Find (TCOMPOUND, f->Value.buf, f->Value.len);
-					if (!t)
-						t = Find (TNIOBJECT, f->Value.buf, f->Value.len);
-					if (!t) {
-						ERR("Unknown block")
-						return 0;
-					}
-
-					Reset_FieldViewAName ();
-					blockIndex = i;
-					if (!ReadObject (s, t))
-						return 0;
-					ARG = NULL;*/
-
 				}// for
 				ReadNifBlock (i, s, "Footer", 6);
-				/*NifLib::Tag *tfooter = Find (TCOMPOUND, "Footer", 6);
-				if (tfooter) {
-
-					Reset_FieldViewAName ();
-					blockIndex++;
-					if (!ReadObject (s, tfooter))
-						return 0;
-					ARG = NULL; //argstack.Clear ();
-
-				}*/
 			}//
 			else {
 				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
@@ -1578,20 +1568,30 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 			NifLib::Field *f = flist[i];
 			NifLib::Tag *t = f->Tag;
 			NifLib::Attr *tname = t->AttrById (ANAME);
-			NifLib::Tag *p = t->Parent;
-			NifLib::Attr *pname = NULL;
-			if (p)
-				pname = p->AttrById (ANAME);
-			if (!pname)
-				INFO(
-				"f:\"NULL." << STDSTR(tname->Value) << "\": "
-				<< f->Value.len << " \"" << f->AsString (this) << "\"")
-			else {
-				INFO(
-				"f #" << f->BlockIndex << ":\"" << STDSTR(pname->Value) << "."
+			NifLib::Tag *owner = t->Owner;
+			NifLib::Attr *oname = NULL;
+
+			std::stringstream tmp;
+			if (owner) {
+				oname = owner->AttrById (ANAME);
+				if (oname)
+					tmp << STDSTR(oname->Value);
+				else tmp << "NULLname";
+			} else tmp << "NULL";
+
+			std::stringstream tmp2;
+			NifLib::Tag *bt = f->BlockTag;
+			if (bt) {
+				NifLib::Attr *btname = bt->AttrById (ANAME);
+				if (btname)
+					tmp2 << STDSTR(btname->Value);
+				else tmp2 << "NULLname";
+			} else tmp2 << "NULL";
+
+			INFO("f #" << f->BlockIndex << "(" << tmp2.str () << ")" << ":\""
+				<< tmp.str () << "."
 				<< STDSTR(tname->Value) << "\": "
 				<< f->Value.len << " \"" << f->AsString (this) << "\"")
-			}
 		}
 	}
 
