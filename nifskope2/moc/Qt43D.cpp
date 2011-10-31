@@ -35,9 +35,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace NifSkope
 {
 	Qt43D::Qt43D(QWidget *)
-		: QGLWidget ()
+		: QWidget ()
 	{
-		setAttribute(Qt::WA_PaintOnScreen, true);
+		setAttribute(Qt::WA_PaintOnScreen, true);// prevent X from doing anything
 		setAttribute(Qt::WA_NoSystemBackground, true);
 		setAttribute(Qt::WA_NoBackground, true);
 	}
@@ -49,6 +49,6 @@ namespace NifSkope
 
 	QPaintEngine *Qt43D::paintEngine() const// override
 	{
-		return 0;
+		return 0;// draw directly to the widget's HDC - "windows"
 	}
 }

@@ -37,6 +37,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __NIFSKOPE_H__
 #define __NIFSKOPE_H__
 
+#define OVERRIDE
+
 #define NS_NAME "NifSkope"
 #define NS_VER "2.0.0"
 #define NS_ORG "NifTools"

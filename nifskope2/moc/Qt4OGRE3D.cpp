@@ -30,6 +30,20 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+/*
+*	WIP
+*
+*	"OGRE" 3D render system for "NifSkope":
+*	http://www.ogre3d.org
+*
+*	help: http://www.ogre3d.org/forums/
+*	TFM :): http://www.ogre3d.org/tikiwiki/
+*
+*	My thanks to all the helpful people at the forums and to the people who
+*	created	"QtOgre": http://www.ogre3d.org/tikiwiki/tiki-index.php?page=QtOgre
+*	My thanks to the people behind OGRE - you rock!
+*/
+
 #include "Qt4OGRE3D.h"
 #include "nifskope.h"
 
@@ -37,12 +51,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <X11/Xlib.h>
 #endif /* NIFSKOPE_X */
 
-// niflib
+// "NifLib"
 #include "Compiler.h"
 
 // OGRE
 #include <OgreSceneNode.h>
 #include <OgreManualObject.h>
+#include <OgreMaterial.h>
+#include <OgreMaterialManager.h>
+#include <OgreResourceGroupManager.h>
 
 namespace NifSkope
 {
@@ -73,248 +90,243 @@ namespace NifSkope
 	Qt4OGRE3D::~Qt4OGRE3D(void)
 	{
 		//delete mRoot;
+
+		// Release NS event handlers
+		if (handleNifLoaded)
+			delete handleNifLoaded;
 	}
 
 	bool
 	Qt4OGRE3D::go()
 	{
-		// attach to events from the model
+		// Attach to events from "NifSkope"
 		handleNifLoaded = new NifLoaded (this);
 		App->File.OnLoad.Subscribe (handleNifLoaded);
 
-		mRoot = new Ogre::Root("", "", "NifSkopeOgre3D.log");
-		// A list of required plugins - it will not run without them
-		Ogre::StringVector required_plugins;
-		required_plugins.push_back("GL RenderSystem");
-		required_plugins.push_back("Octree & Terrain Scene Manager");
-		// List of plugins to load
-		Ogre::StringVector plugins_toLoad;
-#ifdef NIFSKOPE_OGRE_GL
-		plugins_toLoad.push_back("RenderSystem_GL");
-#endif /* NIFSKOPE_OGRE_GL */
-#ifdef NIFSKOPE_OGRE_DX9
-		plugins_toLoad.push_back("RenderSystem_Direct3D9");
-#endif /* NIFSKOPE_OGRE_DX */
-		plugins_toLoad.push_back("Plugin_OctreeSceneManager");
-		// Load the OpenGL RenderSystem and the Octree SceneManager plugins
-		for (Ogre::StringVector::iterator j = plugins_toLoad.begin(); j != plugins_toLoad.end(); j++)
-		{
+		// Setup OGRE
+		mRoot = new Ogre::Root ("", "", "NifSkopeOgre3D.log");
 #ifdef _DEBUG
-			mRoot->loadPlugin(*j + Ogre::String("_d"));
+		Ogre::String ext ("_d")
 #else
-			mRoot->loadPlugin(*j);
+		Ogre::String ext ("");
 #endif
-		}
-		// Check if the required plugins are installed and ready for use
-		// If not: exit the application
-		Ogre::Root::PluginInstanceList ip = mRoot->getInstalledPlugins();
-		for (Ogre::StringVector::iterator j = required_plugins.begin(); j != required_plugins.end(); j++) {
-			bool found = false;
-			// try to find the required plugin in the current installed plugins
-			for (Ogre::Root::PluginInstanceList::iterator k = ip.begin(); k != ip.end(); k++) {
-				if ((*k)->getName() == *j) {
-					found = true;
-					break;
-				}
-			}
-			if (!found) {  // return false because a required plugin is not available
-				return false;
-			}
-		}
-		//-------------------------------------------------------------------------------------
-		// setup resources
-		// Only add the minimally required resource locations to load up the Ogre head mesh
-		// TODO:remove this after the *.nif mesh + *.dds loader is ready
-		/*Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/programs", "FileSystem", "General");
-		Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/scripts", "FileSystem", "General");
-		Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/materials/textures", "FileSystem", "General");
-		Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/mnt/hd/inst-src/rain/ogre_src_v1-7-2/Samples/Media/models", "FileSystem", "General");*/
-		/*Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/programs", "FileSystem", "General");
-		Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/scripts", "FileSystem", "General");
-		Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/materials/textures", "FileSystem", "General");
-		Ogre::ResourceGroupManager::getSingleton().addResourceLocation("D:/projects/nifskope/debug/media/models", "FileSystem", "General");*/
-		//-------------------------------------------------------------------------------------
-		// configure
-		// Grab the OpenGL RenderSystem, or exit
 #ifdef NIFSKOPE_OGRE_GL
-		//TODO: choice dialog, settings load ?
-		//
-		Ogre::RenderSystem* rs = mRoot->getRenderSystemByName("OpenGL Rendering Subsystem");
+		mRoot->loadPlugin (Ogre::String ("RenderSystem_GL") + ext);
 #endif /* NIFSKOPE_OGRE_GL */
 #ifdef NIFSKOPE_OGRE_DX9
-		//Ogre::RenderSystem* rs = mRoot->getRenderSystemByName("Direct3D9 Rendering Subsystem");
+		mRoot->loadPlugin (Ogre::String ("RenderSystem_Direct3D9") + ext);
 #endif /* NIFSKOPE_OGRE_DX9 */
+		mRoot->loadPlugin (Ogre::String ("Plugin_OctreeSceneManager") + ext);
+		//	Select OGRE render system
+		//	TODO: choice dialog, settings load, etc.
+		Ogre::RenderSystem* rs = NULL;
 #ifdef NIFSKOPE_OGRE_GL
-		//TODO: choice dialog, settings load ?
-		if(!(rs->getName() == "OpenGL Rendering Subsystem")) {
+		rs = mRoot->getRenderSystemByName ("OpenGL Rendering Subsystem");
+		if (!rs || rs->getName () != Ogre::String ("OpenGL Rendering Subsystem"))
+			return false; // failed
 #endif /* NIFSKOPE_OGRE_GL */
 #ifdef NIFSKOPE_OGRE_DX9
-		//if(!(rs->getName() == "Direct3D9 Rendering Subsystem")) {
+		//rs = mRoot->getRenderSystemByName("Direct3D9 Rendering Subsystem");
+		if (!rs || rs->getName () != Ogre::String ("Direct3D9 Rendering Subsystem"))
+			return false; // failed
 #endif /* NIFSKOPE_OGRE_DX9 */
-			return false; //No RenderSystem found
-		}
-		// configure our RenderSystem
-		rs->setConfigOption("Full Screen", "No");
-		rs->setConfigOption("VSync", "Yes");
-		rs->setConfigOption("Video Mode", "800 x 600 @ 32-bit");// TODO: check 800 x 600
-		mRoot->setRenderSystem(rs);
+		rs->setConfigOption ("Full Screen", "No");
+		rs->setConfigOption ("VSync", "Yes");
+		rs->setConfigOption ("Video Mode", "800 x 600 @ 32-bit");
+		//	TODO: AA, AF, etc. - settings
+		mRoot->setRenderSystem (rs);
+		//	Setup Qt4 Widget and OGRE working environment*
 		Ogre::NameValuePairList misc;
-		//misc["parentWindowHandle"] = Ogre::StringConverter::toString((long)window_provider.winId());
-
 #ifdef NIFSKOPE_WIN
-		//works under windows with both GL and DX
-		misc["externalWindowHandle"] = Ogre::StringConverter::toString((long)winId());
-		// TODO: works but the rendering is not fit to the window
-		//misc["parentWindowHandle"] = Ogre::StringConverter::toString((long)winId());
+		misc["externalWindowHandle"] = Ogre::StringConverter::toString ((long)winId ());
 #else
 #ifdef NIFSKOPE_X
-		//QX11Info info = x11Info(); #ifdef Q_WS_X11 #ifdef _WIN32
 		Display* dpy = XOpenDisplay (getenv ("DISPLAY"));
     	int screen = DefaultScreen (dpy);
-		/*misc["externalWindowHandle"] = fails
-			Ogre::StringConverter::toString((unsigned long)(info.display())) + ":" +
-			Ogre::StringConverter::toString((unsigned int)(info.screen())) + ":" +
-			Ogre::StringConverter::toString((unsigned long)winId());*/
-		QWidget *q_parent = dynamic_cast <QWidget *> ( parent() );
+		QWidget *q_parent = dynamic_cast<QWidget *>(parent ());
 		if (q_parent) {
-		misc["parentWindowHandle"] = 
-			/*Ogre::StringConverter::toString((unsigned long)(info.display())) + ":" +
-			Ogre::StringConverter::toString((unsigned int)(info.screen())) + ":" +
-			Ogre::StringConverter::toString((unsigned long)q_parent->winId());*/
-			Ogre::StringConverter::toString((unsigned long)(dpy)) + ":" +
-			Ogre::StringConverter::toString((unsigned int)(screen)) + ":" +
-			Ogre::StringConverter::toString((unsigned long)q_parent->winId());
-		} else return false;
+			misc["parentWindowHandle"] = 
+				Ogre::StringConverter::toString ((unsigned long)(dpy)) + ":" +
+				Ogre::StringConverter::toString ((unsigned int)(screen)) + ":" +
+				Ogre::StringConverter::toString ((unsigned long)q_parent->winId ());
+		} else
+			return false;
 #else
 #error No supported windowing system found
 #endif /* NIFSKOPE_X */
 #endif /* NIFSKOPE_WIN */
-
 		misc["vsync"] = "true";// it ignores the above when "createRenderWindow"
-		//mWin = mRoot->createRenderWindow("mu", 800, 600, false);
-		//  ogre created window 
-		mWin = mRoot->initialise(false, "Nifskope 2");
-		mWin = mRoot->createRenderWindow("Nifskope 2", width(), height(), false, &misc);
-
-    	mWin->setActive( true );
-    	mWin->resize(width(), height());
-    	mWin->setVisible( true );
-
+		mWin = mRoot->initialise (false, "Nifskope 2");
+		mWin = mRoot->createRenderWindow (
+			"Nifskope 2", width (), height (), false, &misc);
+    	mWin->setActive (true);
+    	mWin->resize (width (), height ());
+    	mWin->setVisible (true);
 #ifdef NIFSKOPE_X
-    	// Get the ID of Ogre render window
+    	//	Get the ID of "OGRE" render window
     	WId window_id;
-    	mWin->getCustomAttribute( "WINDOW", &window_id );
-    	// Take over the ogre created window.
-    	QWidget::create( window_id );
-    	resizeEvent( NULL );
-    	setAttribute( Qt::WA_PaintOnScreen );
-    	setAttribute( Qt::WA_OpaquePaintEvent );
+    	mWin->getCustomAttribute ("WINDOW", &window_id);
+    	//	Take over the "OGRE" created window.
+    	QWidget::create (window_id); // Qt specific way*
+    	resizeEvent (NULL);
+    	setAttribute (Qt::WA_PaintOnScreen);
+    	setAttribute (Qt::WA_OpaquePaintEvent);
 #endif /* NIFSKOPE_X */
-
-		//-------------------------------------------------------------------------------------
-		// choose scenemanager
-		// Get the SceneManager, in this case the OctreeSceneManager
-		mScn = mRoot->createSceneManager("OctreeSceneManager", "DefaultSceneManager");
-		//-------------------------------------------------------------------------------------
-		// create camera
-		// Create the camera
-		mCam = mScn->createCamera("PlayerCam");
-		// Position it at 500 in Z direction
-		mCam->setPosition(Ogre::Vector3(0,0,80));
-		// Look back along -Z
-		mCam->lookAt(Ogre::Vector3(0,0,-300));
-		mCam->setNearClipDistance(5);
-		//-------------------------------------------------------------------------------------
-		// create viewports
-		// Create one viewport, entire window
-		Ogre::Viewport* vp = mWin->addViewport(mCam);
-		vp->setBackgroundColour(Ogre::ColourValue(0,0,0));
-		// Alter the camera aspect ratio to match the viewport
-		mCam->setAspectRatio(
-			Ogre::Real(vp->getActualWidth()) / Ogre::Real(vp->getActualHeight()));
-		//-------------------------------------------------------------------------------------
-		// Set default mipmap level (NB some APIs ignore this)
-		Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
-		//-------------------------------------------------------------------------------------
-		// Create any resource listeners (for loading screens)
-		//createResourceListener();
-		//-------------------------------------------------------------------------------------
-		// load resources
-		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-		//-------------------------------------------------------------------------------------
-		// Create the scene
-		/*Ogre::Entity* ogreHead = mScn->createEntity("Head", "ogrehead.mesh");
-		Ogre::SceneNode* headNode = mScn->getRootSceneNode()->createChildSceneNode();
-		headNode->attachObject(ogreHead);
-		// Set ambient light
-		mScn->setAmbientLight(Ogre::ColourValue(0.5, 0.5, 0.5));
-		// Create a light
-		Ogre::Light* l = mScn->createLight("MainLight");
-		l->setPosition(20,80,50);*/
+		//	Setup the scene*
+		mScn = mRoot->createSceneManager ("OctreeSceneManager", "DefaultSceneManager");
+		mCam = mScn->createCamera ("camMain");
+		mCam->setPosition (Ogre::Vector3 (10, 10, 100));
+		mCam->lookAt (Ogre::Vector3 (0, 0, 0));// look at the center*
+		mCam->setNearClipDistance (5);// near clipping plane
+		mVp = mWin->addViewport (mCam);
+		mVp->setBackgroundColour (Ogre::ColourValue (0, 0, 0));
+		mCam->setAspectRatio (
+			(Ogre::Real)mVp->getActualWidth ()/mVp->getActualHeight ());
+		Ogre::TextureManager::getSingleton ().setDefaultNumMipmaps (5);
+		Ogre::ResourceGroupManager::getSingleton ().initialiseAllResourceGroups ();
+		mScn->setAmbientLight (Ogre::ColourValue (0.1, 0.1, 0.1));// slight global
+		Ogre::Light* l = mScn->createLight ("lightMain");
+		l->setPosition (100, 100, 100);
+		QTimer *timer = new QTimer(this);
+		timer->setSingleShot (false);
+ 		connect(timer, SIGNAL(timeout()), this, SLOT(Render()));
 		ready = 1;
+		timer->start (1000/25);
 
 		/*
-		//-------------------------------------------------------------------------------------
-		//mRoot->startRendering();
-		while(true) {
-			// Pump window messages for nice behaviour
-			Ogre::WindowEventUtilities::messagePump();
-			// Render a frame
-			mRoot->renderOneFrame();
-			if(mWin->isClosed())	{
-				return false;
-			}
-		}
-		// We should never be able to reach this corner
-		// but return true to calm down our compiler
-		return true;
 		*/
+		// manual material example
+		Ogre::MaterialPtr myManualObjectMaterial =
+			Ogre::MaterialManager::getSingleton().create("manual1Material",
+			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME); 
+		myManualObjectMaterial->setReceiveShadows(false); 
+		myManualObjectMaterial->getTechnique(0)->setLightingEnabled(true); 
+		myManualObjectMaterial->getTechnique(0)->getPass(0)->setDiffuse(0,0,1,0); 
+		myManualObjectMaterial->getTechnique(0)->getPass(0)->setAmbient(0,0,1); 
+		myManualObjectMaterial->getTechnique(0)->getPass(0)->setSelfIllumination(0,0,1); 
+		//myManualObjectMaterial->dispose();  // no such method
+
+		// show axes so one can orient what is where
+		Ogre::SceneNode *axesSn =
+			mScn->getRootSceneNode ()->createChildSceneNode ("Axes");
+		Ogre::ManualObject* sm = mScn->createManualObject ("axesMobj");
+		// colour() works with no lighting material only
+		// a wild guess - it uses color material when no lighting
+		sm->begin ("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
+		float al = 100;
+		sm->position (0, 0, 0);	sm->colour (0, 1, 0);
+		sm->position (al, 0, 0); sm->colour (0, 1, 0);// X axis - green
+		sm->position (0, 0, 0);	sm->colour (0, 0, 1);
+		sm->position (0, al, 0); sm->colour (0, 0, 1);// Y axis - blue
+		sm->position (0, 0, 0);	sm->colour (1, 0, 0);
+		sm->position (0, 0, al); sm->colour (1, 0, 0);// Z axis - red
+		sm->end ();
+		axesSn->attachObject (sm);
+
+		/*
+		OGRE main loop when no windowing system is available - eventually
+		TODO: roadmap
+		mRoot->startRendering();
+		while (true) {
+			Ogre::WindowEventUtilities::messagePump ();
+			mRoot->renderOneFrame ();
+			if (mWin->isClosed ())
+				return false;
+		}*/
 		return ready;
 	}// go
 
-	void
+	/*
+	*	QWidget event handler.
+	*/
+	OVERRIDE void
+	Qt4OGRE3D::mouseMoveEvent(QMouseEvent *event)
+	{
+		// Interactive Event:Mouse:Moving:Button down
+
+		NSINFO("IE:M:M: (" << event->x() << ", " << event->y() << ")")
+		// Observed behaviour in X && Qt 4.6.1:
+		// - occures not - needs a mouse button down
+
+		// create motion vector
+		//int dx = event->x () - lastPos.x ();
+		//int dy = event->y () - lastPos.y ();
+
+		if (event->buttons () & Qt::LeftButton) {
+			NSINFO("IE:M:M:LB (" << event->x() << ", " << event->y() << ")")
+			// Observed behaviour in X && Qt 4.6.1:
+			// - repeats
+			// - low frequency - filtered to "change" it seems
+
+			//mouseRot += Vector3( dy * .5, 0, dx * .5 );
+		} else
+		if (event->buttons () & Qt::MidButton) {
+			NSINFO("IE:M:M:MB (" << event->x() << ", " << event->y() << ")")
+			//float d = axis / ( qMax( width(), height() ) + 1 );
+			//mouseMov += Vector3( dx * d, - dy * d, 0 );
+		} else
+		if (event->buttons () & Qt::RightButton) {
+			NSINFO("IE:M:M:RB (" << event->x() << ", " << event->y() << ")")
+		//setDistance( Dist - (dx + dy) * ( axis / ( qMax( width(), height() ) + 1 ) ) );
+		}
+		//lastPos = event->pos();
+		//QPoint lastPos;
+		//QPoint pressPos;
+	}
+
+	/*
+	*	QWidget event handler. Occures after the widget is resized.
+	*/
+	OVERRIDE void
 	Qt4OGRE3D::resizeEvent(QResizeEvent *p)// overrides
 	{
 		if (!ready)
 			return;
-		//mWin->resize(width(), height());
-		mWin->windowMovedOrResized();
-		//mCam->setAspectRatio(1);
+		mWin->resize (p->size ().width (), p->size ().height ());
+		mWin->windowMovedOrResized ();// TODO: not sure why should I call that
 	}
 
+	/*
+	*	QTimer event handler. Qt "slot".
+	*/
 	void
+	Qt4OGRE3D::Render()
+	{
+		Ogre::WindowEventUtilities::messagePump ();
+		mRoot->renderOneFrame ();
+
+		// update (); causes 100% cpu load for no apparent reason
+		// TODO: figure out why
+	}
+
+	/*
+	*	QWidget event handler.
+	*	Occures when the widget needs to update its "outlook".
+	*/
+	OVERRIDE void
 	Qt4OGRE3D::paintEvent(QPaintEvent *p)
 	{
 		if (!ready)
 			return;
-		// Pump window messages for nice behaviour
-		Ogre::WindowEventUtilities::messagePump();
-		// Render a frame
-		mRoot->renderOneFrame();
-		//if(mWin->isClosed())	{
-		//	return false;
-		//}
+		Ogre::WindowEventUtilities::messagePump ();
+		mRoot->renderOneFrame ();
 	}
 
+	/*
+	*	NifSkope::FileIO event handler. Occures after the parser
+	*	has loaded a file.
+	*/
 	void
 	Qt4OGRE3D::LoadNif(IEvent *sender)
 	{
-		/*Ogre::Light* l1 = mScn->createLight("L1");
-		l1->setType (Ogre::Light::LT_SPOTLIGHT);
-		l1->setDiffuseColour (0, 0, 1.0);
-		l1->setSpecularColour (0, 0, 1.0);
-		l1->setDirection (Ogre::Vector3 (0, 0, 0));
-		l1->setPosition (Ogre::Vector3 (0, 0, 5));*/
-
-    	// Set ambient light
-    	mScn->setAmbientLight (Ogre::ColourValue (0.0, 0.0, 0.0));
-		// Create a light
-    	Ogre::Light* l = mScn->createLight ("MainLight");
-    	l->setPosition (20, 80, 50);
-
-		//mCam->SetPolygonMode (PM_WIREFRAME);// in my camera
+		// TODO: to settings
+		std::string texbase ("/mnt/workspace/rain/c/nif/test/nfiskope_bin/data/");
+		Ogre::ResourceGroupManager::getSingleton ().addResourceLocation (
+			texbase, "FileSystem");
 
 		NifLib::Compiler *nif = App->File.NifFile;
+		std::string tex;
+		std::string matname;
 		for (int i = 0; i < nif->FCount (); i++) {
 			NifLib::Field *f = (*nif)[i];
 			//NiTriStripsData
@@ -325,7 +337,41 @@ namespace NifSkope
 			if (!tname)
 				continue;// a tag has no "name" - error
 			int block = f->BlockIndex;
-			if (tname->Value.Equals ("NiTriStripsData", 15)) {
+			if (tname->Value.Equals ("NiSourceTexture", 15)) {
+				ft = f->Tag;
+				tname = ft->AttrById (ANAME);
+				if (tname->Value.Equals ("Value", 5)) {
+					NSINFO("found NiSourceTexture.Value at #" << f->BlockIndex)
+					//NSINFO(std::string (f->Value.buf, f->Value.len))
+					std::stringstream tmp;
+					tmp << std::string (f->Value.buf, f->Value.len);
+					tex = tmp.str ();
+					int pathlen = tex. length ();
+					char *path = new char[pathlen];
+					memcpy (path, tex.c_str (), pathlen);
+					for (int i = 0; i < pathlen; i++)
+						if (path[i] == '\\')
+							path[i] = '/';
+					tex = std::string (path, pathlen);
+//#include <OgreTextureManager.h>
+//	Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
+//#include <OgreTexture.h>
+	//Ogre::TexturePtr mSkyTexture = Ogre::TexturePtr(tm.getByName(mSkyTextureFileName));
+					NSINFO(tex)
+					//std::stringstream matname;
+					std::stringstream matnamestream;
+					matnamestream << "Tex " << block;
+					matname = matnamestream.str ();
+					NSINFO("mat set to: \"" << matname << "\"")
+					Ogre::MaterialPtr mat =
+						Ogre::MaterialManager::getSingleton ().create(matname,
+						Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+					Ogre::TextureUnitState* tuisTexture =
+						mat->getTechnique (0)->getPass (0)->createTextureUnitState (
+						tex);
+				}
+			}
+			else if (tname->Value.Equals ("NiTriStripsData", 15)) {
 				int vnum = 0, sl = 0;
 				NIFfloat *v = NULL, *n = NULL, *uv = NULL;
 				NIFushort *s = NULL;
@@ -375,13 +421,14 @@ namespace NifSkope
 						mScn->getRootSceneNode ()->createChildSceneNode (nn.str ());
 					mySceneNode->setScale (0.5, 0.5, 0.5);
 					Ogre::ManualObject* sm = mScn->createManualObject (objn.str ());
+					NSINFO("Using mat: \"" << matname << "\"")
 					for (int m = 0; m < sl; m++) {
 						// submesh
 						/*ManualObject* sm = mScn->createManualObject ("manual");
 						sm->begin ("BaseWhiteNoLighting",
 							RenderOperation::OT_TRIANGLE_STRIP);*/
-						INFO ("m[" << m << "]=" << s[m])
-						sm->begin ("BaseWhite",
+						//INFO ("m[" << m << "]=" << s[m])
+						sm->begin (matname,// "BaseWhite",
 							Ogre::RenderOperation::OT_TRIANGLE_STRIP);
 						for (int vidx = base; vidx < base + s[m]; vidx++) {
 							// faces
@@ -389,12 +436,12 @@ namespace NifSkope
 							NIFfloat *vertex = &v[3*idx];
 							NIFfloat *normal = &n[3*idx];
 							NIFfloat *tcoord = &uv[2*idx];
-							INFO("#" << vidx - base << "(("
+							/*INFO("#" << vidx - base << "(("
 							<< vertex[0] << ", " << vertex[1] << ", " << vertex[2]
 							<< ") ("
 							<< normal[0] << ", " << normal[1] << ", " << normal[2]
 							<< ") ("
-							<< tcoord[0] << ", " << tcoord[1] << "))")
+							<< tcoord[0] << ", " << tcoord[1] << "))")*/
 							sm->position (vertex[0], vertex[1], vertex[2]);
 							sm->normal (normal[0], normal[1], normal[2]);
 							sm->textureCoord (tcoord[0], tcoord[1]);

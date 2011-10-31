@@ -35,14 +35,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <NifSkopeApp.h>
 
-#include <QGLWidget>
-
 #include <QtGui>
-#include <QGLWidget>
 
 namespace NifSkope
 {
-	class Qt43D: public QGLWidget
+	class Qt43D: public QWidget
 	{
 	public:
 		Qt43D(QWidget *parent = NULL);

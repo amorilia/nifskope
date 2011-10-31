@@ -1,0 +1,51 @@
+This document is a work in progress.
+
+1.Abbreviations used in this document:
+	NL - NifLib
+	NS - NifSkope
+	RS - Render System
+	WS - Windowing System
+	WIP - work in progress
+	N/A - not available
+
+2.Responsibilities by actor:
+	NL - low level .nif, kf parser and "langauge" editor
+		- parses languages: "nif.xml", "kfm.xml" (is not a XML parser)
+		- runtime parser generator:
+			- "nif.xml" is a "class"
+				- reflection
+			- a concrete .nif file is an "instance" - stream of "fields"
+				- reflection
+		- (N/A yet) static parser generator:
+			- "C"
+			- "C++"
+			- "C#"
+			- "Python"
+			- "Java"
+			- ...
+		- no external dependencies, c++ STL only
+		- will use c++0x feats when they become final
+	NS - handles .nif. .kf (NL):
+		- editing
+		- languages editing (NL) - "nif.xml", "kfm.xml"
+		- block import/export - .obj, .3ds, texture formats
+		- options/settings persistence
+	RS - renders textured shaded geometry according to the data in NS
+		- handles timings, animations, interactive events filtering
+		- provides matrix and vector math.
+	WS - provides rendering context, interactive events and UI
+
+3.NS geometry "models" I found so far:
+	- partitioned mesh - NiTriStripsData
+
+4.Core classes ("C++"):
+	NL - NifLib::Compiler
+	NS - NifSkope::NifSkopeApp
+	WS "Qt4":
+	RS "Open GL" immediate mode - NifSkope::Qt4OGL2 -> NifSkope::Qt43D (N/A yet)
+	RS "Open GL 3" - NifSkope::Qt4OGL3 -> NifSkope::Qt43D (N/A yet)
+	RS "OGRE" - NifSkope::Qt4OGRE3D -> NifSkope::Qt43D (WIP)
+		- Rendering Context - NifSkope::Qt43D -> QWidget
+		- Interactive Events - method overrides:
+			RS "OGRE" - Qt4OGRE3D::mouseMoveEvent(QMouseEvent *event)
+		- UI - NifSkope::Qt4App -> NifSkope::NifSkopeApp

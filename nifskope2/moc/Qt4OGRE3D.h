@@ -54,24 +54,30 @@ namespace NifSkope
 {
 	class Qt4OGRE3D: public Qt43D
 	{
+	Q_OBJECT
 		ICommand *handleNifLoaded;
 	private:
 		int ready;
+	protected:
+		// Qt delegates
+		void mouseMoveEvent(QMouseEvent *event);
+		void resizeEvent(QResizeEvent *p);
+		void paintEvent(QPaintEvent *p);
 	public:
 		//static Qt4OGRE3D * create();
 		Qt4OGRE3D(void);
 		virtual ~Qt4OGRE3D(void);
 		bool go();
-		void resizeEvent(QResizeEvent *p);
-		void paintEvent(QPaintEvent *p);
-
 		// handlers
 		void LoadNif(IEvent *sender);
+ 	public slots:
+		void Render();
 	protected:
 		Ogre::Root *mRoot;
 		Ogre::Camera *mCam;
 		Ogre::SceneManager *mScn;
 		Ogre::RenderWindow *mWin;
+		Ogre::Viewport *mVp;
 	};
 }
 
