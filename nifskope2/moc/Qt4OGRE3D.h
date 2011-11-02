@@ -58,9 +58,13 @@ namespace NifSkope
 		ICommand *handleNifLoaded;
 	private:
 		int ready;
+		QPoint lastPos;
 	protected:
 		// Qt delegates
+		void mousePressEvent(QMouseEvent *event);
+		void mouseReleaseEvent(QMouseEvent *event);
 		void mouseMoveEvent(QMouseEvent *event);
+		void wheelEvent(QWheelEvent *event);
 		void resizeEvent(QResizeEvent *p);
 		void paintEvent(QPaintEvent *p);
 	public:
@@ -78,6 +82,8 @@ namespace NifSkope
 		Ogre::SceneManager *mScn;
 		Ogre::RenderWindow *mWin;
 		Ogre::Viewport *mVp;
+		Ogre::SceneNode* progress;
+		Ogre::Real ar, br, cr;
 	};
 }
 

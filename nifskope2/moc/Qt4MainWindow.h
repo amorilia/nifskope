@@ -42,13 +42,35 @@ namespace NifSkopeQt4
 	class MainWindow: public QMainWindow
 	{
 		void createMainMenu();
+		void createDockWidgets();
+		void createToolbars();
+		QAction *aLoad;
+		QAction *aSaveAs;
+
+		QDockWidget *dockTVBL;
+		QDockWidget *dockTVBD;
+		QDockWidget *dockTVKFM;
+		QDockWidget *dockInsp;
+		QDockWidget *dockRefr;
+
+		QAction *aViewTop;
+		QAction *aViewFront;
+		QAction *aViewSide;
+		QAction *aViewUser;
+		QAction *aViewWalk;
+		QAction *aViewFlip;
+		QAction *aViewPerspective;
 	Q_OBJECT
 	public:
 		MainWindow();
 		NifSkope::NifSkopeApp *App;// TODO: init by Qt4App because of NewWindow() only
 
 	protected slots:
-		void mFileLoad();
+		void sFileLoad();
+		void sSelectFont();
+		void sOpenURL();
+	public slots:
+		void About();
 	};
 }
 

@@ -1,5 +1,6 @@
 CC       = g++
 MOC	     = $(QTDIR)/bin/moc
+RCC      = $(QTDIR)/bin/rcc
 QT4INC   = ${QTDIR}/include
 QTINCS   = -I$(QT4INC) -I$(QT4INC)/Qt -I$(QT4INC)/QtCore -I$(QT4INC)/QtOpenGL
 OGREINC  = -I$(OGRE_ROOT)/include/OGRE
@@ -27,14 +28,24 @@ NIFLIB_CPP = $(wildcard $(NIFLIB_DIR)/*.cpp)
 NIFLIB_CPP := $(patsubst $(NIFLIB_DIR)/niflib++.cpp,,$(NIFLIB_CPP)) 
 NIFLIB_OBJ = $(patsubst %.cpp,%.o,$(NIFLIB_CPP))
 
+RCC_QRC = $(wildcard *.qrc)
+RCC_CPP = $(patsubst %.qrc,qrc_%.cpp,$(RCC_QRC))
+RCC_OBJ = $(patsubst %.qrc,qrc_%.o,$(RCC_QRC))
+
+qrc_%.cpp: %.qrc
+	$(RCC) -name $(APP) $< -o $@
+
+qrc_%.o: qrc_%.cpp
+	$(CC) $(CXXFLAGS) -c $< -o $@
+
 %.moc.cpp: %.h
 	$(MOC) $< -o $@
 
 %.moc.o: %.moc.cpp
 	$(CC) $(CXXFLAGS) -c $< -o $@
 
-$(APP): $(GLOBAL_OBJ) $(MOC_OBJS) $(NIFLIB_OBJ)
-	$(CC) $(GLOBAL_OBJ) $(MOC_OBJS) $(NIFLIB_OBJ) $(LDFLAGS) -o $(APP)
+$(APP): $(GLOBAL_OBJ) $(MOC_OBJS) $(NIFLIB_OBJ) $(RCC_OBJ)
+	$(CC) $(GLOBAL_OBJ) $(MOC_OBJS) $(NIFLIB_OBJ) $(RCC_OBJ) $(LDFLAGS) -o $(APP)
 
 test:
 	@echo "GLOBAL_SRC:" $(GLOBAL_SRC)
@@ -44,6 +55,9 @@ test:
 	@echo "MOC_OBJS:" $(MOC_OBJS)
 	@echo "NIFLIB_CPP:" $(NIFLIB_CPP)
 	@echo "NIFLIB_OBJ:" $(NIFLIB_OBJ)
+	@echo "RCC_QRC:" $(RCC_QRC)
+	@echo "RCC_CPP:" $(RCC_CPP)
+	@echo "RCC_OBJ:" $(RCC_OBJ)
 
 clean:
 	rm -f $(APP) $(GLOBAL_OBJ) $(MOC_OBJS) $(MOC_MODULES)

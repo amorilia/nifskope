@@ -61,8 +61,8 @@ namespace NifSkopeQt4
 		//  &Quit
 
 		// TODO: should be/could be generated from "nifskopeqt.xml" or something ... :
-		QAction *aLoad = new QAction (tr("&Load..."), this);
-		QAction *aSaveAs = new QAction (tr("&Save As..."), this);
+		aLoad = new QAction (tr("&Load..."), this);
+		aSaveAs = new QAction (tr("&Save As..."), this);
 		QMenu *mImport = new QMenu (tr("Import"), this);
 		QAction *aImport3ds = new QAction (tr("Import.3DS..."), this);
 		QAction *aImportobj = new QAction (tr("Import.OBJ..."), this);
@@ -78,12 +78,12 @@ namespace NifSkopeQt4
 		
 		aLoad->setShortcut (QKeySequence (tr("Ctrl+L")));
 		aSaveAs->setShortcut (QKeySequence (tr("Ctrl+S")));
-		aAutoSanitize->setCheckable( true );
-		aAutoSanitize->setChecked( true );
+		aAutoSanitize->setCheckable(true);
+		aAutoSanitize->setChecked(true);
 		aNewWindow->setShortcut (QKeySequence::New );
 		aReloadXMLNif->setShortcut (QKeySequence (tr("Alt+X")) );
 
-		QMenu *mFile = menuBar()->addMenu(tr("&File"));
+		QMenu *mFile = menuBar ()->addMenu (tr("&File"));
 		mFile->addAction (aLoad);
 		mFile->addAction (aSaveAs);
 		mFile->addSeparator();
@@ -105,10 +105,367 @@ namespace NifSkopeQt4
 		mFile->addSeparator();
 		mFile->addAction (aQuit);
 		//connect( aWindow, SIGNAL( triggered() ), this, SLOT( sltWindow() ) );
-		connect( aLoad, SIGNAL( triggered() ), this, SLOT( mFileLoad() ) );
+		connect(aLoad, SIGNAL(triggered()), this, SLOT(sFileLoad()));
+
+		// View
+		createDockWidgets ();
+		QMenu *mView = menuBar ()->addMenu (tr("&View"));
+		mView->addAction (dockRefr->toggleViewAction ());
+		mView->addAction (dockTVBL->toggleViewAction ());
+		mView->addAction (dockTVBD->toggleViewAction ());
+		mView->addAction (dockTVKFM->toggleViewAction ());
+		mView->addAction (dockInsp->toggleViewAction ());
+		mView->addSeparator ();
+		QMenu *mToolbars = new QMenu (tr("&Toolbars") );
+		mView->addMenu (mToolbars);
+		createToolbars ();
+		foreach (QObject *o, children ()) {
+			QToolBar *tb = qobject_cast<QToolBar*>(o);
+			if (tb)
+				mToolbars->addAction (tb->toggleViewAction ());
+		}
+		mView->addSeparator ();
+		QMenu *mBlockList = new QMenu (tr("Block List"));
+		mView->addMenu (mBlockList);
+		QAction *aHierarchy = new QAction (tr("Show Blocks in Tree"), this);
+		aHierarchy->setCheckable (true);
+		QAction *aList = new QAction (tr("Show Blocks in List"), this);
+		aList->setCheckable (true);
+		mBlockList->addAction (aHierarchy);
+		mBlockList->addAction (aList);
+		QMenu *mBlockDetails = new QMenu (tr("Block Details"));
+		mView->addMenu (mBlockDetails);
+		QAction *aCondition = new QAction (tr("Hide Version Mismatched Rows"), this);
+		aCondition->setCheckable (true);
+		aCondition->setChecked (false);
+		QAction *aRCondition =
+			new QAction (tr("Realtime Row Version Updating (slow)"), this);
+		aRCondition->setCheckable (true);
+		aRCondition->setChecked (false);
+		aRCondition->setEnabled (false);
+		mBlockDetails->addAction (aCondition);
+		mBlockDetails->addAction (aRCondition);
+		mView->addSeparator ();
+		QAction *aSelectFont = new QAction (tr("Select Font ..."), this);
+		connect(aSelectFont, SIGNAL(triggered()), this, SLOT(sltSelectFont()));
+		mView->addAction (aSelectFont);
+
+		// Render - the actions are created by createToolbars ()
+		// TODO: all actions should be created in one place
+		QMenu *mRender = menuBar ()->addMenu (tr("&Render"));
+		mRender->addAction (aViewTop);
+		mRender->addAction (aViewFront);
+		mRender->addAction (aViewSide);
+		mRender->addAction (aViewWalk);
+		mRender->addAction (aViewUser);
+		mRender->addSeparator();
+		mRender->addAction (aViewFlip);
+		mRender->addAction (aViewPerspective);
+		QAction *aViewUserSave = new QAction (tr("Save User View"), this);
+		aViewUserSave->setToolTip (tr("Save current view rotation, position and distance"));
+		aViewUserSave->setShortcut (Qt::CTRL + Qt::Key_F9);
+		mRender->addAction (aViewUserSave);
+		mRender->addSeparator ();
+		//
+		QAction *aDrawAxes = new QAction (tr("Draw &Axes"), this);
+		aDrawAxes->setToolTip (tr("draw xyz-Axes"));
+		aDrawAxes->setCheckable (true);
+		QAction *aDrawNodes = new QAction (tr("Draw &Nodes"), this);
+		aDrawNodes->setToolTip (tr("draw bones/nodes"));
+		aDrawNodes->setCheckable (true);
+		QAction *aDrawHavok = new QAction (tr("Draw &Havok"), this);
+		aDrawHavok->setToolTip (tr("draw the havok shapes"));
+		aDrawHavok->setCheckable (true);
+		QAction *aDrawConstraints = new QAction (tr("Draw &Constraints"), this);
+		aDrawConstraints->setToolTip (tr("draw the havok constraints"));
+		aDrawConstraints->setCheckable (true);
+		QAction *aDrawFurn = new QAction (tr("Draw &Furniture"), this);
+		aDrawFurn->setToolTip (tr("draw the furniture markers"));
+		aDrawFurn->setCheckable (true);
+		QAction *aDrawHidden = new QAction (tr("Show Hid&den"), this);
+		aDrawHidden->setToolTip (tr("always draw nodes and meshes"));
+		aDrawHidden->setCheckable (true);
+		QAction *aDrawStats = new QAction (tr("Show S&tats"), this);
+		aDrawStats->setToolTip (tr("display some statistics about the selected node"));
+		aDrawStats->setCheckable (true);
+		QAction *aSettings = new QAction (tr("&Settings..."), this);
+		aSettings->setToolTip (tr("show the settings dialog"));
+		//
+		mRender->addActions (
+			QList<QAction*>()
+			<< aDrawAxes
+			<< aDrawNodes
+			<< aDrawHavok
+			<< aDrawConstraints
+			<< aDrawFurn
+			<< aDrawHidden
+			<< aDrawStats
+			<< aSettings
+		);
+
+		// Tools ("Spells")
+		//  Animation
+		//   Attach .KF
+		//   Edit String Palettes
+		//  Block
+		//   Insert
+		//   Remove By Id
+		//   Sort By Name
+		//  Sanitize
+		//   Reorder Link Arrays
+		//   Collapse Link Arrays
+		//   Adjust Texture Sources
+		//   Reorder Blocks
+		//   Check Links
+		//  Optimize
+		//   Combine Properties
+		//   Split Properties
+		//   Remove Bogus Nodes
+		//   Stripify All TriShapes
+		//  Batch
+		//   Make All Skin Partitions
+		//   Update All Tangent Spaces
+		//   Multi Apply Mode
+		QMenu *mTools = menuBar ()->addMenu (tr("&Tools"));
+		QMenu *mAnimation = new QMenu (tr("Animation"), this);
+		QAction *aAttach_KF = new QAction (tr("Attach .KF"), this);
+		QAction *aEditStringPalettes = new QAction (tr("Edit String Palettes"), this);
+		mAnimation->addActions (QList<QAction*>()
+			<< aAttach_KF << aEditStringPalettes);
+		QMenu *mBlock = new QMenu (tr("Block"), this);
+		QAction *aInsert = new QAction (tr("Insert"), this);
+		QAction *aRemoveById = new QAction (tr("Remove By Id"), this);
+		QAction *aSortByName = new QAction (tr("Sort By Name"), this);
+		mBlock->addActions (QList<QAction*>()
+			<< aInsert << aRemoveById << aSortByName);
+		QMenu *mSanitize = new QMenu (tr("Sanitize"), this);
+		QAction *aReorderLinkArrays = new QAction (tr("Reorder Link Arrays"), this);
+		QAction *aCollapseLinkArrays = new QAction (tr("Collapse Link Arrays"), this);
+		QAction *aAdjustTextureSources =
+			new QAction (tr("Adjust Texture Sources"), this);
+		QAction *aReorderBlocks = new QAction (tr("Reorder Blocks"), this);
+		QAction *aCheckLinks = new QAction (tr("Check Links"), this);
+		mSanitize->addActions (QList<QAction*>()
+			<< aReorderLinkArrays
+			<< aCollapseLinkArrays
+			<< aAdjustTextureSources
+			<< aReorderBlocks
+			<< aCheckLinks);
+		QMenu *mOptimize = new QMenu (tr("Export"), this);
+		QAction *aCombineProperties = new QAction (tr("Combine Properties"), this);
+		QAction *aSplitProperties = new QAction (tr("Split Properties"), this);
+		QAction *aRemoveBogusNodes = new QAction (tr("Remove Bogus Nodes"), this);
+		QAction *aStripifyAllTriShapes =
+			new QAction (tr("Stripify All TriShapes"), this);
+		mOptimize->addActions (QList<QAction*>()
+			<< aCombineProperties
+			<< aSplitProperties
+			<< aRemoveBogusNodes
+			<< aStripifyAllTriShapes);
+		QMenu *mBatch = new QMenu (tr("Export"), this);
+		QAction *MakeAllSkinPartitions =
+			new QAction (tr("Make All Skin Partitions"), this);
+		QAction *aUpdateAllTangentSpaces =
+			new QAction (tr("Update All Tangent Spaces"), this);
+		QAction *aMultiApplyMode = new QAction (tr("Multi Apply Mode"), this);
+		mBatch->addActions (QList<QAction*>()
+			<< MakeAllSkinPartitions
+			<< aUpdateAllTangentSpaces
+			<< aMultiApplyMode);
+		mTools->addMenu (mAnimation);
+		mTools->addMenu (mBlock);
+		mTools->addMenu (mSanitize);
+		mTools->addMenu (mOptimize);
+		mTools->addMenu (mBatch);
+
+		// Help
+		QMenu *mHelp = menuBar ()->addMenu (tr ("&Help"));
+		mHelp->addAction (dockRefr->toggleViewAction ());
+		QAction *aHelpWebsite =
+			new QAction (tr ("NifSkope Documentation && &Tutorials"), this);
+		aHelpWebsite->setData (
+			QUrl ("http://niftools.sourceforge.net/wiki/index.php/NifSkope"));
+		connect(aHelpWebsite, SIGNAL(triggered()), this, SLOT(sOpenURL()));
+		QAction *aHelpForum =
+			new QAction (tr ("NifSkope Help && Bug Report &Forum"), this);
+		aHelpForum->setData (
+			QUrl ("http://niftools.sourceforge.net/forum/viewforum.php?f=24"));
+		connect(aHelpForum, SIGNAL(triggered()), this, SLOT(sOpenURL()));
+		QAction *aNifToolsWebsite = new QAction (tr ("NifTools &Wiki"), this);
+		aNifToolsWebsite->setData (QUrl ("http://niftools.sourceforge.net"));
+		connect(aNifToolsWebsite, SIGNAL(triggered()), this, SLOT(sOpenURL()));
+		QAction *aNifToolsDownloads = new QAction (tr ("NifTools &Downloads"), this);
+		aNifToolsDownloads->setData (
+			QUrl ("http://sourceforge.net/project/showfiles.php?group_id=149157"));
+		connect(aNifToolsDownloads, SIGNAL(triggered()), this, SLOT(sOpenURL()));
+		QAction *aNifSkope = new QAction (tr ("About &NifSkope"), this);
+		connect(aNifSkope, SIGNAL(triggered()), this, SLOT(About()));
+		QAction *aAboutQt = new QAction (tr ("About &Qt"), this);
+		connect(aAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+		mHelp->addAction (aHelpWebsite);
+		mHelp->addAction (aHelpForum);
+		mHelp->addSeparator ();
+		mHelp->addAction (aNifToolsWebsite);
+		mHelp->addAction (aNifToolsDownloads);
+		mHelp->addSeparator ();
+		mHelp->addAction (aAboutQt);
+		mHelp->addAction (aNifSkope);
 	}
 
-	void MainWindow::mFileLoad()
+	void
+	MainWindow::createDockWidgets()
+	{
+		// TODO: list or something
+		// core layout - main widgets
+		// 1 TODO: createListView ("Block List", true);
+		QTreeView *tvBlockList = new QTreeView;
+		dockTVBL = new QDockWidget (tr("Block List"));
+		dockTVBL->setObjectName ("dockTVBL");
+		dockTVBL->setWidget (tvBlockList);
+
+		// 2 TODO: createListView ("Block Details", true);
+		QTreeView *tvBlockDetails = new QTreeView;
+		dockTVBD = new QDockWidget (tr("Block Details"));
+		dockTVBD->setObjectName ("dockTVBD");
+		dockTVBD->setWidget (tvBlockDetails);
+
+		// 3
+		QTreeView *tvKFM = new QTreeView;
+		tvKFM->header ()->setStretchLastSection (false);
+		dockTVKFM = new QDockWidget (tr("KFM"));
+		dockTVKFM->setObjectName ("dockTVKFM");
+		dockTVKFM->setWidget (tvKFM);
+		dockTVKFM->toggleViewAction ()->setShortcut (Qt::Key_F4);
+		dockTVKFM->toggleViewAction ()->setChecked (false);
+		//dockTVKFM->setVisible (false);
+
+		// 4
+		QDialog *inspect = new QDialog;
+		dockInsp = new QDockWidget (tr("Inspect"));
+		dockInsp->setObjectName ("InspectDock");
+		dockInsp->setWidget (inspect);
+		dockInsp->toggleViewAction ()->setChecked (false);
+		//dInsp->setVisible (false);
+
+		// 5
+		QTextBrowser *refrbrwsr = new QTextBrowser;
+		dockRefr = new QDockWidget (tr("Interactive Help"));
+		dockRefr->setObjectName ("RefrDock");
+		dockRefr->setWidget (refrbrwsr);
+		dockRefr->toggleViewAction ()->setShortcut (Qt::Key_F1);
+		dockRefr->toggleViewAction ()->setChecked (false);
+		//dRefr->setVisible (false);
+
+		addDockWidget (Qt::BottomDockWidgetArea, dockTVBD);
+		addDockWidget (Qt::LeftDockWidgetArea, dockTVBL);
+		addDockWidget (Qt::RightDockWidgetArea, dockTVKFM);
+		addDockWidget (Qt::RightDockWidgetArea, dockInsp, Qt::Vertical);
+		addDockWidget (Qt::BottomDockWidgetArea, dockRefr);
+	}
+
+	void
+	MainWindow::createToolbars()
+	{
+		// core layout - main toolbars
+		QToolBar *tCommon = new QToolBar (tr("Load && Save"));
+		tCommon->setObjectName ("tCommon");
+		tCommon->setAllowedAreas (Qt::TopToolBarArea | Qt::BottomToolBarArea);
+		tCommon->addAction (aLoad);
+		QLineEdit *leLoadFile = new QLineEdit;
+		tCommon->addWidget (leLoadFile);
+		QLineEdit *leSaveFile = new QLineEdit;
+		tCommon->addWidget (leSaveFile);
+		tCommon->addAction (aSaveAs);
+
+		QToolBar *tAnim = new QToolBar (tr("Animation"));
+		tAnim->setObjectName ("tAnim");
+		tAnim->setAllowedAreas (Qt::TopToolBarArea | Qt::BottomToolBarArea);
+		tAnim->setIconSize (QSize (16, 16));
+		// actions
+		QAction *aAnimPlay = new QAction (QIcon (":/btn/play"), tr("&Play"), this);
+		aAnimPlay->setCheckable (true);
+		aAnimPlay->setChecked (true);
+		aAnimPlay->setToolTip (tr("Start Animation"));
+		QAction *aAnimLoop = new QAction (QIcon (":/btn/loop"), tr("&Loop"), this);
+		aAnimLoop->setCheckable (true);
+		aAnimLoop->setChecked (true);
+		QAction *aAnimSwitch = new QAction (QIcon (":/btn/switch"), tr("&Switch"), this);
+		aAnimSwitch->setCheckable (true);
+		aAnimSwitch->setChecked (true);
+		// toolbar
+		tAnim->addAction (aAnimPlay);
+		QSlider *sldTime = new QSlider (Qt::Horizontal);
+		tAnim->addWidget (sldTime);// has an editor - a floating one IIRC
+		tAnim->addAction (aAnimLoop);
+		tAnim->addAction (aAnimSwitch);
+		QComboBox *animGroups = new QComboBox;
+		animGroups->setMinimumWidth (100);
+		tAnim->addWidget (animGroups);
+
+		QToolBar *tView = new QToolBar (tr("View"));
+		tView->setObjectName ("tView" );
+		tView->setAllowedAreas (Qt::TopToolBarArea | Qt::BottomToolBarArea);
+		tView->setIconSize (QSize (16, 16));
+		// actions
+		QActionGroup *grpView = new QActionGroup (this);
+		grpView->setExclusive (true);
+		/*connect(grpView, SIGNAL(triggered(QAction *)),
+				this, SLOT(viewAction(QAction *)));*/
+		aViewTop = new QAction (QIcon (":/btn/viewTop"), tr("Top"), grpView);
+		aViewTop->setToolTip (tr("View from above") );
+		aViewTop->setCheckable (true);
+		aViewTop->setShortcut (Qt::Key_F5);
+		grpView->addAction (aViewTop);
+		aViewFront =
+			new QAction (QIcon (":/btn/viewFront"), tr("Front"), grpView);
+		aViewFront->setToolTip (tr("View from the front"));
+		aViewFront->setCheckable (true);
+		aViewFront->setChecked (true);
+		aViewFront->setShortcut (Qt::Key_F6);
+		grpView->addAction (aViewFront);
+		aViewSide = new QAction (QIcon (":/btn/viewSide"), tr("Side"), grpView);
+		aViewSide->setToolTip (tr("View from the side"));
+		aViewSide->setCheckable (true);
+		aViewSide->setShortcut (Qt::Key_F7);
+		grpView->addAction (aViewSide);
+		aViewUser = new QAction (QIcon (":/btn/viewUser" ), tr("User"), grpView);
+		aViewUser->setToolTip (tr("Restore the view as it was when Save User View was activated"));
+		aViewUser->setCheckable (true);
+		aViewUser->setShortcut (Qt::Key_F8);
+		grpView->addAction (aViewUser);
+		aViewWalk = new QAction (QIcon (":/btn/viewWalk"), tr("Walk"), grpView);
+		aViewWalk->setToolTip (tr("Enable walk mode"));
+		aViewWalk->setCheckable (true);
+		aViewWalk->setShortcut (Qt::Key_F9);
+		grpView->addAction (aViewWalk);
+		aViewFlip = new QAction (QIcon (":/btn/viewFlip"), tr("Flip"), this);
+		aViewFlip->setToolTip (tr("Flip View from Front to Back, Top to Bottom, Side to Other Side"));
+		aViewFlip->setCheckable (true);
+		aViewFlip->setShortcut (Qt::Key_F11);
+		grpView->addAction (aViewFlip);
+		aViewPerspective =
+			new QAction (QIcon (":/btn/viewPers"), tr("Perspective"), this);
+		aViewPerspective->setToolTip (tr("Perspective View Transformation or Orthogonal View Transformation"));
+		aViewPerspective->setCheckable (true);
+		aViewPerspective->setShortcut (Qt::Key_F10);
+		grpView->addAction (aViewPerspective);
+		// toolbar
+		tView->addAction (aViewTop);
+		tView->addAction (aViewFront);
+		tView->addAction (aViewSide);
+		tView->addAction (aViewUser);
+		tView->addAction (aViewWalk);
+		tView->addSeparator ();
+		tView->addAction (aViewFlip);
+		tView->addAction (aViewPerspective);
+
+		addToolBar (Qt::TopToolBarArea, tCommon);
+		addToolBar (Qt::TopToolBarArea, tAnim);
+		addToolBar (Qt::TopToolBarArea, tView);
+	}
+
+	void
+	MainWindow::sFileLoad()
 	{
 		// UI part of the handler
 		QString fileName = QFileDialog::getOpenFileName (
@@ -119,6 +476,68 @@ namespace NifSkopeQt4
 		// Model part of the handler
 		App->File.FileName = fileName.toStdString ();
 		App->File.Load ();
+	}
+
+	void
+	MainWindow::sSelectFont()
+	{
+		bool ok;
+		QFont fnt = QFontDialog::getFont (&ok, this->font (), this);
+		if (!ok)
+			return;
+		QApplication::setFont (fnt);
+	}
+
+	void
+	MainWindow::sOpenURL()
+	{
+		if (!sender ())
+			return;
+		QAction *aURL = qobject_cast<QAction*>(sender ());
+		if (!aURL)
+			return;
+		QUrl URL = aURL->data ().toUrl ();
+		if (!URL.isValid ())
+			return;
+		QDesktopServices::openUrl (URL);
+	}
+
+	void
+	MainWindow::About()
+	{
+		QString text = tr (
+		"<p style='white-space:pre'>NifSkope is a tool for analyzing and editing NetImmerse/Gamebryo '.nif' files.</p>"
+		"<p>NifSkope is based on NifTool's XML file format specification. "
+		"For more information visit our site at <a href='http://niftools.sourceforge.net'>http://niftools.sourceforge.net</a></p>"
+		"<p>NifSkope is free software available under a BSD license. "
+		"The source is available via <a href='http://niftools.git.sourceforge.net/git/gitweb.cgi?p=niftools/nifskope'>git</a> "
+		"(<a href='git://niftools.git.sourceforge.net/gitroot/niftools/nifskope'>clone</a>) on <a href='http://sourceforge.net'>SourceForge</a>. "
+		"Instructions on compiling NifSkope are available on the <a href='http://niftools.sourceforge.net/wiki/NifSkope/Compile'>NifTools wiki</a>.</p>"
+		"<p>The most recent version of NifSkope can always be downloaded from the <a href='https://sourceforge.net/projects/niftools/files/nifskope/'>"
+		"NifTools SourceForge Project page</a>.</p>"
+// only the windows build uses havok
+// (Q_OS_WIN32 is also defined on win64)
+#ifdef Q_OS_WIN32
+		"<center><img src=':/img/havok_logo' /></center>"
+		"<p>NifSkope uses Havok(R) for the generation of mopp code. "
+		"(C)Copyright 1999-2008 Havok.com Inc. (and its Licensors). "
+		"All Rights Reserved. "
+		"See <a href='http://www.havok.com'>www.havok.com</a> for details.</p>"
+#endif
+		"<center><img src=':/img/qhull_logo' /></center>"
+		"<p>NifSkope uses Qhull for the generation of convex hulls. "
+		"Copyright(c) 1993-2010  C.B. Barber and The Geometry Center. "
+		"Qhull is free software and may be obtained from <a href='http://www.qhull.org'>www.qhull.org</a>. "
+		"See Qhull_COPYING.txt for details."
+		);
+
+		QMessageBox mb (tr ("About NifSkope %1 (revision %2)")
+			.arg(NS_VERSION).arg("F"),
+			text,
+			QMessageBox::Information,
+			QMessageBox::Ok + QMessageBox::Default, 0, 0, this);
+		mb.setIconPixmap (QPixmap ( ":/res/nifskope.png" ));
+		mb.exec ();
 	}
 
 	MainWindow::MainWindow()

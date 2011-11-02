@@ -60,9 +60,29 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <OgreMaterial.h>
 #include <OgreMaterialManager.h>
 #include <OgreResourceGroupManager.h>
+#include <OgreMath.h>
+#include <OgreCommon.h>
+
+#include <sys/time.h>
 
 namespace NifSkope
 {
+
+/* Init the pseudo-random generator */
+void
+randomize(void)
+{
+	srand ((unsigned)time(NULL));
+}
+
+/* Returns a random number [0;N-1] 
+   http://www.c-faq.com/lib/randrange.html */
+int
+rnd(int N)
+{
+	return (int)(rand () / (RAND_MAX / N + 1));
+}
+
 	class NifLoaded: public ICommand // event
 	{
 		Qt4OGRE3D *obj;
@@ -83,7 +103,7 @@ namespace NifSkope
 
 	Qt4OGRE3D::Qt4OGRE3D(void)
 		: Qt43D (NULL)
-		,ready(0), mRoot(0), mCam(0), mScn(0), mWin(0)
+		,ready(0), mRoot(0), mCam(0), mScn(0), mWin(0), progress(0)
 	{
 	}
 
@@ -99,6 +119,8 @@ namespace NifSkope
 	bool
 	Qt4OGRE3D::go()
 	{
+		randomize ();
+		ar = 0.05; br = 0.03; cr = 0.08;
 		// Attach to events from "NifSkope"
 		handleNifLoaded = new NifLoaded (this);
 		App->File.OnLoad.Subscribe (handleNifLoaded);
@@ -175,7 +197,7 @@ namespace NifSkope
 		//	Setup the scene*
 		mScn = mRoot->createSceneManager ("OctreeSceneManager", "DefaultSceneManager");
 		mCam = mScn->createCamera ("camMain");
-		mCam->setPosition (Ogre::Vector3 (10, 10, 100));
+		mCam->setPosition (Ogre::Vector3 (0, 0, 0));
 		mCam->lookAt (Ogre::Vector3 (0, 0, 0));// look at the center*
 		mCam->setNearClipDistance (5);// near clipping plane
 		mVp = mWin->addViewport (mCam);
@@ -193,18 +215,83 @@ namespace NifSkope
 		ready = 1;
 		timer->start (1000/25);
 
-		/*
-		*/
-		// manual material example
-		Ogre::MaterialPtr myManualObjectMaterial =
-			Ogre::MaterialManager::getSingleton().create("manual1Material",
+		// debug
+		Ogre::MaterialPtr matDbg =
+			Ogre::MaterialManager::getSingleton().create("debugMat",
 			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME); 
-		myManualObjectMaterial->setReceiveShadows(false); 
-		myManualObjectMaterial->getTechnique(0)->setLightingEnabled(true); 
-		myManualObjectMaterial->getTechnique(0)->getPass(0)->setDiffuse(0,0,1,0); 
-		myManualObjectMaterial->getTechnique(0)->getPass(0)->setAmbient(0,0,1); 
-		myManualObjectMaterial->getTechnique(0)->getPass(0)->setSelfIllumination(0,0,1); 
-		//myManualObjectMaterial->dispose();  // no such method
+		matDbg->setReceiveShadows(false); 
+		matDbg->getTechnique(0)->setLightingEnabled(false); 
+		matDbg->getTechnique(0)->getPass(0)->setCullingMode (Ogre::CULL_NONE);
+		matDbg->getTechnique(0)->getPass(0)->setPolygonMode (Ogre::PM_WIREFRAME);
+
+		Ogre::ManualObject* pG = mScn->createManualObject ("pG");
+		pG->begin ("debugMat", Ogre::RenderOperation::OT_TRIANGLE_STRIP);
+		int q = 5;
+		Ogre::ColourValue pGc (0.8, 0.8, 0.8, 0);
+		pG->position (-q, -q, -q); pG->colour (pGc);
+		pG->position (-q, q, -q);
+		pG->position (q, -q, -q);
+		pG->position (q, q, -q);
+		pG->position (q, -q, q);
+		pG->position (q, q, q);
+		pG->position (-q, -q, q);
+		pG->position (-q, q, q);
+		pG->position (-q, -q, -q);
+		pG->position (-q, q, -q);
+		pG->end ();
+		progress = mScn->getRootSceneNode ()->createChildSceneNode ("in progress");
+		progress->attachObject (pG);
+
+		q = 3;
+		Ogre::ManualObject* camFocus = mScn->createManualObject ("camFocus");
+		// colour() works with no lighting material only
+		// a wild guess - it uses color material when no lighting
+		camFocus->begin ("debugMat", Ogre::RenderOperation::OT_TRIANGLE_STRIP);
+		//int q = 5;
+		Ogre::ColourValue c1 (0, 0.8, 0, 0);
+		camFocus->position (-q, -q, -q); camFocus->colour (c1);
+		camFocus->position (-q, q, -q);
+		camFocus->position (q, -q, -q);
+		camFocus->position (q, q, -q);
+		camFocus->position (q, -q, q);
+		camFocus->position (q, q, q);
+		camFocus->position (-q, -q, q);
+		camFocus->position (-q, q, q);
+		camFocus->position (-q, -q, -q);
+		camFocus->position (-q, q, -q);
+		camFocus->end ();
+
+		Ogre::ManualObject* camOfs = mScn->createManualObject ("camOfs");
+		// colour() works with no lighting material only
+		// a wild guess - it uses color material when no lighting
+		Ogre::ColourValue c2 (0.8, 0, 0, 0);
+		camOfs->begin ("debugMat", Ogre::RenderOperation::OT_TRIANGLE_STRIP);
+		camOfs->position (-q, -q, -q); camOfs->colour (c2);
+		camOfs->position (-q, q, -q);
+		camOfs->position (q, -q, -q);
+		camOfs->position (q, q, -q);
+		camOfs->position (q, -q, q);
+		camOfs->position (q, q, q);
+		camOfs->position (-q, -q, q);
+		camOfs->position (-q, q, q);
+		camOfs->position (-q, -q, -q);
+		camOfs->position (-q, q, -q);
+		camOfs->end ();
+
+		// Camera "navigation"
+		// Described here (5th post) :
+		// http://www.ogre3d.org/forums/viewtopic.php?p=241142
+		Ogre::SceneNode *camMainFocus =
+			mScn->getRootSceneNode ()->createChildSceneNode ("camMainFocus");
+		camMainFocus->setPosition (0, 0, 0);
+		Ogre::SceneNode *camMainOfs =
+			camMainFocus->createChildSceneNode ("camMainOfs");
+		camMainFocus->attachObject (camFocus);
+		camMainOfs->setPosition (0, 0, 0);
+		camMainOfs->attachObject (mCam);
+		camMainOfs->attachObject (camOfs);
+		mCam->lookAt (camMainFocus->getPosition ());
+		mCam->setPosition (0, 0, 20);
 
 		// show axes so one can orient what is where
 		Ogre::SceneNode *axesSn =
@@ -240,42 +327,81 @@ namespace NifSkope
 	*	QWidget event handler.
 	*/
 	OVERRIDE void
-	Qt4OGRE3D::mouseMoveEvent(QMouseEvent *event)
+	Qt4OGRE3D::mousePressEvent(QMouseEvent *event)
 	{
-		// Interactive Event:Mouse:Moving:Button down
+		lastPos = event->pos ();
+	}
 
-		NSINFO("IE:M:M: (" << event->x() << ", " << event->y() << ")")
-		// Observed behaviour in X && Qt 4.6.1:
-		// - occures not - needs a mouse button down
-
-		// create motion vector
-		//int dx = event->x () - lastPos.x ();
-		//int dy = event->y () - lastPos.y ();
-
-		if (event->buttons () & Qt::LeftButton) {
-			NSINFO("IE:M:M:LB (" << event->x() << ", " << event->y() << ")")
-			// Observed behaviour in X && Qt 4.6.1:
-			// - repeats
-			// - low frequency - filtered to "change" it seems
-
-			//mouseRot += Vector3( dy * .5, 0, dx * .5 );
-		} else
-		if (event->buttons () & Qt::MidButton) {
-			NSINFO("IE:M:M:MB (" << event->x() << ", " << event->y() << ")")
-			//float d = axis / ( qMax( width(), height() ) + 1 );
-			//mouseMov += Vector3( dx * d, - dy * d, 0 );
-		} else
-		if (event->buttons () & Qt::RightButton) {
-			NSINFO("IE:M:M:RB (" << event->x() << ", " << event->y() << ")")
-		//setDistance( Dist - (dx + dy) * ( axis / ( qMax( width(), height() ) + 1 ) ) );
-		}
-		//lastPos = event->pos();
-		//QPoint lastPos;
-		//QPoint pressPos;
+	OVERRIDE void
+	Qt4OGRE3D::mouseReleaseEvent(QMouseEvent *event)
+	{
+		// move "parent" to "child" pos in world space
+		/*Ogre::SceneNode *camMainFocus = mScn->getSceneNode ("camMainFocus");
+		Ogre::SceneNode *camMainOfs = mScn->getSceneNode ("camMainOfs");
+		Ogre::Vector3 p3 =
+			mScn->getRootSceneNode ()->convertLocalToWorldPosition (
+				camMainFocus->getPosition ());
+		Ogre::Vector3 p4 =
+			mScn->getRootSceneNode ()->convertLocalToWorldPosition (
+				camMainOfs->getPosition ());
+		camMainFocus->setPosition (p4.x+p3.x, p4.y+p3.y, p4.z+p3.z);
+		camMainOfs->setPosition (0, 0, 0);*/
 	}
 
 	/*
-	*	QWidget event handler. Occures after the widget is resized.
+	*	QWidget event handler.
+	*/
+	OVERRIDE void
+	Qt4OGRE3D::mouseMoveEvent(QMouseEvent *event)
+	{
+		// TODO: trackball
+		// behaves like NifSkope right now I hope
+		int dx = event->x () - lastPos.x ();
+		int dy = event->y () - lastPos.y ();
+		if (event->buttons () & Qt::LeftButton) {
+		}
+
+		Ogre::SceneNode *camMainOfs = mScn->getSceneNode ("camMainOfs");
+		Ogre::SceneNode *camMainFocus = mScn->getSceneNode ("camMainFocus");
+		if (event->buttons () & Qt::LeftButton) {
+			Ogre::Real sx = (Ogre::Real)dx/-100;// TODO: these "k" are stub
+			Ogre::Real sy = (Ogre::Real)dy/-100;
+			camMainFocus->yaw (Ogre::Radian (sx));//, Ogre::Node::TS_WORLD);
+			camMainOfs->pitch (Ogre::Radian (sy));//, Ogre::Node::TS_LOCAL);
+			//camMainOfs->rotate (Ogre::Vector3 (1,0,0), Ogre::Radian (sy));
+			//camMainOfs->rotate (Ogre::Vector3 (0,1,0), Ogre::Radian (sx));
+			//camMainOfs->rotate (Ogre::Vector3 (0,0,1), Ogre::Radian (0));
+		} else
+		if (event->buttons () & Qt::MidButton) {
+			Ogre::Real sx = (Ogre::Real)dx/-10;// TODO: these "k" are stub
+			Ogre::Real sy = (Ogre::Real)dy/10;
+           	camMainOfs->translate (sx, sy, 0, Ogre::Node::TS_LOCAL);
+		} else
+		if (event->buttons () & Qt::RightButton) {
+			//Ogre::Real sx = (Ogre::Real)dx/100;
+			//camMainOfs->roll (Ogre::Radian (sx));//, Ogre::Node::TS_LOCAL);
+			//Ogre::Real sx = (Ogre::Real)dx/-10;// TODO: these "k" are stub
+			//Ogre::Real sy = (Ogre::Real)dy/10;
+			//Ogre::Vector3 camp = mCam->getPosition ();
+			//camp.z += (sx+sy);
+			//mCam->setPosition (camp);
+		}
+		lastPos = event->pos ();
+	}
+
+	/*
+	*	QWidget event handler.
+	*/
+	OVERRIDE void
+	Qt4OGRE3D::wheelEvent(QWheelEvent *event)
+	{
+		Ogre::Vector3 camp = mCam->getPosition ();
+		camp.z += (Ogre::Real)event->delta ()/-10;// TODO: these "k" are stub
+		mCam->setPosition (camp);
+	}
+
+	/*
+	*	QWidget event handler. Occurs after the widget is resized.
 	*/
 	OVERRIDE void
 	Qt4OGRE3D::resizeEvent(QResizeEvent *p)// overrides
@@ -283,7 +409,9 @@ namespace NifSkope
 		if (!ready)
 			return;
 		mWin->resize (p->size ().width (), p->size ().height ());
-		mWin->windowMovedOrResized ();// TODO: not sure why should I call that
+		//mWin->windowMovedOrResized ();// TODO: not sure why should I call that
+		mCam->setAspectRatio (
+			(Ogre::Real)p->size ().width ()/p->size ().height ());
 	}
 
 	/*
@@ -292,6 +420,18 @@ namespace NifSkope
 	void
 	Qt4OGRE3D::Render()
 	{
+		if (progress) {
+			if (rnd (100) == 42)
+				ar = -ar;
+			if (rnd (100) == 2)
+				br = -br;
+			if (rnd (100) == 4)
+				cr = -cr;
+			progress->yaw (Ogre::Radian (ar));
+			progress->pitch (Ogre::Radian (br));
+			progress->roll (Ogre::Radian (cr));
+		}
+
 		Ogre::WindowEventUtilities::messagePump ();
 		mRoot->renderOneFrame ();
 
@@ -301,7 +441,7 @@ namespace NifSkope
 
 	/*
 	*	QWidget event handler.
-	*	Occures when the widget needs to update its "outlook".
+	*	Occurs when the widget needs to update its "outlook".
 	*/
 	OVERRIDE void
 	Qt4OGRE3D::paintEvent(QPaintEvent *p)
@@ -313,7 +453,7 @@ namespace NifSkope
 	}
 
 	/*
-	*	NifSkope::FileIO event handler. Occures after the parser
+	*	NifSkope::FileIO event handler. Occurs after the parser
 	*	has loaded a file.
 	*/
 	void
@@ -353,10 +493,6 @@ namespace NifSkope
 						if (path[i] == '\\')
 							path[i] = '/';
 					tex = std::string (path, pathlen);
-//#include <OgreTextureManager.h>
-//	Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
-//#include <OgreTexture.h>
-	//Ogre::TexturePtr mSkyTexture = Ogre::TexturePtr(tm.getByName(mSkyTextureFileName));
 					NSINFO(tex)
 					//std::stringstream matname;
 					std::stringstream matnamestream;
@@ -366,13 +502,14 @@ namespace NifSkope
 					Ogre::MaterialPtr mat =
 						Ogre::MaterialManager::getSingleton ().create(matname,
 						Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-					Ogre::TextureUnitState* tuisTexture =
+					//Ogre::TextureUnitState* tuisTexture =
 						mat->getTechnique (0)->getPass (0)->createTextureUnitState (
 						tex);
 				}
 			}
 			else if (tname->Value.Equals ("NiTriStripsData", 15)) {
-				int vnum = 0, sl = 0;
+				//int vnum = 0;
+				int sl = 0;
 				NIFfloat *v = NULL, *n = NULL, *uv = NULL;
 				NIFushort *s = NULL;
 				NIFushort *si = NULL;
@@ -391,7 +528,7 @@ namespace NifSkope
 				//  "Points" type="ushort" arr1="Num Strips" arr2="Strip Lengths"
 				if (tname->Value.Equals ("Vertices", 8)) {
 					NSINFO ("found NiTriStripsData.Vertices at #" << f->BlockIndex)
-					vnum = f->Value.len / 4;
+					//vnum = f->Value.len / 4;
 					v = (NIFfloat *)&f->Value.buf[0];
 				}
 				else if (tname->Value.Equals ("Normals", 7)) {

@@ -76,9 +76,9 @@ namespace NifSkopeQt4
 		LoadStyle (app);
 		// create main window and pass the control to it
 		NifSkopeQt4::MainWindow mainWindow;
-		mainWindow.App = this;// stattic list of commands
+		mainWindow.App = this;// static list of commands
 		NifSkope::Qt4OGRE3D centralWidget;
-		centralWidget.App = this;// stattic list of commands
+		centralWidget.App = this;// static list of commands
 		
 		mainWindow.setCentralWidget (&centralWidget);
 		mainWindow.setWindowTitle (
