@@ -107,6 +107,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 			f->JField = i2j;
 			f->Tag = t;
 			f->Value.CopyFrom ("", 1);
+			node->OwnsValue = 1;// indicate that the node destructor should release
 		}
 		node->Value = f;
 		pnode->Nodes.Add (node);
@@ -721,6 +722,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		for (i = 0; i < flist.Count (); i++)
 			delete flist[i];
 		flist.Clear ();
+		ftree.Clear ();
 
 		Reset_FieldViewAName ();
 	}
