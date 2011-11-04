@@ -101,7 +101,6 @@ namespace NifLib
 	Field::Field()
 	{
 		Tag = NULL;
-		BlockIndex = -1;
 		BlockTag = NULL;
 		JField = NULL;
 	}

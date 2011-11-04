@@ -48,8 +48,7 @@ namespace NifLib
 	public:
 		Field();
 		Buffer Value;			// value
-		NifLib::Tag *Tag;		// type
-		int BlockIndex;			// file block index
+		NifLib::Tag *Tag;		// type and other attributes
 		NifLib::Tag *BlockTag;	// file block tag
 		NifLib::Field *JField;	// jagged array field, if this is jagged array
 		NIFuint AsNIFuint();

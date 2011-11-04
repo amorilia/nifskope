@@ -72,7 +72,6 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 	{
 		A(1)
 		NifLib::Field *f = new NifLib::Field();
-		f->BlockIndex = blockIndex;
 		f->BlockTag = blockTag;
 		f->JField = i2j;
 		f->Tag = field;
@@ -102,7 +101,6 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		node->Parent = pnode;
 		if (!f) {
 			f = new NifLib::Field ();
-			f->BlockIndex = blockIndex;
 			f->BlockTag = blockTag;
 			f->JField = i2j;
 			f->Tag = t;
@@ -303,8 +301,6 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		std::string buf1s = buf1.str ();
 		len = buf1s.length ();
 		const char *buf = buf1s.c_str ();
-		//INFO("Block #" << blockIndex
-		//	<< ", E p1: \"" << std::string (buf, len) << "\"")
 
 		// pass2
 		// "(User Version == 10) || (User Version == 11)"
@@ -435,10 +431,6 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 					//INFO("E: EVAL_TYPE_UINT")
 					litem = str2<NIFuint> (std::string (lbuf, llen));
 				}
-				//if (ARG)
-				//	INFO ("Block #" << blockIndex << ", ARG: " << STDSTR(ARG->Value))
-				//else
-				//	INFO ("Block #" << blockIndex << ", ARG: null")
 				/*if (lf) INFO("E: L: [" << "f," << lt << "]")
 				else INFO("E: L: [" << " ," << lt << "]")
 				if (rf) INFO("E: R: [" << "f," << rt << "]")
@@ -686,7 +678,6 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		nUserVersion = 0;
 		nUserVersion2 = 0;
 		DETAILEDLOG = 0;
-		blockIndex = 0;
 		blockTag = NULL;
 		TEMPLATE = NULL;
 		fVersion = NULL;
@@ -710,7 +701,6 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		nUserVersion = 0;
 		nUserVersion2 = 0;
 		DETAILEDLOG = 0;
-		blockIndex = 0;
 		blockTag = NULL;
 		TEMPLATE = NULL;
 		ARG = NULL;
@@ -838,7 +828,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 				}
 				else {// an expression
 					result = Evaluate (arr);// TODO: error handling
-					//INFO("Block #" << blockIndex
+					//INFO("Block #" << STDSTR(blockTag->Value)
 					//	<< ", InitArr expression: \"" << STDSTR(arr->Value) << "\""
 					//	<< ", result: " << result)
 				}
@@ -940,8 +930,6 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 			ARGsentinel = ARG;
 			if (tmp) {
 				ARG = field->AttrById (AARG);
-			//if (ARG)
-			//	INFO("Block #" << blockIndex << ", ARG: \"" << STDSTR (ARG->Value) << "\"")
 			}
 			tmp = field->AttrById (ATEMPLATE);
 			if (tmp && !tmp->Value.Equals ("TEMPLATE", 8))
@@ -1141,7 +1129,6 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		}
 
 		Reset_FieldViewAName ();
-		blockIndex = i;
 		blockTag = t;
 		if (!ReadObject (s, t, AddNode (t, NULL, &ftree)/*&ftree*/))
 			return 0;
@@ -1161,7 +1148,6 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 			INFO("Opened \"" << fname << "\"")
 
 			//INFO("R: Header")
-			blockIndex = -1;
 			blockTag = t;
 			if (!ReadObject (s, t, AddNode (t, NULL, &ftree)/*&ftree*/))
 				return 0;
@@ -1283,7 +1269,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 						ERR("Invalid block name field")
 						return 0;
 					}
-					//INFO("Block #" << i	<< " \"" << STDSTR (f->Value) << "\"")
+					//INFO("Block #" << i << " \"" << STDSTR (f->Value) << "\"")
 					if (!ReadNifBlock (i, s, f->Value.buf, f->Value.len))
 						return 0;
 				}// for
@@ -1599,10 +1585,13 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 	void
 	Compiler::PrintNode(NifLib::TreeNode<NifLib::Field *> *node, std::string ofs)
 	{
+		static int bIdx = -1;
 		//INFO(ofs << "-- " << node->Nodes.Count ())
 		for (int i = 0; i < node->Nodes.Count (); i++) {
 			NifLib::Field *f = node->Nodes[i]->Value;
-			INFO(ofs << "f #" << f->BlockIndex
+			if (node->Parent == NULL)
+				bIdx = i - 1;
+			INFO(ofs << "f #" << bIdx
 			<< " (" << f->BlockName () << ")" << ": \""
 			<< f->OwnerName () << "."
 			<< f->Name () << "\": "
@@ -1619,13 +1608,13 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		PrintNode (&ftree, ofs);
 		return;
 
+		int bIdx = -1;
 		for (int i = 0; i < flist.Count (); i++) {
 			NifLib::Field *f = flist[i];
-			std::string structure = "";
-			if (f->IsStruct (this))
-				structure = " [struct]";
-			INFO("f #" << f->BlockIndex
-				<< " (" << f->BlockName () << ")" << ": " << structure << " \""
+			if (i > 0 && f->BlockTag != flist[i-1]->BlockTag)
+				bIdx++;
+			INFO("f #" << bIdx
+				<< " (" << f->BlockName () << ")" << ": \""
 				<< f->OwnerName () << "."
 				<< f->Name () << "\": "
 				<< f->Value.len << " \"" << f->AsString (this) << "\"")

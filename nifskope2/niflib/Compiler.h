@@ -51,7 +51,6 @@ namespace NifLib
 	{
 		int DETAILEDLOG;
 		int POS;
-		int blockIndex;
 		NifLib::Tag *blockTag;
 		NifLib::Field *i2j;// jagged array
 		//

@@ -496,11 +496,51 @@ namespace NifSkopeQt4
 				QString (f->OwnerName ().c_str ()) + QString (".") +
 				QString (f->Name ().c_str ()) );
 			QStandardItem *fv = NULL;
-			if (f->Value.len < 100)
-				fv = new QStandardItem (QString (
-					f->AsString (App->File.NifFile).c_str ()));
-			else
-				fv = new QStandardItem (QString ("[LARGE STRUCTURE]"));
+			if (!(f->Tag->AttrById (AARR1))/*f->Value.len < 100*/) {
+				if (f->Value.len > 64)
+					fv = new QStandardItem (QString ("[LARGE STRUCTURE]"));
+				else
+					fv = new QStandardItem (QString (
+						f->AsString (App->File.NifFile).c_str ()));
+			}
+			else {
+				if (f->Tag->AttrById (AARR2)) {
+					if (f->JField)
+						fv = new QStandardItem (QString ("[2D JAGGED ARRAY]"));
+					else fv = new QStandardItem (QString ("[2D ARRAY]"));
+				} else {
+					if (f->JField)
+						fv = new QStandardItem (QString ("[1D JAGGED ARRAY]"));
+					else {
+						if (f->Tag->AttrById (ATYPE)->Value.Equals ("char", 4))
+							fv = new QStandardItem (QString (
+								f->AsString (App->File.NifFile).c_str ()));
+						else if (f->Tag->AttrById (ATYPE)->Value.Equals ("BlockTypeIndex", 14)) {
+							unsigned short *buf = (unsigned short *)&(f->Value.buf[0]);
+							int cnt = f->Value.len / 2;
+							for (int i = 0; i < cnt; i++) {
+								fi->appendRow (QList<QStandardItem *>()
+									<< new QStandardItem (QString ("%0").arg (i))
+									<< new QStandardItem (QString ("[%0]").arg (i))
+			 						<< new QStandardItem (QString ("%0").arg (buf[i])));
+							}
+							fv = new QStandardItem (QString ("[1D ARRAY]"));
+						}
+						else if (f->Tag->AttrById (ATYPE)->Value.Equals ("Ref", 3)) {
+							int *buf = (int *)&(f->Value.buf[0]);
+							int cnt = f->Value.len / 4;
+							for (int i = 0; i < cnt; i++) {
+								fi->appendRow (QList<QStandardItem *>()
+									<< new QStandardItem (QString ("%0").arg (i))
+									<< new QStandardItem (QString ("[%0]").arg (i))
+			 						<< new QStandardItem (QString ("%0").arg (buf[i])));
+							}
+							fv = new QStandardItem (QString ("[1D ARRAY]"));
+						} else
+							fv = new QStandardItem (QString ("[1D ARRAY]"));
+					}
+				}
+			}
 			fi->setEditable (false);
 			fn->setEditable (false);
 			fv->setEditable (false);
@@ -566,13 +606,6 @@ namespace NifSkopeQt4
 			try {
 				NifTreePrefixWalk (nif->Nodes[r], &MainWindow::wFindFieldByName);
 			} catch (int) {}
-			/*for (int i = 0; i < nif->Nodes[r]->Nodes.Count (); i++) {
-				f = nif->Nodes[r]->Nodes[i]->Value;
-				if (f->Name () == std::string ("Value")) {
-					fvalue = f;
-					break;
-				}
-			}*/
 			// QString can not handle std::string ("", 1)
 			QStandardItem *name = new QStandardItem (QString (f->BlockName ().c_str ()));
 			QStandardItem *value = new QStandardItem (QString (
