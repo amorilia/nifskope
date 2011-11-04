@@ -69,6 +69,15 @@ namespace NifSkopeQt4
 
 	private:
 		void AddSubItems(QStandardItem *itm, NifLib::TreeNode<NifLib::Field *> *n);
+
+		// "args" for the walker actions
+		// all walker related fields are prefixed with "w"
+		NifLib::Field *wField;
+		std::string wName;
+		void NifTreePrefixWalk(
+			NifLib::TreeNode<NifLib::Field *> *node,
+			int (MainWindow::*actn) (NifLib::TreeNode<NifLib::Field *> *node));
+		int wFindFieldByName(NifLib::TreeNode<NifLib::Field *> *node);
 	protected slots:
 		void sFileLoad();
 		void sSelectFont();

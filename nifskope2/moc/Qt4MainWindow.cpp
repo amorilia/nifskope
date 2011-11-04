@@ -509,6 +509,30 @@ namespace NifSkopeQt4
 		}
 	}
 
+	void MainWindow::NifTreePrefixWalk(
+		NifLib::TreeNode<NifLib::Field *> *node,
+		int (MainWindow::*actn)(NifLib::TreeNode<NifLib::Field *> *node))
+	{
+		if (!actn)
+			return;
+		for (int i = 0; i < node->Nodes.Count (); i++) {
+			if (!((this->*actn) (node->Nodes[i])))
+				break;
+			NifTreePrefixWalk (node->Nodes[i], actn);
+		}
+	}
+
+	int
+	MainWindow::wFindFieldByName(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		if (node->Value->Name () == wName) {
+			wField = node->Value;
+			throw 1;// stop the recursion
+		}
+		else
+			return 1;// continue searching
+	}
+
 	/*
 	*	Load a .nif file
 	*/
@@ -537,21 +561,23 @@ namespace NifSkopeQt4
 			QStandardItem *n = new QStandardItem (QString ("%0").arg (r));
 			NifLib::Field *f = nif->Nodes[r]->Value;
 			// get "Value"
-			NifLib::Field *fvalue = NULL;
-			for (int i = 0; i < nif->Nodes[r]->Nodes.Count (); i++) {
+			wField = NULL;
+			wName = "Value";
+			try {
+				NifTreePrefixWalk (nif->Nodes[r], &MainWindow::wFindFieldByName);
+			} catch (int) {}
+			/*for (int i = 0; i < nif->Nodes[r]->Nodes.Count (); i++) {
 				f = nif->Nodes[r]->Nodes[i]->Value;
 				if (f->Name () == std::string ("Value")) {
 					fvalue = f;
 					break;
 				}
-			}
+			}*/
 			// QString can not handle std::string ("", 1)
 			QStandardItem *name = new QStandardItem (QString (f->BlockName ().c_str ()));
 			QStandardItem *value = new QStandardItem (QString (
-				(fvalue ? fvalue->AsString (App->File.NifFile).c_str () : "")));
-
+				(wField ? wField->AsString (App->File.NifFile).c_str () : "")));
 			AddSubItems (n, nif->Nodes[r]);
-
 			model->setItem (r, 0, n);
 			model->setItem (r, 1, name);
 			model->setItem (r, 2, value);
