@@ -90,13 +90,6 @@ md5filesareequal(const char *fname1, const char *fname2)
 		MD5_DIGEST_LENGTH);
 }
 
-template <typename T> class TreeNode
-{
-public:
-	TreeNode<T> *Parent;
-	NifLib::List< TreeNode<T> > Nodes;
-};
-
 int
 main(int argc, char **argv)
 {
@@ -107,7 +100,7 @@ main(int argc, char **argv)
 	INFO("XML loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 
 	//p.SaveFile ("nif3.xml");
-	/*int r = 0;
+	int r = 0;
 	p.Build ();
 	gettimeofday (&tstart, NULL);
 	//r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
@@ -128,9 +121,9 @@ main(int argc, char **argv)
 	} else {
 		INFO("ReadNif failed")
 		p.DbgPrintFields ();
-	}*/
+	}
 
-	const char *pfix = "/mnt/archive/rain/temp/nif/";
+	/*const char *pfix = "/mnt/archive/rain/temp/nif/";
 	std::string line;
 	std::ifstream myf("flist_nif.txt");
 	int cnt = 0;
@@ -168,7 +161,7 @@ main(int argc, char **argv)
 				}
 			}
 		}
-	}
+	}*/
 
 	return EXIT_SUCCESS;
 }

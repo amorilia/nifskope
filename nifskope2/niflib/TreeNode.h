@@ -30,56 +30,21 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#ifndef __FILEIO_H__
-#define __FILEIO_H__
+#ifndef __TREENODE_H__
+#define __TREENODE_H__
 
-#include <string>
-#include <vector>
+#include "List.h"
 
-#include "IEvent.h"
-
-// niflib
-#include "Compiler.h"
-
-namespace NifSkope
+namespace NifLib
 {
-	class FileIO
+	template <typename T> class TreeNode
 	{
-		std::vector<std::string> fmt_load;
 	public:
-		FileIO();
-		~FileIO();
-		
-		/*
-		*	Attempts to load a file. "FileName" is its argument.
-		*	"NifFile" - its partial* result - "NifLib::Compiler"
-		*	may load "nif.xml" and may fail to load "FileName".
-		*/
-		std::string FileName;
-		virtual void Load();
-		NifLib::Compiler *NifFile;
-
-		/*
-		*	Returns true if a file is currently loaded
-		*/
-		bool Loaded();
-
-		/*
-		*	Returns a list of extensions for the supported file formats
-		*/
-		std::string	GetLoadFormats(std::string pairSeparator, std::string listSeparator);
-
-		/*virtual void SaveAs();
-		virtual void Import();
-		virtual void Export();
-		virtual void ReloadXML();// reloads nif.xml and kfm.xml
-		virtual void ReloadXMLAndNif(); // ReloadXML() + current .nif*/
-
-		/*
-		*	Notifies when Load() succeeds
-		*/
-		IEvent OnLoad;
+		// TODO: () ~()
+		TreeNode<T> *Parent;
+		NifLib::List< TreeNode<T> *> Nodes;
+		T Value;
 	};
 }
 
-#endif /*__FILEIO_H__*/
+#endif /*__TREENODE_H__*/

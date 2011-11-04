@@ -43,6 +43,8 @@ namespace NifLib
 	class Compiler;
 	class Field
 	{
+		NifLib::Attr *Type();
+		std::string AsBasicTypeValue(NifLib::Tag *btype, Compiler *typesprovider);
 	public:
 		Field();
 		Buffer Value;			// value
@@ -51,7 +53,43 @@ namespace NifLib
 		NifLib::Tag *BlockTag;	// file block tag
 		NifLib::Field *JField;	// jagged array field, if this is jagged array
 		NIFuint AsNIFuint();
+
+		/*
+		*	Returns a string representation of the field.
+		*	Can be enormous in case of arrays.
+		*/
 		std::string AsString(Compiler *typesprovider);
+
+		/*
+		*	Helper function. Returns the file block name this feild belongs to.
+		*	TODO: is "std::string" good enough as a result type?
+		*/
+		std::string BlockName();
+
+		/*
+		*	Helper function. Returns the name of the field.
+		*/
+		std::string Name();
+
+		/*
+		*	Helper function. Returns the tag block name this feild belongs to.
+		*/
+		std::string OwnerName();
+
+		/*
+		*	Helper function. Returns "true" if the field type is TENUM.
+		*/
+		bool IsEnum (Compiler *typesprovider);
+
+		/*
+		*	Helper function. Returns "true" if the field type is TCOMPOUND or TNIOBJECT.
+		*/
+		bool IsStruct(Compiler *typesprovider);
+
+		/*
+		*	Helper function. Returns the name of the enum if the field is TENUM.
+		*/
+		std::string AsEnumName(Compiler *typesprovider);
 	};
 
 	template <typename T> class FieldArrayView: public Field

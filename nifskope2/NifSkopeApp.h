@@ -38,6 +38,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "XMLChecker.h"
 #include "ResourceFiles.h"
 
+// "NifLib"
+#include "List.h"
+#include "Field.h"
+#include "TreeNode.h"
+
 namespace NifSkope
 {
 	/*
@@ -46,15 +51,32 @@ namespace NifSkope
 	*/
 	class NifSkopeApp
 	{
+		// .nif views
+		// as a list of blocks
+		NifLib::List< NifLib::List<NifLib::Field *> *> vBlock;
+
 	public:
 		NifSkopeApp();
+
+		/* 
+		*	"contract" - .nif file view.
+		*	Currently loaded .nif file grouped by blocks.
+		*	Returns NULL if there is no currently loaded .nif file.
+		*/
+		NifLib::List< NifLib::List<NifLib::Field *> *> *AsBlocks();
+		NifLib::TreeNode<NifLib::Field *> *AsTree();
+
 		// arguments
-		std::string FileName;
 		bool SanitizeBeforeSave;
 		// commands - File
 		virtual int Run(int argc, char **argv);
 		virtual void NewWindow();// creates new mainwindow
-		NifSkope::FileIO File;// "contract"
+
+		/*
+		*	"contract" - gives access to file IO of the applicaiton.
+		*/
+		NifSkope::FileIO File;
+
 		NifSkope::XMLChecker XmlChecker;
 		NifSkope::ResourceFiles ResourceFiles;
 		virtual void Quit();

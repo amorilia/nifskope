@@ -39,6 +39,65 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifLib
 {
+	NifLib::Attr *
+	Field::Type()
+	{
+		NifLib::Attr *atype = Tag->AttrById (ATYPE);
+		if (!atype)
+			atype = Tag->AttrById (ANIFLIBTYPE);
+		if (!atype)
+			atype = Tag->AttrById (ANAME);
+		return atype;
+	}
+
+	std::string
+	Field::AsBasicTypeValue(NifLib::Tag *btype, Compiler *typesprovider)
+	{
+		// 0000 0000 - unsigned
+		// 1000 0000 - signed
+		// 0000 0000 - int
+		// 0100 0000 - float
+		// 0000 0000 - 0 bytes
+		// 0000 0001 - 1 byte
+		// 0000 0010 - 2 bytes
+		// 0000 0100 - 4 bytes
+		// 0000 1000 - 8 bytes, etc.
+		std::stringstream result;
+		NifLib::Attr *_ta = btype->AttrById (ANIFLIBTYPE);
+		if (!_ta)
+			result << "[UNKNOWN TBASIC ANIFLIBTYPE]";
+		else if (_ta->Value.Equals ("HeaderString", 12) ||
+			_ta->Value.Equals ("LineString", 10))
+			result << std::string (Value.buf, Value.len - 1);
+		else if (_ta->Value.Equals ("unsigned int", 12)||
+			_ta->Value.Equals ("IndexString", 11))
+			result << (unsigned int)*(unsigned int *)&Value.buf[0];
+		else if (_ta->Value.Equals ("Ref", 3))
+			result << "Ref:" << (int)*(int *)&Value.buf[0];
+		else if (_ta->Value.Equals ("*", 1))
+			result << "*:" << (int)*(int *)&Value.buf[0];
+		else if (_ta->Value.Equals ("int", 3))
+			result << (int)*(int *)&Value.buf[0];
+		else if (_ta->Value.Equals ("byte", 4)) {
+			if (Type ()->Value.Equals ("char", 4))
+				result << std::string (Value.buf, Value.len);
+			else
+				result << (int)*(unsigned char *)&Value.buf[0];
+		}
+		else if (_ta->Value.Equals ("unsigned short", 14))
+			result << (unsigned short)*(unsigned short *)&Value.buf[0];
+		else if (_ta->Value.Equals ("short", 5))
+			result << (short)*(short *)&Value.buf[0];
+		else if (_ta->Value.Equals ("bool", 4))
+			result << StreamBlockB (Value.buf, Value.len, Value.len + 1);
+		else if (_ta->Value.Equals ("float", 5))
+			result << (float)*(float *)&Value.buf[0];
+		else// TODO: this could be avoided if "nif.xml" specifies sizes
+			result << "[NEW ANIFLIBTYPE: "
+				<< std::string (_ta->Value.buf, _ta->Value.len) << "]";
+		return result.str ();
+	}
+
 	Field::Field()
 	{
 		Tag = NULL;
@@ -65,12 +124,18 @@ namespace NifLib
 	{
 		if (Value.len <= 0)
 			return "[EMPTY]";
-		NifLib::Attr *atype = Tag->AttrById (ATYPE);
-		if (!atype)
-			atype = Tag->AttrById (ANIFLIBTYPE);
-		NifLib::Tag *btype = typesprovider->GetBasicType (atype);
-		std::stringstream result;
-		if (btype) {
+		NifLib::Attr *ftype = Type ();
+		NifLib::Tag *btype = typesprovider->GetBasicType (ftype);
+		if (IsEnum (typesprovider))
+			return AsEnumName (typesprovider);
+		if (btype)
+			return AsBasicTypeValue (btype, typesprovider);
+		else {
+			std::stringstream result;
+			result << "[" << std::string (ftype->Value.buf, ftype->Value.len) << "]";
+			return result.str ();
+		}
+		/*if (btype) {
 			NifLib::Attr *_ta = btype->AttrById (ANIFLIBTYPE);
 			if (!_ta)
 				result << "[UNKNOWN]";
@@ -88,9 +153,9 @@ namespace NifLib
 				result << (int)*(int *)&Value.buf[0];
 			else if (_ta->Value.Equals ("byte", 4)) {
 				if (atype->Value.Equals ("char", 4))
-				result << std::string (Value.buf, Value.len);
+					result << std::string (Value.buf, Value.len);
 				else
-				result << (int)*(unsigned char *)&Value.buf[0];
+					result << (int)*(unsigned char *)&Value.buf[0];
 			}
 			else if (_ta->Value.Equals ("unsigned short", 14)) {
 				unsigned short *buf = (unsigned short *)&Value.buf[0];
@@ -148,7 +213,88 @@ namespace NifLib
 			}
 			else
 				result << "[" << std::string (atype->Value.buf, atype->Value.len) << "]";
+		}*/
+	}
+
+	/*
+	*	Helper function, returns file block name
+	*	TODO: is "std::string" good enough as a result type?
+	*/
+	std::string
+	Field::BlockName()
+	{
+		return Compiler::TagName (BlockTag);
+	}
+
+	/*
+	*	Helper function. Returns the name of the field.
+	*/
+	std::string
+	Field::Name()
+	{
+		return Compiler::TagName (Tag);
+	}
+
+	/*
+	*	Helper function. Returns the TCOMPUND or TNIOBJECT this field belongs to.
+	*/
+	std::string
+	Field::OwnerName()
+	{
+		return Compiler::TagName (Tag->Owner);
+	}
+
+	/*
+	*	Helper function. Returns "true" if the field type is TENUM.
+	*/
+	bool
+	Field::IsEnum(Compiler *typesprovider)
+	{
+		NifLib::Attr *type = Type ();
+		if (!type)
+			return false;
+		return (typesprovider->Find (TENUM, type->Value.buf, type->Value.len));
+	}
+
+	/*
+	*	Helper function. Returns "true" if the field type is TCOMPOUND or TNIOBJECT.
+	*/
+	bool
+	Field::IsStruct(Compiler *typesprovider)
+	{
+		NifLib::Attr *type = Type ();
+		if (!type)
+			return false;
+		return (typesprovider->Find (TCOMPOUND, type->Value.buf, type->Value.len) ||
+				typesprovider->Find (TNIOBJECT, type->Value.buf, type->Value.len));
+	}
+
+	/*
+	*	Helper function. Returns the name of the enum if the field is TENUM.
+	*/
+	std::string
+	Field::AsEnumName(Compiler *typesprovider)
+	{
+		NifLib::Attr *type = Tag->AttrById (ATYPE);
+		if (!type)
+			return std::string ("ERROR: field without ATYPE");
+		NifLib::Tag *e = typesprovider->Find (TENUM, type->Value.buf, type->Value.len);
+		if (e) { // its enum
+			std::string value =
+				AsBasicTypeValue (typesprovider->GetBasicType (Type ()), typesprovider);
+			for (int i = 0; i < e->Tags.Count (); i++) {
+				NifLib::Attr *v = e->Tags[i]->AttrById (AVALUE);
+				if (!v)
+					return std::string ("ERROR: TENUM TOPTION without AVALUE");
+				if (std::string (v->Value.buf, v->Value.len) == value) {
+					NifLib::Attr *n = e->Tags[i]->AttrById (ANAME);
+					if (!n)
+						return std::string ("ERROR: TENUM TOPTION without ANAME");
+					return std::string (n->Value.buf, n->Value.len);
+				}
+			}
+			return value;// name not found
 		}
-		return result.str ();
+		return std::string ("ERROR: field is not TENUM");
 	}
 }

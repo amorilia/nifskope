@@ -43,6 +43,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <sstream>
 #include <map>
+#include "TreeNode.h"
 
 namespace NifLib
 {
@@ -53,10 +54,11 @@ namespace NifLib
 		int blockIndex;
 		NifLib::Tag *blockTag;
 		NifLib::Field *i2j;// jagged array
-		//NifLib::List<NifLib::Attr *> argstack;
+		//
 		NifLib::Attr *ARG;
 		NifLib::Attr *TEMPLATE;
-		NifLib::List<NifLib::Field *> flist;
+		NifLib::List<NifLib::Field *> flist;// core data
+		NifLib::TreeNode<NifLib::Field *> ftree;
 
 		NifLib::Field *fVersion;
 		NifLib::Field *fUserVersion;
@@ -82,7 +84,11 @@ namespace NifLib
 		NIFuint nVersion, nUserVersion, nUserVersion2;// global nif file variable(s)
 		int	Read_bool (NifStream *s, char *b);
 
-		void AddField(NifLib::Tag *field, char *buf, int bl);
+		NifLib::Field *AddField(NifLib::Tag *field, char *buf, int bl);
+		NifLib::TreeNode<NifLib::Field *> *AddNode(
+			NifLib::Tag *t,
+			NifLib::Field *f,
+			NifLib::TreeNode<NifLib::Field *> *pnode);
 
 		/*
 		*	Starts from current count-1 and scans untill the first field.
@@ -98,7 +104,7 @@ namespace NifLib
 		void Reset_FieldViewAName();
 
 		bool V12Check(NifLib::Tag *field);
-		NifLib::Tag *Find(int tagid, const char *attrvalue, int len);
+		
 		template <typename T> static T str2(const std::string &val)
 		{
 			std::stringstream aa;
@@ -130,7 +136,8 @@ namespace NifLib
 		/*
 		*	Read one object from the .nif
 		*/
-		int ReadObject(NifStream &s, NifLib::Tag *t);
+		int ReadObject(NifStream &s, NifLib::Tag *t,
+			NifLib::TreeNode<NifLib::Field *> *n);
 		int ReadNifBlock(int i, NifStream &s, const char *n, int nlen);
 	public:
 		Compiler(const char *fname);
@@ -143,10 +150,16 @@ namespace NifLib
 		NIFuint HeaderString2Version(const char *buf, int bl);
 
 		/*
-		*	Return TBASIC for that ATYPE attribute if there is TBASIC
+		*	Returns TBASIC for that ATYPE attribute if there is TBASIC
 		*	reachable for it.
 		*/
 		NifLib::Tag *GetBasicType(NifLib::Attr *type);
+
+		/*
+		*	Returns tag "tagid" with ANAME "attrvalue".
+		*	Returns NULL if there is no such tag.
+		*/
+		NifLib::Tag *Find(int tagid, const char *attrvalue, int len);
 
 		int ReadNif(const char *fname);
 		void WriteNif(const char *fname);
@@ -154,6 +167,15 @@ namespace NifLib
 		void Build();
 
 		void DbgPrintFields();
+
+		void PrintNode(NifLib::TreeNode<NifLib::Field *> *node, std::string ofs);
+
+		/*
+		*	Returns tag ANAME attribute as a string
+		*/
+		static std::string TagName(NifLib::Tag *tag);
+
+		NifLib::TreeNode<NifLib::Field *> *AsTree();
 	};
 }
 

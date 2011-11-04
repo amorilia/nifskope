@@ -41,6 +41,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iomanip>
 #include <map>
 #include <string.h>
+#include "TreeNode.h"
 
 namespace NifLib
 {
@@ -66,7 +67,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 
 #define STDSTR(BUF) std::string (BUF.buf, BUF.len)
 
-	void
+	NifLib::Field *
 	Compiler::AddField(NifLib::Tag *field, char *buf, int bl)
 	{
 		A(1)
@@ -88,6 +89,28 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		lst->Add(flist.Count () - 1);
 
 		B(1)
+		return f;
+	}
+
+	NifLib::TreeNode<NifLib::Field *> *
+	Compiler::AddNode(
+			NifLib::Tag *t,
+			NifLib::Field *f,
+			NifLib::TreeNode<NifLib::Field *> *pnode)
+	{
+		NifLib::TreeNode<NifLib::Field *> *node = new NifLib::TreeNode<NifLib::Field *>;
+		node->Parent = pnode;
+		if (!f) {
+			f = new NifLib::Field ();
+			f->BlockIndex = blockIndex;
+			f->BlockTag = blockTag;
+			f->JField = i2j;
+			f->Tag = t;
+			f->Value.CopyFrom ("", 1);
+		}
+		node->Value = f;
+		pnode->Nodes.Add (node);
+		return node;
 	}
 
 	NifLib::Field *
@@ -824,7 +847,8 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 	}
 
 	int
-	Compiler::ReadObject(NifStream &s, NifLib::Tag *t)
+	Compiler::ReadObject(
+		NifStream &s, NifLib::Tag *t, NifLib::TreeNode<NifLib::Field *> *n)
 	{
 		A(9)
 		if (!t) {
@@ -853,7 +877,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 				return 0;
 			}
 			B(9)
-			if (!ReadObject (s, tp)) {
+			if (!ReadObject (s, tp, AddNode(tp, NULL, n))) {
 				return 0;
 			}
 			A(9)
@@ -880,7 +904,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 			B(9)\
 			return 0;\
 		}\
-		AddField (field, (char *)&buf[0], BYTES);\
+		AddNode (field, AddField (field, (char *)&buf[0], BYTES), n);\
 		POS += rr;\
 		NifRelease (buf);\
 	}\
@@ -976,7 +1000,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 					NIFchar buf[MAX];
 					NIFint rr = s.ReadCharCond (&buf[0], MAX, '\n');
 					if (rr <= MAX) {
-						AddField (field, &buf[0], rr);
+						AddNode (field, AddField (field, &buf[0], rr), n);
 					} else {// file format not supported
 						ERR("R: ReadCharCond failed")
 						B(9)
@@ -1005,7 +1029,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 			for (int idx = 0; idx < i1; idx++) {\
 				for (int j = 0; j < (int)lengths[idx]; j++) {\
 					B(9)\
-					if (!ReadObject (s, tt)) {\
+					if (!ReadObject (s, tt, newnode)) {\
 						return 0;\
 					}\
 					A(9)\
@@ -1069,14 +1093,19 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 					B(9)
 					return 0;// can not continue - its sequential file format
 				}
-				//AddField (field, NULL, 0); // struct marker
+				//AddField (field, "", 1); // struct marker
+				NifLib::TreeNode<NifLib::Field *> *newnode = AddNode (field, NULL, n);
 				if (!i2j) {
-					if (tt->FixedSize > 0)
+					if (tt->FixedSize > 0) {
+						NifLib::TreeNode<NifLib::Field *> *nn = n;
+						n = newnode;
 						READ(NIFbyte, tt->FixedSize * izise, Byte, tt->FixedSize * izise)
+						n = nn;
+					}
 					else
 						for (int idx = 0; idx < izise; idx++) {// 1d/2d/3d array
 							B(9)
-							if (!ReadObject (s, tt)) {
+							if (!ReadObject (s, tt, newnode)) {
 								return 0;
 							}
 							A(9)
@@ -1104,7 +1133,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		if (!t) {
 			t = Find (TNIOBJECT, name, nlen);
 			if (!t) {
-				ERR("Unknown block")
+				ERR("Unknown block \"" << std::string (name, nlen) << "\"")
 				return 0;
 			}
 		}
@@ -1112,7 +1141,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		Reset_FieldViewAName ();
 		blockIndex = i;
 		blockTag = t;
-		if (!ReadObject (s, t))
+		if (!ReadObject (s, t, AddNode (t, NULL, &ftree)/*&ftree*/))
 			return 0;
 		ARG = NULL;
 		return 1;
@@ -1131,7 +1160,8 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 
 			//INFO("R: Header")
 			blockIndex = -1;
-			if (!ReadObject (s, t))
+			blockTag = t;
+			if (!ReadObject (s, t, AddNode (t, NULL, &ftree)/*&ftree*/))
 				return 0;
 			ARG = NULL;
 			//argstack.Clear ();
@@ -1195,7 +1225,8 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 						return 0;// block name length read failed
 				}
 				// those seem to have footer too
-				ReadNifBlock (i, s, "Footer", 6);
+				if (!ReadNifBlock (i, s, "Footer", 6))
+					return 0;
 			}
 			else if (nVersion > 0x0A000100/*"10.0.1.0"*/) {
 				f = FFBackwards ("Block Type Index", 16);
@@ -1251,9 +1282,11 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 						return 0;
 					}
 					//INFO("Block #" << i	<< " \"" << STDSTR (f->Value) << "\"")
-					ReadNifBlock (i, s, f->Value.buf, f->Value.len);
+					if (!ReadNifBlock (i, s, f->Value.buf, f->Value.len))
+						return 0;
 				}// for
-				ReadNifBlock (i, s, "Footer", 6);
+				if (!ReadNifBlock (i, s, "Footer", 6))
+					return 0;
 			}//
 			else {
 				INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
@@ -1562,37 +1595,60 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 	}
 
 	void
+	Compiler::PrintNode(NifLib::TreeNode<NifLib::Field *> *node, std::string ofs)
+	{
+		//INFO(ofs << "-- " << node->Nodes.Count ())
+		for (int i = 0; i < node->Nodes.Count (); i++) {
+			NifLib::Field *f = node->Nodes[i]->Value;
+			INFO(ofs << "f #" << f->BlockIndex
+			<< " (" << f->BlockName () << ")" << ": \""
+			<< f->OwnerName () << "."
+			<< f->Name () << "\": "
+			<< f->Value.len << " \"" << f->AsString (this) << "\"")
+			if (node->Nodes[i]->Nodes.Count () > 0)
+				PrintNode (node->Nodes[i], ofs + " ");
+		}
+	}
+
+	void
 	Compiler::DbgPrintFields()
 	{
+		std::string ofs = "";;
+		PrintNode (&ftree, ofs);
+		return;
+
 		for (int i = 0; i < flist.Count (); i++) {
 			NifLib::Field *f = flist[i];
-			NifLib::Tag *t = f->Tag;
-			NifLib::Attr *tname = t->AttrById (ANAME);
-			NifLib::Tag *owner = t->Owner;
-			NifLib::Attr *oname = NULL;
-
-			std::stringstream tmp;
-			if (owner) {
-				oname = owner->AttrById (ANAME);
-				if (oname)
-					tmp << STDSTR(oname->Value);
-				else tmp << "NULLname";
-			} else tmp << "NULL";
-
-			std::stringstream tmp2;
-			NifLib::Tag *bt = f->BlockTag;
-			if (bt) {
-				NifLib::Attr *btname = bt->AttrById (ANAME);
-				if (btname)
-					tmp2 << STDSTR(btname->Value);
-				else tmp2 << "NULLname";
-			} else tmp2 << "NULL";
-
-			INFO("f #" << f->BlockIndex << "(" << tmp2.str () << ")" << ":\""
-				<< tmp.str () << "."
-				<< STDSTR(tname->Value) << "\": "
+			std::string structure = "";
+			if (f->IsStruct (this))
+				structure = " [struct]";
+			INFO("f #" << f->BlockIndex
+				<< " (" << f->BlockName () << ")" << ": " << structure << " \""
+				<< f->OwnerName () << "."
+				<< f->Name () << "\": "
 				<< f->Value.len << " \"" << f->AsString (this) << "\"")
 		}
+	}
+
+	/*
+	*	Returns tag ANAME attribute as a string
+	*/
+	std::string
+	Compiler::TagName(NifLib::Tag *tag)
+	{
+		if (tag) {
+			NifLib::Attr *tname = tag->AttrById (ANAME);
+			if (tname)
+				return std::string (tname->Value.buf, tname->Value.len);
+			else
+				return std::string ("ERROR: Missing tag name");
+		} else
+			return std::string ("NULL");
+	}
+
+	NifLib::TreeNode<NifLib::Field *> *Compiler::AsTree()
+	{
+		return &ftree;
 	}
 
 #undef STDSTR

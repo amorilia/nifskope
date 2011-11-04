@@ -34,6 +34,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <nifskope.h>
 
+// "NifLib"
+#include "List.h"
+#include "Field.h"
+#include "Tag.h"
+#include "Attr.h"
+#include "niflib.h"
+
 namespace NifSkopeQt4
 {
 	void MainWindow::createMainMenu()
@@ -127,12 +134,23 @@ namespace NifSkopeQt4
 		mView->addSeparator ();
 		QMenu *mBlockList = new QMenu (tr("Block List"));
 		mView->addMenu (mBlockList);
+		QActionGroup *gListMode = new QActionGroup (this);
 		QAction *aHierarchy = new QAction (tr("Show Blocks in Tree"), this);
 		aHierarchy->setCheckable (true);
+		aHierarchy->setEnabled (false);//TODO: implement me
 		QAction *aList = new QAction (tr("Show Blocks in List"), this);
 		aList->setCheckable (true);
+		aList->setEnabled (false);//TODO: implement me
+		QAction *aBlockView = new QAction (tr("Block View"), this);
+		aBlockView->setCheckable (true);
+		gListMode->addAction (aList);
+		gListMode->addAction (aHierarchy);
+		gListMode->addAction (aBlockView);
+		gListMode->setExclusive (true);
 		mBlockList->addAction (aHierarchy);
 		mBlockList->addAction (aList);
+		mBlockList->addAction (aBlockView);
+		aBlockView->setChecked (true);
 		QMenu *mBlockDetails = new QMenu (tr("Block Details"));
 		mView->addMenu (mBlockDetails);
 		QAction *aCondition = new QAction (tr("Hide Version Mismatched Rows"), this);
@@ -318,7 +336,11 @@ namespace NifSkopeQt4
 		// TODO: list or something
 		// core layout - main widgets
 		// 1 TODO: createListView ("Block List", true);
-		QTreeView *tvBlockList = new QTreeView;
+		tvBlockList = new QTreeView;
+		tvBlockList->setUniformRowHeights (true);
+		tvBlockList->setAlternatingRowColors (true);
+		tvBlockList->setContextMenuPolicy (Qt::CustomContextMenu);
+		tvBlockList->setHorizontalScrollBarPolicy (Qt::ScrollBarAsNeeded);
 		dockTVBL = new QDockWidget (tr("Block List"));
 		dockTVBL->setObjectName ("dockTVBL");
 		dockTVBL->setWidget (tvBlockList);
@@ -465,6 +487,32 @@ namespace NifSkopeQt4
 	}
 
 	void
+	MainWindow::AddSubItems(QStandardItem *itm, NifLib::TreeNode<NifLib::Field *> *n)
+	{
+		for (int s = 0; s < n->Nodes.Count (); s++) {
+			NifLib::Field *f = n->Nodes[s]->Value;
+			QStandardItem *fi = new QStandardItem (QString ("%0").arg (s));
+			QStandardItem *fn =	new QStandardItem (
+				QString (f->OwnerName ().c_str ()) + QString (".") +
+				QString (f->Name ().c_str ()) );
+			QStandardItem *fv = NULL;
+			if (f->Value.len < 100)
+				fv = new QStandardItem (QString (
+					f->AsString (App->File.NifFile).c_str ()));
+			else
+				fv = new QStandardItem (QString ("[LARGE STRUCTURE]"));
+			fi->setEditable (false);
+			fn->setEditable (false);
+			fv->setEditable (false);
+			itm->appendRow (QList<QStandardItem *>() << fi << fn << fv);
+			AddSubItems (fi, n->Nodes[s]);
+		}
+	}
+
+	/*
+	*	Load a .nif file
+	*/
+	void
 	MainWindow::sFileLoad()
 	{
 		// UI part of the handler
@@ -476,6 +524,42 @@ namespace NifSkopeQt4
 		// Model part of the handler
 		App->File.FileName = fileName.toStdString ();
 		App->File.Load ();
+		// UI part of the handler
+		//  Display it in "Block List" "As Blocks"
+		//  BlockTag name="", SubTag with name="Value"
+		//tvBlockList
+		//NifLib::List< NifLib::List<NifLib::Field *> *> *nif = App->AsBlocks ();
+		NifLib::TreeNode<NifLib::Field *> *nif = App->AsTree ();
+		if (!nif)
+			return;
+		QStandardItemModel *model = new QStandardItemModel (nif->Nodes.Count (), 3);
+		for (int r = 0; r < nif->Nodes.Count (); r++) {
+			QStandardItem *n = new QStandardItem (QString ("%0").arg (r));
+			NifLib::Field *f = nif->Nodes[r]->Value;
+			// get "Value"
+			NifLib::Field *fvalue = NULL;
+			for (int i = 0; i < nif->Nodes[r]->Nodes.Count (); i++) {
+				f = nif->Nodes[r]->Nodes[i]->Value;
+				if (f->Name () == std::string ("Value")) {
+					fvalue = f;
+					break;
+				}
+			}
+			// QString can not handle std::string ("", 1)
+			QStandardItem *name = new QStandardItem (QString (f->BlockName ().c_str ()));
+			QStandardItem *value = new QStandardItem (QString (
+				(fvalue ? fvalue->AsString (App->File.NifFile).c_str () : "")));
+
+			AddSubItems (n, nif->Nodes[r]);
+
+			model->setItem (r, 0, n);
+			model->setItem (r, 1, name);
+			model->setItem (r, 2, value);
+		}
+		model->setHorizontalHeaderItem (0, new QStandardItem ("N"));
+		model->setHorizontalHeaderItem (1, new QStandardItem ("Name"));
+		model->setHorizontalHeaderItem (2, new QStandardItem ("Value"));
+ 		tvBlockList->setModel (model);
 	}
 
 	void
@@ -551,3 +635,4 @@ namespace NifSkopeQt4
 		createMainMenu ();
 	}
 }
+

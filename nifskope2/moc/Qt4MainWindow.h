@@ -47,6 +47,8 @@ namespace NifSkopeQt4
 		QAction *aLoad;
 		QAction *aSaveAs;
 
+		QTreeView *tvBlockList;
+
 		QDockWidget *dockTVBL;
 		QDockWidget *dockTVBD;
 		QDockWidget *dockTVKFM;
@@ -65,6 +67,8 @@ namespace NifSkopeQt4
 		MainWindow();
 		NifSkope::NifSkopeApp *App;// TODO: init by Qt4App because of NewWindow() only
 
+	private:
+		void AddSubItems(QStandardItem *itm, NifLib::TreeNode<NifLib::Field *> *n);
 	protected slots:
 		void sFileLoad();
 		void sSelectFont();

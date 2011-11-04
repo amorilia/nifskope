@@ -35,10 +35,50 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "nifskope.h"
 #include "NifSkopeException.h"
 
+// "NifLib"
+#include "Compiler.h"
+
 namespace NifSkope
 {
 	NifSkopeApp::NifSkopeApp()
 	{
+	}
+
+	NifLib::List< NifLib::List<NifLib::Field *> *> *
+	NifSkopeApp::AsBlocks()
+	{
+		NSINFO("Requested Block View")
+		if (!File.Loaded ()) {
+			NSINFO(" Block View: no file loaded")
+			return NULL;
+		}
+		for (int i = 0; i < vBlock.Count (); i++) {
+			vBlock[i]->Clear ();
+			delete vBlock[i];
+		}
+		vBlock.Clear ();
+		NifLib::Compiler *nif = File.NifFile;
+		for (int i = 0; i < nif->FCount (); i++) {
+			NifLib::Field *f = (*nif)[i];
+			// BlockIndex is sequiential. -1 is compound name="header"
+			int block = f->BlockIndex + 1;
+			if (vBlock.Count () <=  block)
+				vBlock.Add (new NifLib::List<NifLib::Field *>);
+			vBlock[block]->Add (f);
+		}
+		NSINFO(" Block View: contains " << vBlock.Count () << " blocks")
+		return &vBlock;
+	}
+
+	NifLib::TreeNode<NifLib::Field *> *
+	NifSkopeApp::AsTree()
+	{
+		NSINFO("Requested Block View")
+		if (!File.Loaded ()) {
+			NSINFO(" Block View: no file loaded")
+			return NULL;
+		}
+		return File.NifFile->AsTree ();
 	}
 
 	int

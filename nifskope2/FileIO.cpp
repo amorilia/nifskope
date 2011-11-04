@@ -113,4 +113,9 @@ namespace NifSkope
 			NSINFO("ReadNif: done")
 		}
 	}
+
+	bool FileIO::Loaded()
+	{
+		return NifFile && NifFile->FCount () > 0;
+	}
 }

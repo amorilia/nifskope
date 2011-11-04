@@ -105,6 +105,7 @@ int const ATTRL[] =
 #define ATEMPLATE 15
 #define ATYPE 16
 #define AUSERVER 17
+#define AVALUE 18
 #define AVER1 19
 #define AVER2 20
 #define AVERCOND 21
