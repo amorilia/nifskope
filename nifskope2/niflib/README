@@ -17,9 +17,6 @@ documents.
 	It has XML tag and attribute names and meaning hard-coded. It also has
 a hard-coded mapping between tag "basic", attribute "niflibtype" value, and
 "C++" types.
-	"Field.BlockIndex" starts at -1 - <compound name="Header">. Then increases
-with one with each block read from the .nif file. "Header" and "Footer" are
-blocks of the .nif file not included in "Header.Num Blocks".
 	Provides access to the .nif file structure as:
 		- a list of fields - Compiler.FCount(), Compiler[]
 		- a tree of lists of fields - Compiler.AsTree()

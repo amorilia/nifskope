@@ -521,11 +521,13 @@ namespace NifSkopeQt4
 						if (type->Value.Equals ("char", 4))
 							fv = new QStandardItem (QString (
 								f->AsString (App->File.NifFile).c_str ()));
-						else if (type->Value.Equals ("BlockTypeIndex", 14))
-							Add1D<unsigned short> (fi, f);
-						else if (type->Value.Equals ("Ref", 3))
-							Add1D<int> (fi, f);
-						fv = new QStandardItem (QString ("[1D ARRAY]"));
+						else {
+							if (type->Value.Equals ("BlockTypeIndex", 14))
+								Add1D<unsigned short> (fi, f);
+							else if (type->Value.Equals ("Ref", 3))
+								Add1DRef<int> (fi, f);
+							fv = new QStandardItem (QString ("[1D ARRAY]"));
+						}
 					}
 				}
 			}
@@ -561,6 +563,23 @@ namespace NifSkopeQt4
 			return 1;// continue searching
 	}
 
+	std::string
+	MainWindow::GetRootNodeValue(int idx)
+	{
+		wField = NULL;
+		wName = "Value";
+		NifLib::TreeNode<NifLib::Field *> *nif = App->AsTree ();
+		if (idx < 0 || idx >= nif->Nodes.Count ())
+			return std::string ("[INVALID]");
+		try {
+			NifTreePrefixWalk (nif->Nodes[idx], &MainWindow::wFindFieldByName);
+		} catch (int) {}
+		if (wField)
+			return wField->AsString (App->File.NifFile);
+		else
+			return std::string ("");
+	}
+
 	/*
 	*	Load a .nif file
 	*/
@@ -588,16 +607,10 @@ namespace NifSkopeQt4
 		for (int r = 0; r < nif->Nodes.Count (); r++) {
 			QStandardItem *n = new QStandardItem (QString ("%0").arg (r));
 			NifLib::Field *f = nif->Nodes[r]->Value;
-			// get "Value"
-			wField = NULL;
-			wName = "Value";
-			try {
-				NifTreePrefixWalk (nif->Nodes[r], &MainWindow::wFindFieldByName);
-			} catch (int) {}
 			// QString can not handle std::string ("", 1)
 			QStandardItem *name = new QStandardItem (QString (f->BlockName ().c_str ()));
 			QStandardItem *value = new QStandardItem (QString (
-				(wField ? wField->AsString (App->File.NifFile).c_str () : "")));
+				GetRootNodeValue (r).c_str ()));
 			AddSubItems (n, nif->Nodes[r]);
 			model->setItem (r, 0, n);
 			model->setItem (r, 1, name);
