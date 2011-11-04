@@ -467,8 +467,11 @@ rnd(int N)
 		NifLib::Compiler *nif = App->File.NifFile;
 		std::string tex;
 		std::string matname;
+		int block = -1;
 		for (int i = 0; i < nif->FCount (); i++) {
 			NifLib::Field *f = (*nif)[i];
+			if (i > 0 && f->BlockTag != ((*nif)[i-1])->BlockTag)
+				block++;
 			//NiTriStripsData
 			NifLib::Tag *ft = f->BlockTag;
 			if (!ft)
@@ -476,12 +479,12 @@ rnd(int N)
 			NifLib::Attr *tname = ft->AttrById (ANAME);
 			if (!tname)
 				continue;// a tag has no "name" - error
-			int block = f->BlockIndex;
+			int pblock = block;
 			if (tname->Value.Equals ("NiSourceTexture", 15)) {
 				ft = f->Tag;
 				tname = ft->AttrById (ANAME);
 				if (tname->Value.Equals ("Value", 5)) {
-					NSINFO("found NiSourceTexture.Value at #" << f->BlockIndex)
+					NSINFO("found NiSourceTexture.Value at #" << block)
 					//NSINFO(std::string (f->Value.buf, f->Value.len))
 					std::stringstream tmp;
 					tmp << std::string (f->Value.buf, f->Value.len);
@@ -513,8 +516,8 @@ rnd(int N)
 				NIFfloat *v = NULL, *n = NULL, *uv = NULL;
 				NIFushort *s = NULL;
 				NIFushort *si = NULL;
-			while (block == f->BlockIndex && ++i < nif->FCount ()) {
-				//NSINFO ("found NiTriStripsData at #" << f->BlockIndex)
+			while (pblock == block && ++i < nif->FCount ()) {
+				//NSINFO ("found NiTriStripsData at #" << block)
 				ft = f->Tag;
 				tname = ft->AttrById (ANAME);
 				// need to find a few things:
@@ -527,27 +530,27 @@ rnd(int N)
 				//  "Strip Lengths" type="ushort" arr1="Num Strips"
 				//  "Points" type="ushort" arr1="Num Strips" arr2="Strip Lengths"
 				if (tname->Value.Equals ("Vertices", 8)) {
-					NSINFO ("found NiTriStripsData.Vertices at #" << f->BlockIndex)
+					NSINFO ("found NiTriStripsData.Vertices at #" << block)
 					//vnum = f->Value.len / 4;
 					v = (NIFfloat *)&f->Value.buf[0];
 				}
 				else if (tname->Value.Equals ("Normals", 7)) {
-					NSINFO ("found NiTriStripsData.Normals at #" << f->BlockIndex)
+					NSINFO ("found NiTriStripsData.Normals at #" << block)
 					n = (NIFfloat *)&f->Value.buf[0];
 				}
 				else if (tname->Value.Equals ("UV Sets", 7)) {
-					NSINFO ("found NiTriStripsData.UV Sets at #" << f->BlockIndex)
+					NSINFO ("found NiTriStripsData.UV Sets at #" << block)
 					uv = (NIFfloat *)&f->Value.buf[0];
 				}
 				//if (tname->Value.Equals ("Num Strips", 10))
-				//	NSINFO ("found NiTriStripsData.Num Strips at #" << f->BlockIndex)
+				//	NSINFO ("found NiTriStripsData.Num Strips at #" << block)
 				else if (tname->Value.Equals ("Strip Lengths", 13)) {
-					NSINFO ("found NiTriStripsData.Strip Lengths at #" << f->BlockIndex)
+					NSINFO ("found NiTriStripsData.Strip Lengths at #" << block)
 					sl = f->Value.len / 2;
 					s = (NIFushort *)&f->Value.buf[0];
 				}
 				else if (tname->Value.Equals ("Points", 6)) {
-					NSINFO ("found NiTriStripsData.Points at #" << f->BlockIndex)
+					NSINFO ("found NiTriStripsData.Points at #" << block)
 					si = (NIFushort *)&f->Value.buf[0];
 					int base = 0;
 					std::stringstream objn;
@@ -590,6 +593,8 @@ rnd(int N)
 					mySceneNode->attachObject (sm);
 				}
 				f = (*nif)[i];
+				if (i > 0 && f->BlockTag != ((*nif)[i-1])->BlockTag)
+					block++;
 			}
 			}// if "NiTriStripsData"
 		}// for each field

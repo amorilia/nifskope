@@ -486,6 +486,11 @@ namespace NifSkopeQt4
 		addToolBar (Qt::TopToolBarArea, tView);
 	}
 
+	/*void
+	MainWindow::AddArraySubItems(QStandardItem *itm, NifLib::Field *f)
+	{
+	}*/
+
 	void
 	MainWindow::AddSubItems(QStandardItem *itm, NifLib::TreeNode<NifLib::Field *> *n)
 	{
@@ -512,32 +517,15 @@ namespace NifSkopeQt4
 					if (f->JField)
 						fv = new QStandardItem (QString ("[1D JAGGED ARRAY]"));
 					else {
-						if (f->Tag->AttrById (ATYPE)->Value.Equals ("char", 4))
+						NifLib::Attr *type = f->Tag->AttrById (ATYPE);
+						if (type->Value.Equals ("char", 4))
 							fv = new QStandardItem (QString (
 								f->AsString (App->File.NifFile).c_str ()));
-						else if (f->Tag->AttrById (ATYPE)->Value.Equals ("BlockTypeIndex", 14)) {
-							unsigned short *buf = (unsigned short *)&(f->Value.buf[0]);
-							int cnt = f->Value.len / 2;
-							for (int i = 0; i < cnt; i++) {
-								fi->appendRow (QList<QStandardItem *>()
-									<< new QStandardItem (QString ("%0").arg (i))
-									<< new QStandardItem (QString ("[%0]").arg (i))
-			 						<< new QStandardItem (QString ("%0").arg (buf[i])));
-							}
-							fv = new QStandardItem (QString ("[1D ARRAY]"));
-						}
-						else if (f->Tag->AttrById (ATYPE)->Value.Equals ("Ref", 3)) {
-							int *buf = (int *)&(f->Value.buf[0]);
-							int cnt = f->Value.len / 4;
-							for (int i = 0; i < cnt; i++) {
-								fi->appendRow (QList<QStandardItem *>()
-									<< new QStandardItem (QString ("%0").arg (i))
-									<< new QStandardItem (QString ("[%0]").arg (i))
-			 						<< new QStandardItem (QString ("%0").arg (buf[i])));
-							}
-							fv = new QStandardItem (QString ("[1D ARRAY]"));
-						} else
-							fv = new QStandardItem (QString ("[1D ARRAY]"));
+						else if (type->Value.Equals ("BlockTypeIndex", 14))
+							Add1D<unsigned short> (fi, f);
+						else if (type->Value.Equals ("Ref", 3))
+							Add1D<int> (fi, f);
+						fv = new QStandardItem (QString ("[1D ARRAY]"));
 					}
 				}
 			}

@@ -58,10 +58,13 @@ namespace NifSkope
 		}
 		vBlock.Clear ();
 		NifLib::Compiler *nif = File.NifFile;
+		int bIdx = -1;
 		for (int i = 0; i < nif->FCount (); i++) {
 			NifLib::Field *f = (*nif)[i];
+			if (i > 0 && f->BlockTag != ((*nif)[i-1])->BlockTag)
+				bIdx++;
 			// BlockIndex is sequiential. -1 is compound name="header"
-			int block = f->BlockIndex + 1;
+			int block = bIdx + 1;
 			if (vBlock.Count () <=  block)
 				vBlock.Add (new NifLib::List<NifLib::Field *>);
 			vBlock[block]->Add (f);
