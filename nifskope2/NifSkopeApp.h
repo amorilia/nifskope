@@ -54,17 +54,52 @@ namespace NifSkope
 		// .nif views
 		// as a list of blocks
 		NifLib::List< NifLib::List<NifLib::Field *> *> vBlock;
+		// "args" for the walker actions
+		// all walker related fields are prefixed with "w"
+		NifLib::Field *wField;
+		std::string wName;
+		void NifTreePrefixWalk(
+			NifLib::TreeNode<NifLib::Field *> *node,
+			int (NifSkopeApp::*actn) (NifLib::TreeNode<NifLib::Field *> *node));
+		int wFindFieldByName(NifLib::TreeNode<NifLib::Field *> *node);
 
 	public:
 		NifSkopeApp();
 
 		/* 
-		*	"contract" - .nif file view.
 		*	Currently loaded .nif file grouped by blocks.
 		*	Returns NULL if there is no currently loaded .nif file.
 		*/
-		NifLib::List< NifLib::List<NifLib::Field *> *> *AsBlocks();
+		//NifLib::List< NifLib::List<NifLib::Field *> *> *AsBlocks();
 		NifLib::TreeNode<NifLib::Field *> *AsTree();
+
+		NifLib::Field *ByName(std::string name, NifLib::TreeNode<NifLib::Field *> *node);
+		NifLib::Field *ByName(std::string name, int index);
+		std::string GetRootNodeValue(int idx);
+
+		template <typename T> std::string ToStr(NifLib::Field *f, int ofs)
+		{
+			std::stringstream s;
+			T *buf = (T *)&(f->Value.buf[0]);
+			int cnt = f->Value.len / sizeof(T);
+			if (ofs < 0)
+				s << f->AsString (File.NifFile);
+			else if (ofs >= cnt)
+				s << "[ERROR: wrong offset]";
+			else if (f->Tag->AttrById (ATYPE)->Value.Equals ("Ref", 3))
+				s << buf[ofs] << " (" << GetRootNodeValue (buf[ofs] + 1) << ")";
+			else
+				s << buf[ofs];
+			return s.str ();
+		}
+		/*
+		*	// "default template arguments may not be used in function
+		*	// templates without -std=c++0x or -std=gnu++0x"
+		*/
+		std::string ToStr(NifLib::Field *f)// template <typename T = NIFbyte>
+		{
+			return f->AsString (File.NifFile);
+		}
 
 		// arguments
 		bool SanitizeBeforeSave;

@@ -40,48 +40,86 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifSkope
 {
-	NifSkopeApp::NifSkopeApp()
+	void NifSkopeApp::NifTreePrefixWalk(
+		NifLib::TreeNode<NifLib::Field *> *node,
+		int (NifSkopeApp::*actn)(NifLib::TreeNode<NifLib::Field *> *node))
 	{
+		if (!actn)
+			return;
+		if (!node)
+			return;
+		for (int i = 0; i < node->Nodes.Count (); i++) {
+			if (!((this->*actn) (node->Nodes[i])))
+				break;
+			NifTreePrefixWalk (node->Nodes[i], actn);
+		}
 	}
 
-	NifLib::List< NifLib::List<NifLib::Field *> *> *
+	int
+	NifSkopeApp::wFindFieldByName(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		if (node->Value->Name () == wName) {
+			wField = node->Value;
+			throw 1;// stop the recursion
+		}
+		else
+			return 1;// continue searching
+	}
+
+	/*NifLib::List< NifLib::List<NifLib::Field *> *> *
 	NifSkopeApp::AsBlocks()
 	{
 		NSINFO("Requested Block View")
-		if (!File.Loaded ()) {
-			NSINFO(" Block View: no file loaded")
-			return NULL;
-		}
-		for (int i = 0; i < vBlock.Count (); i++) {
-			vBlock[i]->Clear ();
-			delete vBlock[i];
-		}
-		vBlock.Clear ();
-		NifLib::Compiler *nif = File.NifFile;
-		int bIdx = -1;
-		for (int i = 0; i < nif->FCount (); i++) {
-			NifLib::Field *f = (*nif)[i];
-			if (i > 0 && f->BlockTag != ((*nif)[i-1])->BlockTag)
-				bIdx++;
-			// BlockIndex is sequiential. -1 is compound name="header"
-			int block = bIdx + 1;
-			if (vBlock.Count () <=  block)
-				vBlock.Add (new NifLib::List<NifLib::Field *>);
-			vBlock[block]->Add (f);
-		}
 		NSINFO(" Block View: contains " << vBlock.Count () << " blocks")
 		return &vBlock;
+	}*/
+
+	NifSkopeApp::NifSkopeApp()
+	{
 	}
 
 	NifLib::TreeNode<NifLib::Field *> *
 	NifSkopeApp::AsTree()
 	{
-		NSINFO("Requested Block View")
-		if (!File.Loaded ()) {
-			NSINFO(" Block View: no file loaded")
-			return NULL;
-		}
+		NSINFO("Requested Tree View")
+		if (!File.Loaded ())
+			NSINFO(" no file loaded")
 		return File.NifFile->AsTree ();
+	}
+
+	NifLib::Field *
+	NifSkopeApp::ByName(std::string name, NifLib::TreeNode<NifLib::Field *> *node = NULL)
+	{
+		wField = NULL;
+		wName = name;
+		try {
+			if (!node) {
+				NifLib::TreeNode<NifLib::Field *> *nif = AsTree ();
+				NifTreePrefixWalk (nif, &NifSkopeApp::wFindFieldByName);
+			} else
+				NifTreePrefixWalk (node, &NifSkopeApp::wFindFieldByName);
+		} catch (int) {
+		}
+		return wField;
+	}
+
+	NifLib::Field *
+	NifSkopeApp::ByName(std::string name, int idx)
+	{
+		NifLib::TreeNode<NifLib::Field *> *nif = AsTree ();
+		if (idx < 0 || idx >= nif->Nodes.Count ())
+			return NULL;
+		return ByName (name, nif->Nodes[idx]);
+	}
+
+	std::string
+	NifSkopeApp::GetRootNodeValue(int idx)
+	{
+		NifLib::Field *f = ByName ("Value", idx);
+		if (f)
+			return f->AsString (File.NifFile);
+		else
+			return std::string ("");
 	}
 
 	int

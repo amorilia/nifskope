@@ -53,20 +53,42 @@ namespace NifLib
 	std::string
 	Field::AsBasicTypeValue(NifLib::Tag *btype, Compiler *typesprovider)
 	{
-		// 0000 0000 - unsigned
-		// 1000 0000 - signed
-		// 0000 0000 - int
-		// 0100 0000 - float
-		// 0000 0000 - 0 bytes
-		// 0000 0001 - 1 byte
-		// 0000 0010 - 2 bytes
-		// 0000 0100 - 4 bytes
-		// 0000 1000 - 8 bytes, etc.
+		// todo: turn into an array of methods
 		std::stringstream result;
 		NifLib::Attr *_ta = btype->AttrById (ANIFLIBTYPE);
 		if (!_ta)
 			result << "[UNKNOWN TBASIC ANIFLIBTYPE]";
-		else if (_ta->Value.Equals ("HeaderString", 12) ||
+		else if (NLType == NIFT_D) {
+			if (NLType == BtlType (BTL_HEADERSTRING) ||
+				NLType == BtlType (BTL_LINESTRING))
+				result << std::string (Value.buf, Value.len - 1);// avoid '\n'
+			else // unknown dynamic
+				result << StreamBlockB (Value.buf, Value.len, Value.len + 1);
+		} else if ((NLType & (NIFT_F | NIFT_4)) == (NIFT_F | NIFT_4))
+ 			result << (NIFfloat)*(NIFfloat *)&Value.buf[0];
+		else {
+			if ((NLType & NIFT_U) == NIFT_U) {
+				if ((NLType & NIFT_4) == NIFT_4)
+					result << (NIFuint)*(NIFuint *)&Value.buf[0];
+				else if ((NLType & NIFT_2) == NIFT_2)
+					result << (NIFushort)*(NIFushort *)&Value.buf[0];
+				else if ((NLType & NIFT_1) == NIFT_1) {
+					if (Type ()->Value.Equals (BTN(BTN_CHAR)))
+						result << std::string (Value.buf, Value.len).c_str ();
+					else
+						result << (NIFint)*(NIFbyte *)&Value.buf[0];
+				} else
+					result << "[" << std::string (_ta->Value.buf, _ta->Value.len) << "]";
+			} else {
+				if ((NLType & NIFT_4) == NIFT_4)
+					result << (NIFint)*(NIFint *)&Value.buf[0];
+				else if ((NLType & NIFT_2) == NIFT_2)
+					result << (NIFshort)*(NIFshort *)&Value.buf[0];
+				else
+					result << "[" << std::string (_ta->Value.buf, _ta->Value.len) << "]";
+			}
+		}
+		/*else if (_ta->Value.Equals ("HeaderString", 12) ||
 			_ta->Value.Equals ("LineString", 10))
 			result << std::string (Value.buf, Value.len - 1);
 		else if (_ta->Value.Equals ("unsigned int", 12)||
@@ -94,7 +116,7 @@ namespace NifLib
 			result << (float)*(float *)&Value.buf[0];
 		else// TODO: this could be avoided if "nif.xml" specifies sizes
 			result << "[NEW ANIFLIBTYPE: "
-				<< std::string (_ta->Value.buf, _ta->Value.len) << "]";
+				<< std::string (_ta->Value.buf, _ta->Value.len) << "]";*/
 		return result.str ();
 	}
 
@@ -103,6 +125,7 @@ namespace NifLib
 		Tag = NULL;
 		BlockTag = NULL;
 		JField = NULL;
+		NLType = NIFT_T;
 	}
 
 	NIFuint

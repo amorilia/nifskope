@@ -49,7 +49,6 @@ namespace NifLib
 {
 	class Compiler: public Parser
 	{
-		int DETAILEDLOG;
 		int POS;
 		NifLib::Tag *blockTag;
 		NifLib::Field *i2j;// jagged array
@@ -81,9 +80,8 @@ namespace NifLib
 		std::map<std::string, NifLib::List<int> *> fview_aname;
 
 		NIFuint nVersion, nUserVersion, nUserVersion2;// global nif file variable(s)
-		int	Read_bool (NifStream *s, char *b);
 
-		NifLib::Field *AddField(NifLib::Tag *field, char *buf, int bl);
+		NifLib::Field *AddField(NifLib::Tag *field, char *buf, int bl, int type);
 		NifLib::TreeNode<NifLib::Field *> *AddNode(
 			NifLib::Tag *t,
 			NifLib::Field *f,

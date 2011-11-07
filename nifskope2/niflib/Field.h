@@ -52,6 +52,7 @@ namespace NifLib
 		NifLib::Tag *BlockTag;	// file block tag
 		NifLib::Field *JField;	// jagged array field, if this is jagged array
 		NIFuint AsNIFuint();
+		int NLType;// NifLib type
 
 		/*
 		*	Returns a string representation of the field.

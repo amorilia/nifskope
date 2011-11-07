@@ -50,18 +50,20 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sstream>
 
 #include <openssl/md5.h>
+
 int
 md5offile(const char *fname, unsigned char *md5_result)
 {
 	MD5_CTX md5_ctx;
 	MD5_Init (&md5_ctx);
-	const int max = 1*1024*1024;
-	char fbuf[max];
+	const int FBUF1_MAX = 1*1024*1024;
+	static char FBUF1[1*1024*1024];
 	FILE *fh = fopen (fname, "r");
 	if (fh) {
 		int rr;
-		while ((rr = fread (&fbuf[0], 1, max, fh)) > 0)
-			MD5_Update (&md5_ctx, &fbuf[0], rr);
+		while ((rr = fread (&(FBUF1[0]), 1, FBUF1_MAX, fh)) > 0) {
+			MD5_Update (&md5_ctx, &(FBUF1[0]), rr);
+		}
 		MD5_Final (&md5_result[0], &md5_ctx);
 		fclose (fh);
 		return 1;
@@ -100,13 +102,13 @@ main(int argc, char **argv)
 	INFO("XML loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 
 	//p.SaveFile ("nif3.xml");
-	int r = 0;
+	/*int r = 0;
 	p.Build ();
 	gettimeofday (&tstart, NULL);
 	//r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
 	try {
 	//r = p.ReadNif ("/mnt/archive/rain/temp/nif/fo3_bsa/dlc04/effects/mansionfx/dlc04mansionwindows01.nif");
-	r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
+		r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
 	} catch (...) {
 		ERR("ReadNif: An exception was thrown")
 	}
@@ -114,16 +116,18 @@ main(int argc, char **argv)
 	if (r) {
 		INFO("nif loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 		p.WriteNif ("aaa.nif");
-		//if (!md5filesareequal (
-			//"/mnt/archive/rain/temp/nif/fo3_bsa/dlc04/effects/mansionfx/dlc04mansionwindows01.nif",
-			//"aaa.nif"))
+		if (!md5filesareequal (
+			"/mnt/archive/rain/temp/nif/fo3/K2/PlayWear/Sedan/K2_Sedan.nif",
+			"aaa.nif")) {
+			INFO ("differ")
+		}
 		p.DbgPrintFields ();
 	} else {
 		INFO("ReadNif failed")
 		p.DbgPrintFields ();
-	}
+	}*/
 
-	/*const char *pfix = "/mnt/archive/rain/temp/nif/";
+	const char *pfix = "/mnt/archive/rain/temp/nif/";
 	std::string line;
 	std::ifstream myf("flist_nif.txt");
 	int cnt = 0;
@@ -142,26 +146,51 @@ main(int argc, char **argv)
 				}
 				if (i != l)
 					continue;
-				if (l > 3 && !NifLib::Parser::StartsWith ("loki", 4, buf, 4))
-					continue;
+				//if (l > 3 && !NifLib::Parser::StartsWith ("loki", 4, buf, 4))
+				//	continue;
 				std::stringstream fname;
 				fname << std::string (pfix) << line;
+				std::string fname2 = fname.str ();
+				int flen = fname2.length ();
+				char *fnbuf = (char *)NifAlloc (flen+1);
+				fnbuf[flen] = '\0';
+				memcpy (fnbuf, fname2.c_str (), flen);
 				cnt++;
-				INFO(cnt << ":\"" << fname.str () << "\"");
-				if (!p.ReadNif (fname.str ().c_str ())) {
+				INFO(cnt << ":\"" << std::string (fnbuf) << "\"");
+
+				/*{
+					//AUTOMATIC ONE const int RMAX = 1*1024*1024;
+					//char rbuf[RMAX];
+					FILE *frh = fopen (fnbuf, "r");
+					//NifStream s(fnbuf, 1*1024*1024);
+					FILE *fh = fopen ("aaa.nif", "w");
+					if (frh && fh) {
+						int rr = 0;
+						while ((rr = fread (&(FBUF2[0]), 1, FBUF2_MAX, frh)) > 0)
+						//while ((rr = s.ReadByte(fbuf, BUFS)))
+							fwrite (&(FBUF2[0]), 1, rr, fh);
+						fclose (fh);
+						fclose (frh);
+					}
+				}*/
+				
+				if (!p.ReadNif (fnbuf)) {
 					INFO ("files done: " << cnt)
+					NifRelease (fnbuf);
 					break;
-				} else {// it was read, write it and md5sum compare it to the original
+				}else {// it was read, write it and md5sum compare it to the original
 					p.WriteNif ("aaa.nif");
-					if (!md5filesareequal (fname.str ().c_str () , "aaa.nif")) {
+					if (!md5filesareequal (fnbuf , "aaa.nif")) {
 						ERR ("read differs written")
 						INFO ("files done: " << cnt)
+						NifRelease (fnbuf);
 						break;
 					}
 				}
+				NifRelease (fnbuf);
 			}
 		}
-	}*/
+	}
 
 	return EXIT_SUCCESS;
 }
