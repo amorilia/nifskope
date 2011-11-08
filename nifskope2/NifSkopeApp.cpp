@@ -81,9 +81,9 @@ namespace NifSkope
 	NifLib::TreeNode<NifLib::Field *> *
 	NifSkopeApp::AsTree()
 	{
-		NSINFO("Requested Tree View")
-		if (!File.Loaded ())
-			NSINFO(" no file loaded")
+		//NSINFO("Requested Tree View")
+		//if (!File.Loaded ())
+		//	NSINFO(" no file loaded")
 		return File.NifFile->AsTree ();
 	}
 
@@ -107,7 +107,7 @@ namespace NifSkope
 	NifSkopeApp::ByName(std::string name, int idx)
 	{
 		NifLib::TreeNode<NifLib::Field *> *nif = AsTree ();
-		if (idx < 0 || idx >= nif->Nodes.Count ())
+		if (!ValidRootNodeIdx (idx))
 			return NULL;
 		return ByName (name, nif->Nodes[idx]);
 	}
@@ -120,6 +120,86 @@ namespace NifSkope
 			return f->AsString (File.NifFile);
 		else
 			return std::string ("");
+	}
+
+	std::string
+	NifSkopeApp::GetRootNodeName(int idx)
+	{
+		NifLib::TreeNode<NifLib::Field *> *nif = AsTree ();
+		if (!ValidRootNodeIdx (idx))
+			return std::string ("[ERR: index out of range]");
+		return nif->Nodes[idx]->Value->Name ();
+	}
+
+	bool
+	NifSkopeApp::ValidRootNodeIdx(int idx)
+	{
+		NifLib::TreeNode<NifLib::Field *> *nif = AsTree ();
+		return (idx >= 0) && (idx < nif->Nodes.Count ());
+	}
+
+	/*
+	*	Defines how the BTN_REF "looks" like
+	*/
+	std::string
+	NifSkopeApp::ToStrRef(NIFint ref)
+	{
+		std::stringstream s;
+		if (!ValidRootNodeIdx (ref))
+			s << "None";
+		else {
+			std::string value = GetRootNodeValue (ref + 1);
+			if (value == "") // if empty - use node name
+				s << ref << " [" << GetRootNodeName (ref + 1) << "]";
+			else // otherwise - use node value
+				s << ref << " (" << value << ")";
+		}
+		return s.str ();
+	}
+
+	/*
+	*	Defines how the BTN_BLOCKTYPEINDEX "looks" like
+	*/
+	std::string
+	NifSkopeApp::ToStrBlockTypeIndex(NIFushort bti)
+	{
+		std::stringstream s;
+		if (!ValidRootNodeIdx (bti))
+			s << "[ERR: invalid BTN_BLOCKTYPEINDEX]";
+		else
+			s << GetRootNodeName (bti + 1) << " [" << bti << "]";
+		return s.str ();
+	}
+
+	/*
+	*	Returns string representation of a field
+	*/
+	std::string
+	NifSkopeApp::ToStr(NifLib::Field *f, int ofs)
+	{
+		if (f->TypeId () == BTN_REF) {
+			//todo: if ((f->NLType & (NIFT_S | NIFT_4)) == (NIFT_S | NIFT_4)) {
+				NIFint *buf = (NIFint *)&(f->Value.buf[0]);
+				return ToStrRef (buf[ofs]);
+			//}
+			//todo: else
+			//todo: 	return "[ERR: wrong REF type]";
+		} else
+		// special handling for some "header" things
+		if (f->TypeId () == BTN_BLOCKTYPEINDEX) {
+			//"unsigned short"
+			NIFushort *buf = (NIFushort *)&(f->Value.buf[0]);
+			return ToStrBlockTypeIndex (buf[ofs]);
+		}
+		else
+			return f->AsString (File.NifFile);
+
+		/*NIFint *buf = (NIFint *)&(f->Value.buf[0]);
+		int cnt = f->Value.len / sizeof(NIFint);
+		if (f->Value.len < (int)sizeof(NIFint))
+			s << "[ERR: invalid Ref field]";
+		else if (ofs < 0 || ofs >= cnt)
+			s << "[ERR: wrong offset]";*/
 	}
 
 	int

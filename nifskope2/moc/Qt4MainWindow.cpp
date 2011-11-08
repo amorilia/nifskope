@@ -486,10 +486,27 @@ namespace NifSkopeQt4
 		addToolBar (Qt::TopToolBarArea, tView);
 	}
 
-	/*void
-	MainWindow::AddArraySubItems(QStandardItem *itm, NifLib::Field *f)
+	void
+	MainWindow::Add1D(QStandardItem *itm, NifLib::Field *f)
 	{
-	}*/
+		int size = (f->NLType & NIFT_SIZE);
+		if (size <= 0)// its an array of complex data structure
+			return;
+		int cnt = f->Value.len / size;
+		if (cnt > 1000) {
+			itm->appendRow (QList<QStandardItem *>()
+			<< new QStandardItem (QString ("Too many items: %0").arg (cnt))
+			<< new QStandardItem (QString ("TODO: Load On"))
+			<< new QStandardItem (QString ("Demand")));
+			return;
+		}
+		for (int i = 0; i < cnt; i++) {
+			itm->appendRow (QList<QStandardItem *>()
+			<< new QStandardItem (QString ("%0").arg (i))
+			<< new QStandardItem (QString ("[%0]").arg (i))
+			<< new QStandardItem (QString (App->ToStr (f, i).c_str ())));
+		}
+	}
 
 	void
 	MainWindow::AddSubItems(QStandardItem *itm, NifLib::TreeNode<NifLib::Field *> *n)
@@ -501,34 +518,28 @@ namespace NifSkopeQt4
 				QString (f->OwnerName ().c_str ()) + QString (".") +
 				QString (f->Name ().c_str ()) );
 			QStandardItem *fv = NULL;
-			if (!(f->Tag->AttrById (AARR1))/*f->Value.len < 100*/) {
+			if (f->IsArray1D ()) {
+				if (f->IsArrayJ ())
+					fv = new QStandardItem (QString ("[1D JAGGED ARRAY]"));
+				else {
+					if (f->IsCharArray ())
+						fv = new QStandardItem (QString (App->ToStr (f).c_str ()));
+					else {
+						Add1D (fi, f);
+						fv = new QStandardItem (QString ("[1D ARRAY]"));
+					}
+				}
+			} else
+			if (f->IsArray2D ()) {
+				if (f->IsArrayJ ())
+					fv = new QStandardItem (QString ("[2D JAGGED ARRAY]"));
+				else
+					fv = new QStandardItem (QString ("[2D ARRAY]"));
+			} else {
 				if (f->Value.len > 64)
 					fv = new QStandardItem (QString ("[LARGE STRUCTURE]"));
 				else
 					fv = new QStandardItem (QString (App->ToStr (f).c_str ()));
-			}
-			else {
-				if (f->Tag->AttrById (AARR2)) {
-					if (f->JField)
-						fv = new QStandardItem (QString ("[2D JAGGED ARRAY]"));
-					else fv = new QStandardItem (QString ("[2D ARRAY]"));
-				} else {
-					if (f->JField)
-						fv = new QStandardItem (QString ("[1D JAGGED ARRAY]"));
-					else {
-						NifLib::Attr *type = f->Tag->AttrById (ATYPE);
-						if (type->Value.Equals ("char", 4))
-							fv = new QStandardItem (QString (
-								f->AsString (App->File.NifFile).c_str ()));
-						else {
-							if (type->Value.Equals ("BlockTypeIndex", 14))
-								Add1D<unsigned short> (fi, f);
-							else if (type->Value.Equals ("Ref", 3))
-								Add1D<int> (fi, f);
-							fv = new QStandardItem (QString ("[1D ARRAY]"));
-						}
-					}
-				}
 			}
 			fi->setEditable (false);
 			fn->setEditable (false);

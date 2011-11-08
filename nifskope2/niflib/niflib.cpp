@@ -42,20 +42,18 @@ std::string
 NIFT2Str(int NLType)
 {
 	std::stringstream nlt;
-	if (NLType == NIFT_T)
+	if (NLType & NIFT_T)
 		nlt << "Complex";
-	else if (NLType == NIFT_D)
-		nlt << "Dynamic";
-	else if (NLType == NIFT_F)
+	else if (NLType & NIFT_F)
 		nlt << "Float";
 	else {
-		if ((NLType & NIFT_U) == NIFT_U)
+		if (NLType & NIFT_U)
 			nlt << "U";
-		if ((NLType & NIFT_1) == NIFT_1)
+		if (NLType & NIFT_1)
 			nlt << "Byte";
-		else if ((NLType & NIFT_2) == NIFT_2)
+		else if (NLType & NIFT_2)
 			nlt << "Short";
-		else if ((NLType & NIFT_4) == NIFT_4)
+		else if (NLType & NIFT_4)
 			nlt << "Int";
 		else
 			nlt << "UNKNOWN";

@@ -147,32 +147,32 @@ const int OPBL[] = {0, 2, 2};
 #define EVAL_TYPE_UINT 2
 
 /*
-*	"nif.xml" C++ types map
+*	"nif.xml" C++ types map, ABI
 *	// 0100 0000 - unsigned
-*	// 1000 0000 - signed
-*	// 0010 0000 - int
+*	// 0010 0000 - signed
 *	// 0001 0000 - float
 *	// 0000 0000 - 0 bytes
 *	// 0000 0001 - 1 byte
 *	// 0000 0010 - 2 bytes
 *	// 0000 0100 - 4 bytes
-*	// 0000 1000 - 8 bytes, etc.
-*	// 0011 0000 - dynamic type
-*	// 1111 0000 - complex or unknown type
+*	// 1000 0000 - complex
 */
-#define NIFT_U 0x40
-#define NIFT_S 0x80
-#define NIFT_F 0x10
-#define NIFT_1 0x01
-#define NIFT_2 0x02
-#define NIFT_4 0x04
-#define NIFT_D 0x30
-#define NIFT_T 0xF0
-#define NIFT_SIZE 0x0F
+#define NIFT_U 0x00000040
+#define NIFT_S 0x00000020
+#define NIFT_F 0x00000010
+#define NIFT_1 0x00000001
+#define NIFT_2 0x00000002
+#define NIFT_4 0x00000004
+#define NIFT_T 0x00000080
+#define NIFT_SIZE 0x0000000F
+#define NIFT_SIGN 0x00000060
+#define NIFT_ID 0x0000FF00
+#define NIFT_BT 0x000000FF
 std::string NIFT2Str(int NLType);
 
 /*
 *	<basic by ANAME ANIFLIBTYPE
+*	You need to modify NIFT_ID if BTYPESNUM goes over 255.
 */
 #define BTYPESNUM 17
 const struct
@@ -180,7 +180,7 @@ const struct
 	char const * const lval; const int llen;// ANIFLIBTYPE
 	const int type;// NifLib type
 } BTYPES[] = {
-	/*  0 */{"bool", 4, "bool", 4, NIFT_D},
+	/*  0 */{"bool", 4, "bool", 4, NIFT_T},
 	/*  1 */{"byte", 4, "byte", 4, NIFT_U | NIFT_1},
 	/*  2 */{"uint", 4, "unsigned int", 12, NIFT_U | NIFT_4},
 	/*  3 */{"ushort", 6, "unsigned short", 14, NIFT_U | NIFT_2},
@@ -191,8 +191,8 @@ const struct
 	/*  8 */{"FileVersion", 11, "unsigned int", 12, NIFT_U | NIFT_4},
 	/*  9 */{"Flags", 5, "unsigned short", 14, NIFT_U | NIFT_2},
 	/* 10 */{"float", 5, "float", 5, NIFT_F | NIFT_4},
-	/* 11 */{"HeaderString", 12, "HeaderString", 12, NIFT_D},
-	/* 12 */{"LineString", 10, "LineString", 10, NIFT_D},
+	/* 11 */{"HeaderString", 12, "HeaderString", 12, NIFT_T},
+	/* 12 */{"LineString", 10, "LineString", 10, NIFT_T},
 	/* 13 */{"Ptr", 3, "*", 1, NIFT_S | NIFT_4},
 	/* 14 */{"Ref", 3, "Ref", 3, NIFT_S | NIFT_4},
 	/* 15 */{"StringOffset", 12, "unsigned int", 12, NIFT_U | NIFT_4},
@@ -236,19 +236,7 @@ const struct
 #define BTN_REF 14
 #define BTN_STRINGOFFSET 15
 #define BTN_STRINGINDEX 16
-// Basic Type ANIFLIBTYPE
-#define BTL_BOOL 0
-#define BTL_BYTE 1
-#define BTL_UINT 2
-#define BTL_USHORT 3
-#define BTL_INT 4
-#define BTL_SHORT 5
-#define BTL_FLOAT 10
-#define BTL_HEADERSTRING 11
-#define BTL_LINESTRING 12
-#define BTL_PTR 13
-#define BTL_REF 14
-#define BTL_INDEXSTRING 16
+#define NIFT(VAL,ID) ((VAL & NIFT_ID) == (ID << 8))
 
 inline const char *
 BtnText(int id)
@@ -268,34 +256,14 @@ BtnType(int id)
 	return BTYPES[id].type;
 }
 
-#define BTN(ID) BtnText (ID), BtnLen (ID)
-
-inline const char *
-BtlText(int id)
-{
-	return BTYPES[id].lval;
-}
-
-inline int
-BtlLen(int id)
-{
-	return BTYPES[id].llen;
-}
-
-inline int
-BtlType(int id)
-{
-	return BTYPES[id].type;
-}
-
 std::string StreamBlockB(const char *buf, int len, int col);
+
 /*
 *	Returns type by ANAME or ANIFLIBTYPE.
 *	Handles the type="char" case and the like.
-*	TODO: hash
 */
-inline int
-BType(const char *buf, int bl)
+/*inline int
+BtnTypeId(const char *buf, int bl)
 {
 	if (!buf)
 		ERR ("BType: buf is NULL")
@@ -303,30 +271,19 @@ BType(const char *buf, int bl)
 		ERR ("BType: bl is invalid: " << bl)
 	if (bl > 100)
 		ERR ("BType: bl is invalid: " << bl << ", \"" << StreamBlockB (buf, 100, 16) << "\"")
-	//std::stringstream a, b;
-	//if (!buf) a << "[NULL], " << bl;
-	//	else  a << "[" << StreamBlockB (buf, bl, bl + 1) << "], " << bl;
 	int i;
 	for (i = 0; i < BTYPESNUM; i++) {
-		if (BtlLen (i) <= bl)
-			if (strncmp (buf, BtlText (i), BtlLen (i)) == 0) {
-				//b << "\"" << BtlText (i) << "\", " << BtlLen (i);
-				//INFO("BType: req: " << a.str () << ", result: " << b.str ())
-				return BtlType (i);
-			}
-		if (BtnLen (i) <= bl)
-			if (strncmp (buf, BtnText (i), BtnLen (i)) == 0) {
-				//b << "\"" << BtnText (i) << "\", " << BtnLen (i);
-				//INFO("BType: req: " << a.str () << ", result: " << b.str ())
-				return BtnType (i);
-			}
+		if (BTYPES[i].nlen == bl)
+			if (strncmp (buf, BTYPES[i].nval, bl) == 0)
+				return (i << 8) | BTYPES[i].type;
+		if (BTYPES[i].llen == bl)
+			if (strncmp (buf, BTYPES[i].lval, bl) == 0)
+				return (i << 8) | BTYPES[i].type;
 	}
-	//b << "[NIFT_T]";
-	//INFO("BType: req: " << a.str () << ", result: " << b.str ())
 	return NIFT_T;
-}
+}*/
 
-#define BTL(ID) BtlText (ID), BtlLen (ID)
+//#define BTL(ID) BtlText (ID), BtlLen (ID)
 
 // Returns (b - a) in microseconds
 long time_interval(struct timeval *a, struct timeval *b);

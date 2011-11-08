@@ -64,6 +64,7 @@ namespace NifLib
 
 		std::map<std::string, NIFuint> strversion_cache;
 		std::map<std::string, int> tagnames_cache[TAGS_NUML1];
+		std::map<std::string, int> btypes_cache;
 
 		/*
 		*	A "view" for the ANAME attribute - fast lookup by ANAME.
@@ -120,6 +121,7 @@ namespace NifLib
 					return false;
 			return true;
 		}
+		int BType(const char *buf, int bl);
 		int Evaluate(NifLib::Attr* cond);
 		int EvalDeduceType(const char *val, int len);
 		int EvaluateL2(NifLib::List<NIFuint> &l2);

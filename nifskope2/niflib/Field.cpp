@@ -58,65 +58,38 @@ namespace NifLib
 		NifLib::Attr *_ta = btype->AttrById (ANIFLIBTYPE);
 		if (!_ta)
 			result << "[UNKNOWN TBASIC ANIFLIBTYPE]";
-		else if (NLType == NIFT_D) {
-			if (NLType == BtlType (BTL_HEADERSTRING) ||
-				NLType == BtlType (BTL_LINESTRING))
+		else if (NLType & NIFT_T) {// can handle two NIFT_T
+			if (NIFT(NLType, BTN_HEADERSTRING) ||
+				NIFT(NLType, BTN_LINESTRING))
 				result << std::string (Value.buf, Value.len - 1);// avoid '\n'
 			else // unknown dynamic
 				result << StreamBlockB (Value.buf, Value.len, Value.len + 1);
-		} else if ((NLType & (NIFT_F | NIFT_4)) == (NIFT_F | NIFT_4))
+		} else if ((NLType & BtnType (BTN_FLOAT)) == BtnType (BTN_FLOAT))
  			result << (NIFfloat)*(NIFfloat *)&Value.buf[0];
+		else if (NIFT(NLType, BTN_FILEVERSION)) {
+			if ((Value.len == (NLType & NIFT_SIZE)) && (Value.len > 0)) {
+				result << (NIFint)Value.buf[Value.len-1];
+				for (int i = Value.len - 2; i > -1; i--)
+					result << "." << (NIFint)Value.buf[i];
+			} else
+				result << "[Unknown FILEVERSION type]";
+		}
+		else if (NIFT(NLType, BTN_CHAR))
+			result << std::string (Value.buf, Value.len).c_str ();
 		else {
-			if ((NLType & NIFT_U) == NIFT_U) {
-				if ((NLType & NIFT_4) == NIFT_4)
-					result << (NIFuint)*(NIFuint *)&Value.buf[0];
-				else if ((NLType & NIFT_2) == NIFT_2)
-					result << (NIFushort)*(NIFushort *)&Value.buf[0];
-				else if ((NLType & NIFT_1) == NIFT_1) {
-					if (Type ()->Value.Equals (BTN(BTN_CHAR)))
-						result << std::string (Value.buf, Value.len).c_str ();
-					else
-						result << (NIFint)*(NIFbyte *)&Value.buf[0];
-				} else
-					result << "[" << std::string (_ta->Value.buf, _ta->Value.len) << "]";
-			} else {
-				if ((NLType & NIFT_4) == NIFT_4)
-					result << (NIFint)*(NIFint *)&Value.buf[0];
-				else if ((NLType & NIFT_2) == NIFT_2)
-					result << (NIFshort)*(NIFshort *)&Value.buf[0];
-				else
-					result << "[" << std::string (_ta->Value.buf, _ta->Value.len) << "]";
-			}
-		}
-		/*else if (_ta->Value.Equals ("HeaderString", 12) ||
-			_ta->Value.Equals ("LineString", 10))
-			result << std::string (Value.buf, Value.len - 1);
-		else if (_ta->Value.Equals ("unsigned int", 12)||
-			_ta->Value.Equals ("IndexString", 11))
-			result << (unsigned int)*(unsigned int *)&Value.buf[0];
-		else if (_ta->Value.Equals ("Ref", 3))
-			result << "Ref:" << (int)*(int *)&Value.buf[0];
-		else if (_ta->Value.Equals ("*", 1))
-			result << "*:" << (int)*(int *)&Value.buf[0];
-		else if (_ta->Value.Equals ("int", 3))
-			result << (int)*(int *)&Value.buf[0];
-		else if (_ta->Value.Equals ("byte", 4)) {
-			if (Type ()->Value.Equals ("char", 4))
-				result << std::string (Value.buf, Value.len);
+			if ((NLType & NIFT_BT) == BtnType (BTN_UINT))
+				result << (NIFuint)*(NIFuint *)&Value.buf[0];
+			else if ((NLType & NIFT_BT) == BtnType (BTN_USHORT))
+				result << (NIFushort)*(NIFushort *)&Value.buf[0];
+			else if ((NLType & NIFT_BT) == BtnType (BTN_BYTE))
+				result << (NIFint)*(NIFbyte *)&Value.buf[0];
+			else if ((NLType & NIFT_BT) == BtnType (BTN_INT))
+				result << (NIFint)*(NIFint *)&Value.buf[0];
+			else if ((NLType & NIFT_BT) == BtnType (BTN_SHORT))
+				result << (NIFshort)*(NIFshort *)&Value.buf[0];
 			else
-				result << (int)*(unsigned char *)&Value.buf[0];
+				result << "[" << std::string (_ta->Value.buf, _ta->Value.len) << "]";
 		}
-		else if (_ta->Value.Equals ("unsigned short", 14))
-			result << (unsigned short)*(unsigned short *)&Value.buf[0];
-		else if (_ta->Value.Equals ("short", 5))
-			result << (short)*(short *)&Value.buf[0];
-		else if (_ta->Value.Equals ("bool", 4))
-			result << StreamBlockB (Value.buf, Value.len, Value.len + 1);
-		else if (_ta->Value.Equals ("float", 5))
-			result << (float)*(float *)&Value.buf[0];
-		else// TODO: this could be avoided if "nif.xml" specifies sizes
-			result << "[NEW ANIFLIBTYPE: "
-				<< std::string (_ta->Value.buf, _ta->Value.len) << "]";*/
 		return result.str ();
 	}
 
@@ -318,5 +291,41 @@ namespace NifLib
 			return value;// name not found
 		}
 		return std::string ("ERROR: field is not TENUM");
+	}
+
+	bool
+	Field::IsArray1D()
+	{
+		return (Tag->AttrById (AARR1) != NULL) &&
+				(Tag->AttrById (AARR2) == NULL);
+	}
+
+	bool
+	Field::IsArray2D()
+	{
+		return (Tag->AttrById (AARR1) != NULL) &&
+				(Tag->AttrById (AARR2) != NULL);
+	}
+
+	bool
+	Field::IsArrayJ()
+	{
+		return JField != NULL;
+	}
+
+	bool
+	Field::IsCharArray()
+	{
+		return (Tag->AttrById (AARR1) != NULL) &&
+				NIFT(NLType, BTN_CHAR);
+	}
+
+	int
+	Field::TypeId()
+	{
+		if (NLType & NIFT_T)
+			return NIFT_T;
+		else
+			return (NLType & NIFT_ID) >> 8;
 	}
 }

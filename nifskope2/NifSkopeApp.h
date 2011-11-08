@@ -76,30 +76,16 @@ namespace NifSkope
 		NifLib::Field *ByName(std::string name, NifLib::TreeNode<NifLib::Field *> *node);
 		NifLib::Field *ByName(std::string name, int index);
 		std::string GetRootNodeValue(int idx);
+		std::string GetRootNodeName (int idx);
+		bool ValidRootNodeIdx(int idx);
 
-		template <typename T> std::string ToStr(NifLib::Field *f, int ofs)
-		{
-			std::stringstream s;
-			T *buf = (T *)&(f->Value.buf[0]);
-			int cnt = f->Value.len / sizeof(T);
-			if (ofs < 0)
-				s << f->AsString (File.NifFile);
-			else if (ofs >= cnt)
-				s << "[ERROR: wrong offset]";
-			else if (f->Tag->AttrById (ATYPE)->Value.Equals ("Ref", 3))
-				s << buf[ofs] << " (" << GetRootNodeValue (buf[ofs] + 1) << ")";
-			else
-				s << buf[ofs];
-			return s.str ();
-		}
+		std::string ToStrRef(NIFint ref);
+		std::string ToStrBlockTypeIndex(NIFushort bti);
+
 		/*
-		*	// "default template arguments may not be used in function
-		*	// templates without -std=c++0x or -std=gnu++0x"
+		*	Returns string representation of a field
 		*/
-		std::string ToStr(NifLib::Field *f)// template <typename T = NIFbyte>
-		{
-			return f->AsString (File.NifFile);
-		}
+		std::string ToStr(NifLib::Field *f, int ofs = 0);
 
 		// arguments
 		bool SanitizeBeforeSave;

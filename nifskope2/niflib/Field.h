@@ -90,25 +90,17 @@ namespace NifLib
 		*	Helper function. Returns the name of the enum if the field is TENUM.
 		*/
 		std::string AsEnumName(Compiler *typesprovider);
-	};
 
-	template <typename T> class FieldArrayView: public Field
-	{
-	public:
-		int Count()
-		{
-			return Value.len / sizeof(T);
-		}
+		bool IsArray1D();
+		bool IsArray2D();
+		bool IsArrayJ();
+		bool IsCharArray();
 
-		T &operator[](int idx)
-		{
-			return Buf ()[idx];
-		}
-
-		T *Buf()
-		{
-			return (T *)&Value.buf[0];
-		}
+		/*
+		*	Returns one of the BTN_* or BTL_* types.
+		*	NIFT_T if not known.
+		*/
+		int TypeId();
 	};
 }
 

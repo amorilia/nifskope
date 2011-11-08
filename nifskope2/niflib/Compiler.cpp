@@ -233,6 +233,17 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		}
 	}
 
+	int
+	Compiler::BType(const char *buf, int bl)
+	{
+		std::string key (buf, bl);
+		std::map<std::string, int>::iterator v = btypes_cache.find (key);
+		if (v == btypes_cache.end ())
+			return NIFT_T;
+		else
+			return v->second;
+	}
+
 	/*
 	*	Evaluates expressions. Searches for fields up in "flist".
 	*	Not all-purposes evaluator.
@@ -683,12 +694,19 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		fUserVersion = NULL;
 		fUserVersion2 = NULL;
 		i2j = NULL;
+		for (int i = 0; i < BTYPESNUM; i++) {
+			btypes_cache[std::string (BTYPES[i].nval)] = (i << 8) | BTYPES[i].type;
+			if (btypes_cache.find (std::string (BTYPES[i].lval)) ==
+				btypes_cache.end ())
+				btypes_cache[std::string (BTYPES[i].lval)] = (i << 8) | BTYPES[i].type;
+		}
 	}
 
 	Compiler::~Compiler()
 	{
 		Reset ();
 		strversion_cache. clear ();
+		btypes_cache. clear ();
 		for (int i = 0; i < TAGS_NUML1; i++)
 			tagnames_cache[i].clear ();
 	}
@@ -964,28 +982,6 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 
 			NifLib::Tag *tt = GetBasicType (ftype);
 			if (tt) {// its a TBASIC type
-				NifLib::Attr *ta = tt->AttrById (ANIFLIBTYPE);
-				if (!ta) {
-					ERR("R: TBASIC is missing ANIFLIBTYPE")
-					B(9)
-					return 0;
-				}
-				if (ta->Value.Equals (BTL(BTL_HEADERSTRING)) ||
-					ta->Value.Equals (BTL(BTL_LINESTRING))) {
-					const int MAX = 1024;// max length
-					NIFchar buf[MAX];
-					NIFint rr = s.ReadCharCond (&buf[0], MAX, '\n');
-					if (rr <= MAX) {
-						AddNode (field, AddField (
-							field, &buf[0], rr, BtlType (BTL_HEADERSTRING)), n);
-					} else {// file format not supported
-						ERR("R: ReadCharCond failed")
-						B(9)
-						return 0;
-					}
-					nVersion = HeaderString2Version (&buf[0], rr - 1);
-					POS += rr;
-				} else
 #define READJBASIC(BT, SZ, TYPE)\
 {\
 	BT *lengths = (BT *)&(i2j->Value.buf[0]);\
@@ -1014,15 +1010,15 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 }
 #define READJBASICALL(SZ, RPROC, TYPE)\
 {\
-	if (i2j->NLType == (NIFT_U | NIFT_4))\
+	if ((i2j->NLType & NIFT_BT) == BtnType (BTN_UINT))\
 		RPROC(NIFuint, SZ, TYPE)\
-	else if (i2j->NLType == (NIFT_S | NIFT_4))\
+	else if ((i2j->NLType & NIFT_BT) == BtnType (BTN_INT))\
 		RPROC(NIFint, SZ, TYPE)\
-	else if (i2j->NLType == (NIFT_U | NIFT_1))\
+	else if ((i2j->NLType & NIFT_BT) == BtnType (BTN_BYTE))\
 		RPROC(NIFbyte, SZ, TYPE)\
-	else if (i2j->NLType == (NIFT_U | NIFT_2))\
+	else if ((i2j->NLType & NIFT_BT) == BtnType (BTN_USHORT))\
 		RPROC(NIFushort, SZ, TYPE)\
-	else if (i2j->NLType == (NIFT_S | NIFT_2))\
+	else if ((i2j->NLType & NIFT_BT) == BtnType (BTN_SHORT))\
 		RPROC(NIFshort, SZ, TYPE)\
 	else {\
 		ERR("R: unknown jagged array type: " << NIFT2Str (i2j->NLType))\
@@ -1030,19 +1026,52 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		return 0;\
 	}\
 }
-				if (ta->Value.Equals (BTL(BTL_BOOL))) {
-					if (nVersion > 0x04010001)
-						READ(NIFbyte, 1*izise, Byte, izise, BtlType (BTL_BYTE))
-					else
-						READ(NIFint, 4*izise, Int, izise, BtlType (BTL_INT))
-				} else
+				NifLib::Attr *ta = tt->AttrById (ANIFLIBTYPE);
+				NifLib::Attr *taname = tt->AttrById (ANAME);
+				if (!taname) {
+					ERR("R: TBASIC is missing ANAME")
+					B(9)
+					return 0;
+				}
+				if (!ta) {
+					ERR("R: TBASIC is missing ANIFLIBTYPE")
+					B(9)
+					return 0;
+				}
+				int btypeid = BType (taname->Value.buf, taname->Value.len);
+				//INFO ("btypeid: " << HEX(8) << btypeid << DEC
+				//	<< " FixedSize: " << tt->FixedSize
+				//	<< ", t: " << std::string (ta->Value.buf, ta->Value.len))
 				if (tt->FixedSize > 0) {
 					if (i2j)
-						READJBASICALL(tt->FixedSize, READJBASIC,
-							BType (ta->Value.buf, ta->Value.len))
+						READJBASICALL(tt->FixedSize, READJBASIC, btypeid)
 					else
 						READ(NIFbyte, tt->FixedSize * izise, Byte, tt->FixedSize * izise,
-							BType (ta->Value.buf, ta->Value.len))
+							btypeid)
+				} else
+				if (NIFT(btypeid, BTN_BOOL)) {
+					if (nVersion > 0x04010001)
+						READ(NIFbyte, 1*izise, Byte, izise,
+							((BTN_BOOL << 8) | BtnType (BTN_BYTE)))
+					else
+						READ(NIFint, 4*izise, Int, izise,
+							((BTN_BOOL << 8) | BtnType (BTN_INT)))
+				} else
+				if (NIFT(btypeid, BTN_HEADERSTRING) ||
+					NIFT(btypeid, BTN_LINESTRING)) {
+					const int MAX = 1024;// max length
+					NIFchar buf[MAX];
+					NIFint rr = s.ReadCharCond (&buf[0], MAX, '\n');
+					if (rr <= MAX) {
+						AddNode (field, AddField (
+							field, &buf[0], rr, btypeid), n);
+					} else {// file format not supported
+						ERR("R: ReadCharCond failed")
+						B(9)
+						return 0;
+					}
+					nVersion = HeaderString2Version (&buf[0], rr - 1);
+					POS += rr;
 				} else {
 					ERR("R: Unknown basic type")
 					B(9)
@@ -1247,7 +1276,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		INFO("FP :" << HEX(8) << POS << DEC)
 #undef DEC
 #undef HEX
-		/*INFO("c: " << c1 << ", s: " << s1 / 1000 << " ms AddField ()")
+		INFO("c: " << c1 << ", s: " << s1 / 1000 << " ms AddField ()")
 		INFO("c: " << c2 << ", s: " << s2 / 1000 << " ms Evaluate ()")
 		INFO("c: " << c3 << ", s: " << s3 / 1000 << " ms EvalDeduceType ()")
 		INFO("c: " << c4 << ", s: " << s4 / 1000 << " ms EvaluateL2 ()")
@@ -1258,7 +1287,7 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 		INFO("c: " << c9 << ", s: " << s9 / 1000 << " ms ReadObject ()")
 		INFO("c: " << c10 << ", s: " << s10 / 1000 << " ms V12Check ()")
 		INFO("c: " << c11 << ", s: " << s11 / 1000 << " ms Find ()")
-		INFO("c: " << c12 << ", s: " << s12 / 1000 << " ms FFVersion ()")*/
+		INFO("c: " << c12 << ", s: " << s12 / 1000 << " ms FFVersion ()")
 		return 1;
 	}
 
@@ -1266,35 +1295,34 @@ s##N += time_interval (&ta##N, &tb##N) / (1);}
 	Compiler::WriteNif(const char *fname)
 	{
 		if (flist.Count () <= 0) {
-			ERR("flist empty")
+			ERR("WriteNif: flist empty")
 			return;// nothing to write
 		}
 		FILE *fh = fopen (fname, "w");
 		if (!fh) {
-			ERR("can't open")
+			ERR("WriteNif: can't open")
 			return; // TODO: error handling
 		}
 		for (int i = 0; i < flist.Count (); i++) {
 			NifLib::Field *f = flist[i];
 			if (f->Value.len > 0) {
 				if (!f) {
-					ERR ("f is null")
+					ERR ("WriteNif: f is null")
 					break;
 				}
 				if (!f->Value.buf) {
-					ERR ("buf is null")
+					ERR ("WriteNif: buf is null")
 					break;
 				}
-				//INFO("W (" << f->Value.len << "): " << StreamBlockB (f->Value.buf, f->Value.len, 16))
 				int rr = fwrite(f->Value.buf, 1, f->Value.len, fh);
 				if (rr != f->Value.len) {
-					ERR("writing " << f->Value.len << ",written " << rr)
+					ERR("WriteNif: writing " << f->Value.len << ",written " << rr)
 					break;
 				}
 			}
 		}
 		fclose (fh);
-		INFO("file closed")
+		INFO("WriteNif: file closed")
 	}
 
 	void

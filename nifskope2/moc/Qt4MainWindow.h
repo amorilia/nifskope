@@ -68,17 +68,7 @@ namespace NifSkopeQt4
 		NifSkope::NifSkopeApp *App;// TODO: init by Qt4App because of NewWindow() only
 
 	private:
-		template <typename T> void Add1D(QStandardItem *itm, NifLib::Field *f)
-		{
-			int cnt = f->Value.len / sizeof(T);
-			for (int i = 0; i < cnt; i++) {
-				itm->appendRow (QList<QStandardItem *>()
-				<< new QStandardItem (QString ("%0").arg (i))
-				<< new QStandardItem (QString ("[%0]").arg (i))
-				<< new QStandardItem (QString (App->ToStr<T> (f, i).c_str ())));
-			}
-		}
-
+		void Add1D(QStandardItem *itm, NifLib::Field *f);
 		void AddSubItems(QStandardItem *itm, NifLib::TreeNode<NifLib::Field *> *n);
 	protected slots:
 		void sFileLoad();
