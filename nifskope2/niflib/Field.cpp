@@ -328,4 +328,20 @@ namespace NifLib
 		else
 			return (NLType & NIFT_ID) >> 8;
 	}
+
+	std::string
+	Field::TagType()
+	{
+		return Type ()->ToString ();
+	}
+
+	std::string
+	Field::TagAttr(int attrId)
+	{
+		NifLib::Attr *a = Tag->AttrById (attrId);
+		if (a)
+			return a->ToString ();
+		else
+			return "";
+	}
 }

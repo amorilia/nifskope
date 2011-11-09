@@ -38,4 +38,10 @@ namespace NifLib
 	{
 		Name = -1;
 	}
+
+	std::string
+	Attr::ToString()
+	{
+		return std::string (Value.buf, Value.len);
+	}
 }

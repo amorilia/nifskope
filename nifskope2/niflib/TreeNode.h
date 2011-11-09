@@ -67,6 +67,7 @@ namespace NifLib
 		NifLib::List< TreeNode<T> *> Nodes;
 		T Value;
 		int OwnsValue;// TODO: find another way - too much memory wasted
+		int Index;
 	};
 }
 

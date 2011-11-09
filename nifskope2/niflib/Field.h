@@ -97,10 +97,20 @@ namespace NifLib
 		bool IsCharArray();
 
 		/*
-		*	Returns one of the BTN_* or BTL_* types.
+		*	Returns one of the BTN_* types.
 		*	NIFT_T if not known.
 		*/
 		int TypeId();
+
+		/*
+		*	Returns field tag type
+		*/
+		std::string TagType();
+
+		/*
+		*	Returns field tag attribute
+		*/
+		std::string TagAttr(int attrId);
 	};
 }
 

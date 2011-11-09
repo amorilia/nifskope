@@ -120,7 +120,7 @@ main(int argc, char **argv)
 			"aaa.nif")) {
 			INFO ("differ")
 		}
-		p.DbgPrintFields ();
+		//p.DbgPrintFields ();
 	} else {
 		INFO("ReadNif failed")
 		p.DbgPrintFields ();

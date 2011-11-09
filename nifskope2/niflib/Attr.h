@@ -45,6 +45,7 @@ namespace NifLib
 		Buffer Value;
 		int Id;
 		int Name;
+		std::string ToString();
 	};
 }
 
