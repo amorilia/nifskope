@@ -44,9 +44,9 @@ namespace NifLib
 	{
 		NifLib::Attr *atype = Tag->AttrById (ATYPE);
 		if (!atype)
-			atype = Tag->AttrById (ANIFLIBTYPE);
-		if (!atype)
 			atype = Tag->AttrById (ANAME);
+		if (!atype)
+			atype = Tag->AttrById (ANIFLIBTYPE);
 		return atype;
 	}
 
@@ -333,6 +333,29 @@ namespace NifLib
 	Field::TagType()
 	{
 		return Type ()->ToString ();
+	}
+
+	NifLib::Tag *
+	Field::TypeTag(Compiler *typesprovider)
+	{
+		NifLib::Attr *atype = Type ();
+		if (!atype)
+			return NULL;
+		NifLib::Tag *result = NULL;
+		result = typesprovider->Find (TBASIC, atype->Value.buf, atype->Value.len);
+		if (result)
+			return result;
+		result = typesprovider->Find (TENUM, atype->Value.buf, atype->Value.len);
+		if (result)
+			return result;
+		result = typesprovider->Find (TBITFLAGS, atype->Value.buf, atype->Value.len);
+		if (result)
+			return result;
+		result = typesprovider->Find (TCOMPOUND, atype->Value.buf, atype->Value.len);
+		if (result)
+			return result;
+		result = typesprovider->Find (TNIOBJECT, atype->Value.buf, atype->Value.len);
+		return result;
 	}
 
 	std::string

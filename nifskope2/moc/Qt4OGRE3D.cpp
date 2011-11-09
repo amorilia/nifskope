@@ -387,6 +387,7 @@ rnd(int N)
 			//mCam->setPosition (camp);
 		}
 		lastPos = event->pos ();
+		//update ();
 	}
 
 	/*
@@ -398,6 +399,7 @@ rnd(int N)
 		Ogre::Vector3 camp = mCam->getPosition ();
 		camp.z += (Ogre::Real)event->delta ()/-10;// TODO: these "k" are stub
 		mCam->setPosition (camp);
+		//update ();
 	}
 
 	/*

@@ -1090,7 +1090,9 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 					ERR("R: Uknown tag")
 					return 0;// can not continue - its sequential file format
 				}
-				NifLib::TreeNode<NifLib::Field *> *newnode = AddNode (field, NULL, n);
+				NifLib::TreeNode<NifLib::Field *> *newnode = n;
+				if (tt->FixedSize <= 0 && !i2j)
+					newnode = AddNode (field, NULL, n);
 				if (!i2j) {
 					if (tt->FixedSize > 0) {
 						NifLib::TreeNode<NifLib::Field *> *nn = n;

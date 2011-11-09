@@ -190,6 +190,13 @@ namespace NifSkope
 			//"unsigned short"
 			NIFushort *buf = (NIFushort *)&(f->Value.buf[0]);
 			return ToStrBlockTypeIndex (buf[ofs]);
+		} else
+		if (f->TypeId () == BTN_BOOL) {// TODO: ToStrBool
+			NIFbyte *buf = (NIFbyte *)&(f->Value.buf[0]);
+			if (buf[0])
+				return std::string ("true");
+			else
+				return std::string ("false");
 		}
 		else
 			return f->AsString (File.NifFile);
@@ -200,6 +207,33 @@ namespace NifSkope
 			s << "[ERR: invalid Ref field]";
 		else if (ofs < 0 || ofs >= cnt)
 			s << "[ERR: wrong offset]";*/
+	}
+
+	void
+	NifSkopeApp::ExpandNode(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		if (node->Nodes.Count () > 0)
+			return;// nothing to expand
+		NifLib::Field *f = node->Value;
+		if (f->IsArray1D () && !f->IsArrayJ () && !f->IsCharArray ()) {// AARR1
+			if ((f->NLType & NIFT_BT) == BtnType (BTN_FLOAT))
+				ExpandToAArr1<NIFfloat> (node);
+			else if ((f->NLType & NIFT_BT) == BtnType (BTN_UINT))
+				ExpandToAArr1<NIFuint> (node);
+			else if ((f->NLType & NIFT_BT) == BtnType (BTN_USHORT))
+				ExpandToAArr1<NIFushort> (node);
+			else if ((f->NLType & NIFT_BT) == BtnType (BTN_BYTE))
+				ExpandToAArr1<NIFbyte> (node);
+			else if ((f->NLType & NIFT_BT) == BtnType (BTN_INT))
+				ExpandToAArr1<NIFint> (node);
+			else if ((f->NLType & NIFT_BT) == BtnType (BTN_SHORT))
+				ExpandToAArr1<NIFshort> (node);
+			// TODO This is not ok. It needs the size, not "NIFfloat[3]"
+			else if (f->TagType () == "Vector3")// allow "Vector3" arrays
+				ExpandToAArr1<NIFfloat[3]> (node);
+			else
+				return;
+		}
 	}
 
 	int

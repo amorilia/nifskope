@@ -87,6 +87,35 @@ namespace NifSkope
 		*/
 		std::string ToStr(NifLib::Field *f, int ofs = 0);
 
+		template <typename T> void ExpandToAArr1(NifLib::TreeNode<NifLib::Field *> *node)
+		{
+			NifLib::Tag *tag = node->Value->TypeTag (File.NifFile);
+			if (!tag)
+				return;// unknown type
+			T *buf = (T *)&(node->Value->Value.buf[0]);
+			int cnt = node->Value->Value.len/sizeof(T);
+			for (int i = 0; i < cnt; i++) {
+				NifLib::TreeNode<NifLib::Field *> *n =
+					new NifLib::TreeNode<NifLib::Field *>;
+				n->Parent = node;
+				NifLib::Field *f = new NifLib::Field ();
+				f->BlockTag = node->Value->BlockTag;
+				f->JField = NULL;
+				f->Tag = tag;
+				f->NLType = node->Value->NLType;
+				f->Value.CopyFrom ((const char *)&buf[i], sizeof(T));
+				n->OwnsValue = 1;
+				n->Value = f;
+				node->Nodes.Add (n);
+				n->Index = node->Nodes.Count () - 1;
+			}
+		}
+
+		/*
+		*	Expands a node to subfields. AARR1
+		*/
+		void ExpandNode(NifLib::TreeNode<NifLib::Field *> *node);
+
 		// arguments
 		bool SanitizeBeforeSave;
 		// commands - File

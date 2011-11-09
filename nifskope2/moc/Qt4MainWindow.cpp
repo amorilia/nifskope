@@ -67,6 +67,7 @@ namespace NifSkopeQt4
 	QVariant
 	QNifModel::data(const QModelIndex &index, int role) const
 	{
+		// TODO: method pointers to avoid the "else if"s
 		if (!index.isValid ())
 			return QVariant ();
 		if (role != Qt::DisplayRole)
@@ -186,6 +187,9 @@ namespace NifSkopeQt4
 			parentItem = rootItem;
 		else
 			parentItem = static_cast<TREEITEM *>(parent.internalPointer ());
+		
+		win->App->ExpandNode (parentItem);// expand if needed
+
 		return parentItem->Nodes.Count ();
 	}
 	int
@@ -708,9 +712,9 @@ namespace NifSkopeQt4
 		// Block Details
 		mBlockDetails = new QNifModel (this);
  		tvBlockDetails->setModel (mBlockDetails);
-		tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
-		tvBlockDetails->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
-		tvBlockDetails->header ()->setResizeMode (2, QHeaderView::ResizeToContents);
+		//tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
+		//tvBlockDetails->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
+		//tvBlockDetails->header ()->setResizeMode (2, QHeaderView::ResizeToContents);
 	}
 
 	void

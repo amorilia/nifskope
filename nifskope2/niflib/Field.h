@@ -107,6 +107,8 @@ namespace NifLib
 		*/
 		std::string TagType();
 
+		NifLib::Tag *TypeTag(Compiler *typesprovider);
+
 		/*
 		*	Returns field tag attribute
 		*/
