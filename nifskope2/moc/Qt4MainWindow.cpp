@@ -60,6 +60,7 @@ namespace NifSkopeQt4
 		<< "Since"
 		<< "Until"
 		<< "Version Condition";
+		rn = win->App->AsTree ();
 	}
    	QNifModel::~QNifModel()
 	{
@@ -73,7 +74,7 @@ namespace NifSkopeQt4
 		if (role != Qt::DisplayRole)
 			return QVariant ();
 		TREEITEM *item = static_cast<TREEITEM *>(index.internalPointer ());
-		TREEITEM *root = win->App->AsTree ();
+		//TREEITEM *root = win->App->AsTree ();
 		NifLib::Field *f = item->Value;
 		int col = index.column ();
 		if (col == 0)// No
@@ -81,13 +82,13 @@ namespace NifSkopeQt4
 		else if (col == 1)// Name
 			return QVariant (QString (f->Name ().c_str ()));
 		else if (col == 2) { // Type
-			if (item->Parent == root)
+			if (item->Parent == win->App->AsTree ())
 				return QVariant (QString ("NiBlock"));
 			else
 				return QVariant (QString (f->TagType ().c_str ()));
 		}
 		else if (col == 3) {// Value
-			if (item->Parent == root)
+			if (item->Parent == win->App->AsTree ())
 				return QVariant (QString (
 					win->App->GetRootNodeValue (item->Index).c_str ()));
 			else {
@@ -152,10 +153,10 @@ namespace NifSkopeQt4
 	{
  		if (!hasIndex (row, column, parent))
         	return QModelIndex ();
-		TREEITEM *rootItem = win->App->AsTree ();
+		//TREEITEM *rootItem = win->App->AsTree ();
 		TREEITEM *parentItem;
 		if (!parent.isValid ())
-			parentItem = rootItem;
+			parentItem = rn;
 		else
 			parentItem = static_cast<TREEITEM *>(parent.internalPointer ());
 		TREEITEM *childItem = parentItem->Nodes[row];// TODO: is this safe?
@@ -171,8 +172,8 @@ namespace NifSkopeQt4
 			return QModelIndex ();
 		TREEITEM *childItem = static_cast<TREEITEM *>(index.internalPointer ());
 		TREEITEM *parentItem = childItem->Parent;
-		TREEITEM *rootItem = win->App->AsTree ();
-		if (parentItem == rootItem)
+		//TREEITEM *rootItem = win->App->AsTree ();
+		if (parentItem == rn)
 			return QModelIndex ();
 		return createIndex (parentItem->Index, 0, parentItem);
 	}
@@ -182,9 +183,9 @@ namespace NifSkopeQt4
 		TREEITEM *parentItem;
 		if (parent.column () > 0)
 			return 0;
-		TREEITEM *rootItem = win->App->AsTree ();
+		//TREEITEM *rootItem = win->App->AsTree ();
 		if (!parent.isValid ())
-			parentItem = rootItem;
+			parentItem = rn;
 		else
 			parentItem = static_cast<TREEITEM *>(parent.internalPointer ());
 		
@@ -196,6 +197,12 @@ namespace NifSkopeQt4
 	QNifModel::columnCount(const QModelIndex &parent) const
 	{
 		return headers.count ();
+	}
+	void
+	QNifModel::SetRoot(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		if (node)
+			rn = node;
 	}
 
 	QNifBlockModel::QNifBlockModel(MainWindow *data, QObject *parent)
@@ -709,12 +716,44 @@ namespace NifSkopeQt4
 		tvBlockList->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
 		tvBlockList->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
 		tvBlockList->header ()->setResizeMode (2, QHeaderView::Interactive);
+		QItemSelectionModel *sm = tvBlockList->selectionModel ();
+		connect(
+			sm,
+			SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+			this,
+			SLOT(stbBLselectionChanged(const QItemSelection &, const QItemSelection &)));
+		
 		// Block Details
 		mBlockDetails = new QNifModel (this);
  		tvBlockDetails->setModel (mBlockDetails);
 		//tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
 		//tvBlockDetails->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
 		//tvBlockDetails->header ()->setResizeMode (2, QHeaderView::ResizeToContents);
+	}
+
+	void
+	MainWindow::stbBLselectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
+	{
+		if (selected.indexes ().count () > 0) {
+			//NSINFO("cnt: " << selected.indexes ().count ())
+			//for (int i = 0; i < selected.indexes ().count (); i++) {
+				void *p = selected.indexes ().value (0).internalPointer ();
+				if (!p)
+					NSINFO(" p is NULL")
+				NifLib::TreeNode<NifLib::Field *> *n =
+					static_cast<NifLib::TreeNode<NifLib::Field *> *>(p);
+				if (!n)
+					NSINFO(" n is NULL")
+				else {
+					NSINFO(n->Value->Name ())
+					QNifModel *mNew = new QNifModel (this);
+					mNew->SetRoot (n);
+					tvBlockDetails->setModel (mNew);
+					delete mBlockDetails;
+					mBlockDetails = mNew;
+				}
+			//}
+		}
 	}
 
 	void

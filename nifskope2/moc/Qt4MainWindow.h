@@ -38,6 +38,14 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QtGui>
 #include <QtCore/qabstractitemmodel.h>
 
+// "NifLib"
+#include "List.h"
+#include "Field.h"
+#include "Tag.h"
+#include "Attr.h"
+#include "TreeNode.h"
+#include "niflib.h"
+
 namespace NifSkopeQt4
 {
 	class MainWindow;
@@ -47,6 +55,7 @@ namespace NifSkopeQt4
 	protected:
 		MainWindow *win;
 		QList<QVariant> headers;
+		NifLib::TreeNode<NifLib::Field *> *rn;
 	public:
 		QNifModel(MainWindow *data, QObject *parent = 0);
 		~QNifModel();
@@ -67,6 +76,7 @@ namespace NifSkopeQt4
                       int row, int column, const QModelIndex &parent);
     	Qt::DropActions supportedDropActions() const;*/
 		// specific
+		void SetRoot(NifLib::TreeNode<NifLib::Field *> *node);
 	};
 
 	class QNifBlockModel: public QNifModel
@@ -89,7 +99,7 @@ namespace NifSkopeQt4
 
 		QTreeView *tvBlockList;
 		QTreeView *tvBlockDetails;
-		QAbstractItemModel *mBlockDetails;
+		QNifModel *mBlockDetails;
 
 		QDockWidget *dockTVBL;
 		QDockWidget *dockTVBD;
@@ -109,6 +119,7 @@ namespace NifSkopeQt4
 		MainWindow();
 		NifSkope::NifSkopeApp *App;// TODO: init by Qt4App because of NewWindow() only
 	protected slots:
+		void stbBLselectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
 		void sFileLoad();
 		void sSelectFont();
 		void sOpenURL();
