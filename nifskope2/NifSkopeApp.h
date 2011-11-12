@@ -79,40 +79,42 @@ namespace NifSkope
 		std::string GetRootNodeName (int idx);
 		bool ValidRootNodeIdx(int idx);
 
+		/*
+		*	Defines how the BTN_REF "looks" like
+		*/
 		std::string ToStrRef(NIFint ref);
+
+		/*
+		*	Defines how the BTN_BLOCKTYPEINDEX "looks" like
+		*/
 		std::string ToStrBlockTypeIndex(NIFushort bti);
+
+		/*
+		*	Defines how the BTN_BOOL "looks" like
+		*/
+		std::string ToStrBool(NIFbyte value);
 
 		/*
 		*	Returns string representation of a field
 		*/
 		std::string ToStr(NifLib::Field *f, int ofs = 0);
 
-		template <typename T> void ExpandToAArr1(NifLib::TreeNode<NifLib::Field *> *node)
-		{
-			NifLib::Tag *tag = node->Value->TypeTag (File.NifFile);
-			if (!tag)
-				return;// unknown type
-			T *buf = (T *)&(node->Value->Value.buf[0]);
-			int cnt = node->Value->Value.len/sizeof(T);
-			for (int i = 0; i < cnt; i++) {
-				NifLib::TreeNode<NifLib::Field *> *n =
-					new NifLib::TreeNode<NifLib::Field *>;
-				n->Parent = node;
-				NifLib::Field *f = new NifLib::Field ();
-				f->BlockTag = node->Value->BlockTag;
-				f->JField = NULL;
-				f->Tag = tag;
-				f->NLType = node->Value->NLType;
-				f->Value.CopyFrom ((const char *)&buf[i], sizeof(T));
-				n->OwnsValue = 1;
-				n->Value = f;
-				node->Nodes.Add (n);
-				n->Index = node->Nodes.Count () - 1;
-			}
-		}
+		/*
+		*	Converts an ARR1 non-J field into a list of fields
+		*	each containing a copy of each item of the array.
+		*	Doesn't damage anything, the Compiler can handle it.
+		*	Now the array can be edited, items modified, etc.
+		*	"node->Value" contains the array as a block of bytes.
+		*	"node->Nodes" contains the array as a list of fields.
+		*	One can edit the list add/remove, or the values and
+		*	then cancel or apply the changes for example.
+		*/
+		void ExpandToAArr1(NifLib::TreeNode<NifLib::Field *> *node, int itemsize);
 
 		/*
-		*	Expands a node to subfields. AARR1
+		*	Expand on demand. Expands a node into subfields.
+		*	Supports AARR1
+		*	TODO: AARR2 J, AARR2, AARR3
 		*/
 		void ExpandNode(NifLib::TreeNode<NifLib::Field *> *node);
 
@@ -123,7 +125,7 @@ namespace NifSkope
 		virtual void NewWindow();// creates new mainwindow
 
 		/*
-		*	"contract" - gives access to file IO of the applicaiton.
+		*	"contract" - gives access to file IO of the application.
 		*/
 		NifSkope::FileIO File;
 

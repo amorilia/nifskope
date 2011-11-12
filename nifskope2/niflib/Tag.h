@@ -43,16 +43,19 @@ namespace NifLib
 	{
 	public:
 		Tag();
+
 		int Id;// sequential id initialized in order of reading from the XML
-		int Name;// reference to tag name
+		int Name;// reference to tag name - see niflib.h
 		int FixedSize;// > 0 when calculated and possible
 		Buffer Value;// XML document value - a free form text for UIs
-		//NifLib::Tag *Parent;TODO
 		NifLib::Tag *Owner;
 		NifLib::List<NifLib::Attr *> Attr;
 		NifLib::List<NifLib::Tag *> Tags;
+
 		bool AttrExists(int attrid);
+
 		NifLib::Attr *AttrById(int attrid);
+
 		~Tag();
 	};
 }

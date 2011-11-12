@@ -36,6 +36,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Buffer.h"
 #include "Tag.h"
 #include "niff.h"
+#include "niflib.h"
 #include <string>
 
 namespace NifLib
@@ -43,7 +44,16 @@ namespace NifLib
 	class Compiler;
 	class Field
 	{
+		/*
+		*	Return the type attribute.
+		*	ATYPE, ANAME, ANIFLIBTYPE - whichever is available - in that order
+		*/
 		NifLib::Attr *Type();
+
+		/*
+		*	Converts TBASIC data value to string.
+		*	Returns [ANIFLIBTYPE] or [Unknown.*] for undefined types.
+		*/		
 		std::string AsBasicTypeValue(NifLib::Tag *btype, Compiler *typesprovider);
 	public:
 		Field();
@@ -51,18 +61,23 @@ namespace NifLib
 		NifLib::Tag *Tag;		// type and other attributes
 		NifLib::Tag *BlockTag;	// file block tag
 		NifLib::Field *JField;	// jagged array field, if this is jagged array
+		int NLType;// NifLib Type
+
+		/*
+		*	Safe cast to NIFuint at offset 0. Used by "Compiler::Evaluate ()".
+		*/
 		NIFuint AsNIFuint();
-		int NLType;// NifLib type
 
 		/*
 		*	Returns a string representation of the field.
-		*	Can be enormous in case of arrays.
+		*	Returns TENUM as ANAME.
+		*	Returns unknown or unmanageable types in rectangular brackets: []
 		*/
 		std::string AsString(Compiler *typesprovider);
 
 		/*
-		*	Helper function. Returns the file block name this feild belongs to.
-		*	TODO: is "std::string" good enough as a result type?
+		*	Helper function. Returns the file block name this field belongs to.
+		*	TODO: replace "std::string" with a "#define" somewhere
 		*/
 		std::string BlockName();
 
@@ -72,28 +87,33 @@ namespace NifLib
 		std::string Name();
 
 		/*
-		*	Helper function. Returns the tag block name this feild belongs to.
+		*	Helper function. Returns the tag block name this field belongs to.
 		*/
 		std::string OwnerName();
 
 		/*
 		*	Helper function. Returns "true" if the field type is TENUM.
 		*/
-		bool IsEnum (Compiler *typesprovider);
+		bool IsEnum(Compiler *typesprovider);
 
 		/*
-		*	Helper function. Returns "true" if the field type is TCOMPOUND or TNIOBJECT.
+		*	Helper function. Returns "true" if the field type is TCOMPOUND or
+		*	TNIOBJECT.
 		*/
 		bool IsStruct(Compiler *typesprovider);
 
 		/*
-		*	Helper function. Returns the name of the enum if the field is TENUM.
+		*	Helper function. Returns the name of the enum if the field is
+		*	TENUM.
 		*/
 		std::string AsEnumName(Compiler *typesprovider);
 
 		bool IsArray1D();
+
 		bool IsArray2D();
+
 		bool IsArrayJ();
+
 		bool IsCharArray();
 
 		/*
@@ -103,16 +123,47 @@ namespace NifLib
 		int TypeId();
 
 		/*
-		*	Returns field tag type
+		*	Returns the field ATYPE, ANAME or ANIFLIBTYPE value.
+		*	Whichever is present in the above-mentioned order:
+		*	 '<add name="Value" type="char"'
+		*	  - returns "char"
 		*/
 		std::string TagType();
 
+		/*
+		*	Returns field ATYPE value:
+		*	type="Vector3", Vector3 Tag
+		*/
 		NifLib::Tag *TypeTag(Compiler *typesprovider);
 
 		/*
-		*	Returns field tag attribute
+		*	Returns field tag attribute value as a string:
+		*	TagAttr (ANAME), "Vector3"
 		*/
 		std::string TagAttr(int attrId);
+
+		/*
+		*	Returns the size of an item in case an array of const size items
+		*	is stored in the field.
+		*	Will not work for (TypeTag->FixedSize > 0) fields.
+		*/
+		inline int ItemSize()
+		{
+			return NLType & NIFT_SIZE;
+		}
+
+		/*
+		*	Returns the size of the array in case an array of const size items
+		*	is stored in the field.
+		*/
+		inline int ArraySize()
+		{
+			int s = ItemSize ();
+			if (s)
+				return Value.len / s;
+			else
+				return 0;
+		}
 	};
 }
 

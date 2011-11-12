@@ -50,6 +50,7 @@ namespace NifSkopeQt4
 {
 	class MainWindow;
 
+	// TODO: class per file
 	class QNifModel: public QAbstractItemModel
 	{
 	protected:
@@ -60,33 +61,35 @@ namespace NifSkopeQt4
 		QNifModel(MainWindow *data, QObject *parent = 0);
 		~QNifModel();
 
-		QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+		QVariant data(
+			const QModelIndex &index,
+			int role = Qt::DisplayRole) const;
 		Qt::ItemFlags flags(const QModelIndex &index) const;
-		QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-		QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+		QVariant headerData(
+			int section,
+			Qt::Orientation orientation,
+			int role = Qt::DisplayRole) const;
+		QModelIndex index(
+			int row,
+			int column,
+			const QModelIndex &parent = QModelIndex()) const;
 		QModelIndex parent(const QModelIndex &index) const;
 		int rowCount(const QModelIndex &parent = QModelIndex()) const;
 		int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    	/*bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-    	bool hasChildren(const QModelIndex &index = QModelIndex()) const;
-    	void sort(int column, Qt::SortOrder order = Qt::AscendingOrder);
-    	QStringList mimeTypes() const;
-    	QMimeData *mimeData(const QModelIndexList &indexes) const;
-    	bool dropMimeData(const QMimeData *data, Qt::DropAction action,
-                      int row, int column, const QModelIndex &parent);
-    	Qt::DropActions supportedDropActions() const;*/
-		// specific
+
 		void SetRoot(NifLib::TreeNode<NifLib::Field *> *node);
 	};
 
+	// TODO: class per file
 	class QNifBlockModel: public QNifModel
 	{
 	public:
 		QNifBlockModel(MainWindow *data, QObject *parent = 0);
 		~QNifBlockModel();
-		QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+		QVariant data(
+			const QModelIndex &index,
+			int role = Qt::DisplayRole) const;
 		int rowCount(const QModelIndex &parent = QModelIndex()) const;
-		//QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
 	};
 
 	class MainWindow: public QMainWindow
@@ -119,9 +122,17 @@ namespace NifSkopeQt4
 		MainWindow();
 		NifSkope::NifSkopeApp *App;// TODO: init by Qt4App because of NewWindow() only
 	protected slots:
-		void stbBLselectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
+		void stbBLselectionChanged(
+			const QItemSelection &selected,
+			const QItemSelection &deselected);
+
+		/*
+		*	Load a .nif file
+		*/
 		void sFileLoad();
+
 		void sSelectFont();
+
 		void sOpenURL();
 	public slots:
 		void About();

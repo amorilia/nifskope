@@ -78,8 +78,6 @@ NifStream::ReadChar(register NIFchar *buf, register int count)
 	return Read (buf, count);
 }
 
-// It always returns bytes read.
-// Ptr needs to have space for "cond" as well.
 int
 NifStream::ReadCharCond(register NIFchar *ptr, register int size, register NIFchar cond)
 {

@@ -61,7 +61,6 @@ NIFT2Str(int NLType)
 	return nlt.str ();
 }
 
-// Returns (b - a) in microseconds
 long
 time_interval(struct timeval *a, struct timeval *b)
 {
@@ -80,9 +79,6 @@ NifRelease(void *ptr)
 	free (ptr);
 }
 
-/*
-*	debug: print "len" from "buf" as ASCII
-*/
 void
 PrintBlockA(const char *buf, int len)
 {
@@ -97,9 +93,6 @@ PrintBlockA(const char *buf, int len)
 	NifRelease (b);
 }
 
-/*
-*	debug: print "len" from "buf" as Bytes in "col"-umns
-*/
 void
 PrintBlockB(const char *buf, int len, int col)
 {
@@ -120,9 +113,6 @@ PrintBlockB(const char *buf, int len, int col)
 #undef FMT
 }
 
-/*
-*	debug: print "len" from "buf" as Bytes in "col"-umns
-*/
 std::string
 StreamBlockB(const char *buf, int len, int col)
 {
@@ -143,9 +133,6 @@ StreamBlockB(const char *buf, int len, int col)
 #undef FMT
 }
 
-/*
-*	debug: write "buf" "len" bytes to file named "fname"
-*/
 void
 WriteToFile(const char *buf, int len, const char *fname)
 {

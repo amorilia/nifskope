@@ -148,12 +148,6 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		}
 	}
 
-	/*
-	*	FindField Version. Special proc to look for "Version",
-	*	"User Version" and "User Version 2" since they're the only
-	*	two fields that are not in the block currently being read
-	*	except for TCOMPOUND "Header".
-	*/
 	NifLib::Field *
 	Compiler::FFVersion(const char *val, int len)
 	{
@@ -216,9 +210,6 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		}
 	}
 
-	/*
-	*	Find l1 tag with (ANAME=="attrvalue") with attrvalue "len"
-	*/
 	NifLib::Tag *
 	Compiler::Find(int tagid, const char *attrvalue, int len)
 	{
@@ -266,36 +257,6 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		}
 	}
 
-	/*
-	*	Evaluates expressions. Searches for fields up in "flist".
-	*	Not all-purposes evaluator.
-	*	- if you have more than one condition always put brackets:
-	*		() && () || () ...
-	*		brackets can be omited only when you have exactly one condition:
-	*		User Version >= 3.14
-	*	- you may have spaces in variable names:
-	*		( User Version >= 3.14 )
-	*		(User Version >= 3.14)
-	*		(UserVersion >= 3.14)
-	*	- it can use following consts:
-	*		11 - uint
-	*		1.1 - version
-	*		1.1.2.123 - version
-	*	- it expects variable name left and const value right:
-	*		( User Version >= 3.14 )
-	*		TODO:it may work in other scenarios later
-	*	- it expects following operators between lvalue and rvalue:
-	*		'==' '>=' '>' '<' '<=' '&' '!=' '-'
-	*	- it expects following operators between brackets '(' ')':
-	*		'||' '&&'
-	*	- it expects following operator before an opening bracket '(':
-	*		'!'
-	*	- it turns '&amp;' to '&', '&lt;' to '<', '&gt;' to '>'
-	*	See "nif.xml" for examples.
-	*	If you fail the rules above, the evaluator will fail to evaluate
-	*	or may evaluate wrongly.
-	*	All suggestions and improvements are welcome of course.
-	*/
 	int
 	Compiler::Evaluate(NifLib::Attr* cond)
 	{
@@ -605,14 +566,6 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		return EVAL_TYPE_UNKNOWN;
 	}
 
-	/*
-	*	Handles brackets.
-	*	Works with: uint, EVAL_OPB_OR, EVAL_OPB_AND and "!"
-	*	Example: "((1)&&(!((0)&&(1))))"
-	*	Note: "(Has Normals) && (TSpace Flag & 240)", so
-	*		  here we'll receive something like:
-	*		  "(1)&&(240)"
-	*/
 	int
 	Compiler::EvaluateL2(NifLib::List<NIFuint> &l2)
 	{
@@ -813,10 +766,6 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		}
 	}
 
-	/*
-	*	Return TBASIC for that ATYPE attribute if there is TBASIC
-	*	reachable for it.
-	*/
 	NifLib::Tag *
 	Compiler::GetBasicType(NifLib::Attr *type)
 	{
@@ -840,18 +789,12 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		return tag;
 	}
 
-	/*
-	*	Initialise AARR attribute. Set *i2j to an array field,
-	*	if any, to indicate jagged array
-	*/
 	NIFint
 	Compiler::InitArr(NifLib::Attr *arr)
 	{
 		A(8)
 		NIFint result = 1;
 		if (arr) {
-			//INFO ("Query InitArr for \"" << std::string (arr->Value.buf, arr->Value.len) << "\"")
-			//PrintBlockA (arr->Value.buf, arr->Value.len);
 			if (IsUInt (arr->Value.buf, arr->Value.len))
 				result = str2<NIFint> (std::string (arr->Value.buf, arr->Value.len));
 			else {// not a const int
@@ -863,12 +806,8 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 					else
 						result = v->AsNIFuint ();// can be 0
 				}
-				else {// an expression
+				else// an expression
 					result = Evaluate (arr);// TODO: error handling
-					//INFO("Block #" << STDSTR(blockTag->Value)
-					//	<< ", InitArr expression: \"" << STDSTR(arr->Value) << "\""
-					//	<< ", result: " << result)
-				}
 			}
 		}
 		B(8)
@@ -1118,7 +1057,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 	}
 
 	int
-	Compiler::ReadNifBlock(int i, NifStream &s, const char *name, int nlen)
+	Compiler::ReadNifBlock(NifStream &s, const char *name, int nlen)
 	{
 		NifLib::Tag *t = Find (TCOMPOUND, name, nlen);
 		if (!t) {
@@ -1203,7 +1142,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 						blockTag = NULL;
 						AddField (t1, (char *)&slen, 4, NIFT_U | NIFT_4);
 						AddField (t2, bname, slen, NIFT_U | NIFT_1);
-						if (!ReadNifBlock(i, s, bname, slen)) {
+						if (!ReadNifBlock (s, bname, slen)) {
 							NifRelease (bname);
 							return 0;// block read failed
 						}
@@ -1216,7 +1155,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 					return 0;// block name length read failed
 			}
 			// those seem to have footer too
-			if (!ReadNifBlock (i, s, "Footer", 6))
+			if (!ReadNifBlock (s, "Footer", 6))
 				return 0;
 		}
 		else if (nVersion > 0x0A000100/*"10.0.1.0"*/) {
@@ -1274,10 +1213,10 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				}
 				//INFO("Block #" << i << " \"" << STDSTR (f->Value) << "\"")
 				//INFO("Block #" << i << " \"" << STDSTR (f->Value) << "\", pos: " << HEX(8) << POS << DEC)
-				if (!ReadNifBlock (i, s, f->Value.buf, f->Value.len))
+				if (!ReadNifBlock (s, f->Value.buf, f->Value.len))
 					return 0;
 			}// for
-			if (!ReadNifBlock (i, s, "Footer", 6))
+			if (!ReadNifBlock (s, "Footer", 6))
 				return 0;
 		}//
 		else {
@@ -1290,12 +1229,6 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		//for (int i = 0; i < MLEN; i++)
 		//	INFO("c: " << M[i].c << ", s: " << M[i].s / 1000 << " ms "
 		//		<< M[i].n << " ()")
-		/*NifLib::List<NifLib::Field *> flist;
-		NifLib::TreeNode<NifLib::Field *> ftree;
-		std::map<std::string, NIFuint> strversion_cache;
-		std::map<std::string, int> tagnames_cache[TAGS_NUML1];
-		std::map<std::string, int> btypes_cache;
-		std::map<std::string, NifLib::List<int> *> fview_aname;*/
 		INFO("flist: " << flist.Count ())
 		INFO("ftree[0]: " << ftree.Nodes.Count ())
 		INFO("strversion_cache: " << strversion_cache.size ())

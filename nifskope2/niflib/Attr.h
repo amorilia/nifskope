@@ -42,9 +42,11 @@ namespace NifLib
 	{
 	public:
 		Attr();
+
 		Buffer Value;
-		int Id;
-		int Name;
+		int Id;// seq. id in order of parsing from the XML document
+		int Name;// mapped name - ANAME for example - see niflib.h
+
 		std::string ToString();
 	};
 }

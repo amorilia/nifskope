@@ -138,9 +138,6 @@ namespace NifSkope
 		return (idx >= 0) && (idx < nif->Nodes.Count ());
 	}
 
-	/*
-	*	Defines how the BTN_REF "looks" like
-	*/
 	std::string
 	NifSkopeApp::ToStrRef(NIFint ref)
 	{
@@ -157,9 +154,6 @@ namespace NifSkope
 		return s.str ();
 	}
 
-	/*
-	*	Defines how the BTN_BLOCKTYPEINDEX "looks" like
-	*/
 	std::string
 	NifSkopeApp::ToStrBlockTypeIndex(NIFushort bti)
 	{
@@ -171,42 +165,87 @@ namespace NifSkope
 		return s.str ();
 	}
 
-	/*
-	*	Returns string representation of a field
-	*/
+	std::string
+	NifSkopeApp::ToStrBool(NIFbyte value)
+	{
+		if (value)
+			return std::string ("true");
+		else
+			return std::string ("false");
+	}
+
 	std::string
 	NifSkopeApp::ToStr(NifLib::Field *f, int ofs)
 	{
+		// TODO: optimizie: to method pointers
+		// WHEN: when completed and this type of comm. is chosen
+		// "QTreeView" calls "the model" and "the model" calls this quite
+		// often - when a selection is changed, when a column is resized, etc.
 		if (f->TypeId () == BTN_REF) {
-			//todo: if ((f->NLType & (NIFT_S | NIFT_4)) == (NIFT_S | NIFT_4)) {
-				NIFint *buf = (NIFint *)&(f->Value.buf[0]);
-				return ToStrRef (buf[ofs]);
-			//}
-			//todo: else
-			//todo: 	return "[ERR: wrong REF type]";
+			NIFint *buf = (NIFint *)&(f->Value.buf[0]);
+			return ToStrRef (buf[ofs]);
 		} else
-		// special handling for some "header" things
 		if (f->TypeId () == BTN_BLOCKTYPEINDEX) {
-			//"unsigned short"
 			NIFushort *buf = (NIFushort *)&(f->Value.buf[0]);
 			return ToStrBlockTypeIndex (buf[ofs]);
 		} else
-		if (f->TypeId () == BTN_BOOL) {// TODO: ToStrBool
+		if (f->TypeId () == BTN_BOOL) {
 			NIFbyte *buf = (NIFbyte *)&(f->Value.buf[0]);
-			if (buf[0])
-				return std::string ("true");
-			else
-				return std::string ("false");
+			return ToStrBool (buf[f->ItemSize ()*ofs]);
+		} else
+		if (f->TypeId () == NIFT_T) {
+			NifLib::Tag *tt = f->TypeTag (File.NifFile);
+			if (!tt)
+				return "[ERR: ASSERTION FAILED: field has no type tag]";
+			if (tt->FixedSize <= 0)
+				return f->AsString (File.NifFile);
+			// Handle fixed size complex fields - "Packed" fields of non-array
+			// type what are not "auto-expanded" by the tree view in the
+			// compiler as the other non-fixed size ones.
+			// Show them on one line for now, handle "float" only:
+			std::stringstream result;
+			NIFfloat *fbuf = (NIFfloat *)&(f->Value.buf[0]);
+			for (int i = 0; i < tt->Tags.Count (); i++) {
+				NifLib::Tag *ct = tt->Tags[i];
+				NifLib::Attr *name = ct->AttrById (ANAME);
+				NifLib::Attr *type = ct->AttrById (ATYPE);
+				if (type->Value.Equals("float", 5)) {
+					result << std::string (name->Value.buf, name->Value.len) << ": ";
+					result << fbuf[i];
+				} else
+					result << std::string (name->Value.buf, name->Value.len) << ": -";
+				if (i < tt->Tags.Count () -1)
+					result << ", ";
+			}
+			return result.str ();
 		}
 		else
 			return f->AsString (File.NifFile);
+	}
 
-		/*NIFint *buf = (NIFint *)&(f->Value.buf[0]);
-		int cnt = f->Value.len / sizeof(NIFint);
-		if (f->Value.len < (int)sizeof(NIFint))
-			s << "[ERR: invalid Ref field]";
-		else if (ofs < 0 || ofs >= cnt)
-			s << "[ERR: wrong offset]";*/
+	void
+	NifSkopeApp::ExpandToAArr1(NifLib::TreeNode<NifLib::Field *> *node, int itemsize)
+	{
+		NifLib::Tag *tag = node->Value->TypeTag (File.NifFile);
+		if (!tag)
+			return;// unknown type
+		char *buf = (char *)&(node->Value->Value.buf[0]);
+		int cnt = node->Value->Value.len/itemsize;
+		for (int i = 0; i < cnt; i++) {
+			NifLib::TreeNode<NifLib::Field *> *n =
+				new NifLib::TreeNode<NifLib::Field *>;
+			n->Parent = node;
+			NifLib::Field *f = new NifLib::Field ();
+			f->BlockTag = node->Value->BlockTag;
+			f->JField = NULL;
+			f->Tag = tag;
+			f->NLType = node->Value->NLType;
+			f->Value.CopyFrom ((const char *)&buf[itemsize*i], itemsize);// copy 1
+			n->OwnsValue = 1;
+			n->Value = f;
+			node->Nodes.Add (n);
+			n->Index = node->Nodes.Count () - 1;
+		}
 	}
 
 	void
@@ -216,21 +255,10 @@ namespace NifSkope
 			return;// nothing to expand
 		NifLib::Field *f = node->Value;
 		if (f->IsArray1D () && !f->IsArrayJ () && !f->IsCharArray ()) {// AARR1
-			if ((f->NLType & NIFT_BT) == BtnType (BTN_FLOAT))
-				ExpandToAArr1<NIFfloat> (node);
-			else if ((f->NLType & NIFT_BT) == BtnType (BTN_UINT))
-				ExpandToAArr1<NIFuint> (node);
-			else if ((f->NLType & NIFT_BT) == BtnType (BTN_USHORT))
-				ExpandToAArr1<NIFushort> (node);
-			else if ((f->NLType & NIFT_BT) == BtnType (BTN_BYTE))
-				ExpandToAArr1<NIFbyte> (node);
-			else if ((f->NLType & NIFT_BT) == BtnType (BTN_INT))
-				ExpandToAArr1<NIFint> (node);
-			else if ((f->NLType & NIFT_BT) == BtnType (BTN_SHORT))
-				ExpandToAArr1<NIFshort> (node);
-			// TODO This is not ok. It needs the size, not "NIFfloat[3]"
-			else if (f->TagType () == "Vector3")// allow "Vector3" arrays
-				ExpandToAArr1<NIFfloat[3]> (node);
+			if (f->ItemSize() > 0)
+				ExpandToAArr1 (node, f->ItemSize ());
+			else if (f->TypeTag (File.NifFile)->FixedSize > 0)
+				ExpandToAArr1 (node, f->TypeTag (File.NifFile)->FixedSize);
 			else
 				return;
 		}

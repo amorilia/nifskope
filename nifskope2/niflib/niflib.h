@@ -168,6 +168,10 @@ const int OPBL[] = {0, 2, 2};
 #define NIFT_SIGN 0x00000060
 #define NIFT_ID 0x0000FF00
 #define NIFT_BT 0x000000FF
+
+/*
+*	debug: print NifLib Type info
+*/
 std::string NIFT2Str(int NLType);
 
 /*
@@ -218,7 +222,10 @@ const struct
     "StringIndex"    "IndexString"    32-bit unsigned integer
 	*/
 };
-// Basic Type ANAME
+
+/*
+*	Basic Type ANAME
+*/
 #define BTN_BOOL 0
 #define BTN_BYTE 1
 #define BTN_UINT 2
@@ -238,56 +245,48 @@ const struct
 #define BTN_STRINGINDEX 16
 #define NIFT(VAL,ID) ((VAL & NIFT_ID) == (ID << 8))
 
+/*
+*	Basic Type Niflib - return text for type "id"
+*/
 inline const char *
 BtnText(int id)
 {
 	return BTYPES[id].nval;
 }
 
+/*
+*	Basic Type Niflib - return text length for type "id"
+*/
 inline int
 BtnLen(int id)
 {
 	return BTYPES[id].nlen;
 }
 
+/*
+*	Basic Type Niflib - return NifLib type for type "id".
+*	NifLib Type is a form of an ABI - it contains info on size,
+*	signedness, etc. See NIFT_* above.
+*/
 inline int
 BtnType(int id)
 {
 	return BTYPES[id].type;
 }
-
+ 
+/*
+*	debug: put buf[0;len) as hexadecimal bytes formatted in "col"umns
+*/
 std::string StreamBlockB(const char *buf, int len, int col);
 
 /*
-*	Returns type by ANAME or ANIFLIBTYPE.
-*	Handles the type="char" case and the like.
+*	debug: return (b - a) in microseconds
 */
-/*inline int
-BtnTypeId(const char *buf, int bl)
-{
-	if (!buf)
-		ERR ("BType: buf is NULL")
-	if (bl <= 0)
-		ERR ("BType: bl is invalid: " << bl)
-	if (bl > 100)
-		ERR ("BType: bl is invalid: " << bl << ", \"" << StreamBlockB (buf, 100, 16) << "\"")
-	int i;
-	for (i = 0; i < BTYPESNUM; i++) {
-		if (BTYPES[i].nlen == bl)
-			if (strncmp (buf, BTYPES[i].nval, bl) == 0)
-				return (i << 8) | BTYPES[i].type;
-		if (BTYPES[i].llen == bl)
-			if (strncmp (buf, BTYPES[i].lval, bl) == 0)
-				return (i << 8) | BTYPES[i].type;
-	}
-	return NIFT_T;
-}*/
-
-//#define BTL(ID) BtlText (ID), BtlLen (ID)
-
-// Returns (b - a) in microseconds
 long time_interval(struct timeval *a, struct timeval *b);
 
+/*
+*	Return XML attr. id by name specified by "buf" and its length - "bl"
+*/
 inline int
 AttrId(const char *buf, int bl)
 {
@@ -299,44 +298,68 @@ AttrId(const char *buf, int bl)
 	return -1;
 }
 
+/*
+*	Check if XML attr. id is valid ( "known" )
+*/
 inline int
 ValidAttrId(int id)
 {
 	return id >= 0 && id < ATTR_NUM;
 }
 
+/*
+*	Return "known" XML attr. text length
+*/
 inline int
 AttrLen(int id)
 {
 	return ATTRL[id];
 }
 
+/*
+*	Return "known" XML attr. text
+*/
 inline const char *
 AttrText(int id)
 {
 	return ATTR[id];
 }
 
+/*
+*	Return "known" XML tag opener text length
+*/
 inline int
 TagLen(int id)
 {
 	return TAGSL[id];
 }
 
+/*
+*	Return "known" XML tag opener text "<add"
+*/
 inline const char *
 TagOpener(int id)
 {
 	return TAGS[2*id];
 }
 
+/*
+*	Return "known" XML tag closer text "</add>"
+*/
 inline const char *
 TagCloser(int id)
 {
 	return TAGS[(2*id) + 1];
 }
 
+/*
+*	malloc () interface used for non-class instances only.
+*/
 void *NifAlloc(size_t size);
 
+/*
+*	free () interface used for non-class instances only.
+*/
 void NifRelease(void *ptr);
 
 /*

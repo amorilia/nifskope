@@ -76,19 +76,34 @@ class NifStream
 	inline int Read(register void *ptr, register int size);
 public:
 	NifStream(const char *fname, int bufsize);
-	// "It's usually imperative that the function's definition (the part
-	// between the {...}) be placed in a header file. If you put the inline
-	// function's definition into a .cpp file, and if it is called from some
-	// other .cpp file, you'll get an "unresolved external" error from the
-	// linker."
+
+	/*
+	*	"It's usually imperative that the function's definition (the part
+	*	between the {...}) be placed in a header file. If you put the inline
+	*	function's definition into a .cpp file, and if it is called from some
+	*	other .cpp file, you'll get an "unresolved external" error from the
+	*	linker."
+	*/
 	int ReadByte(register NIFbyte *buf, register int count);
+
 	int ReadChar(register NIFchar *buf, register int count);
+
+	/*
+	*	It always returns bytes read.
+	*	Ptr needs to have space for "cond" as well.
+	*/
 	int ReadCharCond(register NIFchar *buf, register int count, register NIFchar cond);
+
 	int ReadUInt(register NIFuint *buf, register int count);
+
 	int ReadInt(register NIFint *buf, register int count);
+
 	int ReadUShort(register NIFushort *buf, register int count);
+
 	int ReadShort(register NIFshort *buf, register int count);
+
 	int ReadFloat(register NIFfloat *buf, register int count);
+
 	~NifStream();
 };
 

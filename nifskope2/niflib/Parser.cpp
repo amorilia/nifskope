@@ -38,13 +38,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifLib
 {
-	/*
-	*	Turn "nif.xml" into objects
-	*	A tag has attributes.
-	*	map<tagname,list<tag>>
-	*	tag
-	*		map<attrname, attr>
-	*/
 	void
 	Parser::Process(const char *fname)
 	{
@@ -60,7 +53,7 @@ namespace NifLib
 		}
 		// 1 - remove the impossible :)
 		// 1.1 ignore all before "<niftoolsxml"
-		// 1.2 ignore <!--.*--> - including new line for multiline comments
+		// 1.2 ignore <!--.*--> - including new line for multi-line comments
 		char *tmp = (char *)NifAlloc (buflen);
 		if (!tmp) {
 			ERR("Out of memory. NifLib.Parser.Process: failed to allocate " <<
@@ -118,9 +111,6 @@ namespace NifLib
 		allok = 1;
 	}
 
-	/*
-	*	to tags and attributes
-	*/
 	void
 	Parser::Tokenize(char *buf, int buflen, int tmin, int tcnt)
 	{
@@ -140,12 +130,6 @@ namespace NifLib
 		}
 	}
 
-	/*
-	*	Tries to get a "tag" from the XML.
-	*	Returns length on success, 0 otherwise.
-	*	"/>" is supported as a "tag closer".
-	*	"buf" is the buffer to scan in, "bl" - its length
-	*/
 	int
 	Parser::TryParseTag(int tagid, char *buf, int bl)
 	{
@@ -186,10 +170,6 @@ namespace NifLib
 		return 0;
 	}
 
-	/*
-	*	Adds an item to "objs".
-	*	Returns true on success, false otherwise.
-	*/
 	int
 	Parser::Add(int tagid, char *buf, int bl)
 	{
@@ -209,7 +189,7 @@ namespace NifLib
 				delete t;
 				return 0;
 			}
-			currentL1->Tags.Add (t);// subtags should always be sequential
+			currentL1->Tags.Add (t);// sub-tags should always be sequential
 			t->Id = currentL1->Tags.Count () - 1;
 			t->Owner = currentL1;
 		}
@@ -226,7 +206,7 @@ namespace NifLib
 				q = !q;
 			// handle comments
 			if (!c && buf[i] == '>' && i + 1 < bl && !q) {
-				c = 1;// search only once for comment because of subtags
+				c = 1;// search only once for comment because of sub-tags
 				int j, q2 = 0;
 				for (j = ++i; ; j++) {// checked in the prev. if operator
 					if (buf[j] == '"')
@@ -238,7 +218,7 @@ namespace NifLib
 							t->Value.CopyFrom (&buf[i + a], (b - a) + 1);
 						break;
 					}
-					else if (buf[j] == '<' && !q2) {// comment and subtags
+					else if (buf[j] == '<' && !q2) {// comment and sub-tags
 						int a, b, len = (j - i);
 						Trim (&a, &b, &buf[i], len);
 						if (b >= a)
@@ -323,11 +303,6 @@ namespace NifLib
 		return allok;
 	}
 
-	/*
-	*	Loads a file "fname" in a buffer "*buf".
-	*	Allocates "*buf" and specifies its size in "*size".
-	*	Returns 0 on failure, 1 - otherwise.
-	*/
 	int
 	Parser::LoadFile(const char *fname, char **buf, int *size)
 	{
@@ -362,10 +337,6 @@ namespace NifLib
 		return result;
 	}
 
-	/*
-	*	Writes "objs" into a XML file.
-	*	Warning - there are no XML Comment "objs".
-	*/
 	int
 	Parser::SaveFile(const char *fname)
 	{
@@ -450,10 +421,6 @@ namespace NifLib
 		return -1;
 	}
 
-	/*
-	*	Moves "a" and "b" to positions not containing white space.
-	*	*a <= *b when there is at least one non-white space character
-	*/
 	void
 	Parser::Trim(int *a, int *b, const char *buf, int bl)
 	{
@@ -465,11 +432,6 @@ namespace NifLib
 					break;
 	}
 
-	/*
-	*	Finds "c" starting from "pos" in "buf" while avoiding
-	*	whitespaces only.
-	*	Returns -1 when not found.
-	*/
 	int
 	Parser::FindPrevw(const char *buf, int pos, char c)
 	{
@@ -488,9 +450,6 @@ namespace NifLib
 		return -1;
 	}
 
-	/*
-	*	Returns true if "buf" starts with "q"
-	*/
 	int
 	Parser::StartsWith(const char *q, int qlen, const char *buf, int buflen)
 	{
@@ -501,11 +460,6 @@ namespace NifLib
 		return !strncmp (q, buf, qlen);
 	}
 
-	/*
-	*	Finds first occurrence of "q" and returns its start index
-	*	relative to "buf".
-	*	Returns "buflen" on failure.
-	*/
 	int
 	Parser::FindFirst(const char *q, int qlen, const char *buf, int buflen)
 	{
@@ -518,16 +472,6 @@ namespace NifLib
 		return buflen;
 	}
 
-	/*
-	*	Find a block what starts with "a" and ends with "b" in "buf".
-	*	Handles nested blocks:
-	*   "a1.b1b1" - a="a1", b="b1" will return 0, blcklen=5
-	*   "a1a1.b1b1" - a="a1", b="b1" will return 0, blcklen=9
-	*   "a1a1.b1" - a="a1", b="b1" will return 2, blcklen=5
-	*	Returns its starting index relative to "buf".
-	*	Returns its length, including "a' and "b", in "blcklen".
-	*	Returns "buflen" on failure.
-	*/
 	int
 	Parser::Find(const char *a, int alen, const char *b, int blen, char *buf, int buflen, int *blcklen)
 	{

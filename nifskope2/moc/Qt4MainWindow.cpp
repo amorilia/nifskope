@@ -693,9 +693,6 @@ namespace NifSkopeQt4
 		addToolBar (Qt::TopToolBarArea, tView);
 	}
 
-	/*
-	*	Load a .nif file
-	*/
 	void
 	MainWindow::sFileLoad()
 	{
@@ -726,33 +723,32 @@ namespace NifSkopeQt4
 		// Block Details
 		mBlockDetails = new QNifModel (this);
  		tvBlockDetails->setModel (mBlockDetails);
-		//tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
-		//tvBlockDetails->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
-		//tvBlockDetails->header ()->setResizeMode (2, QHeaderView::ResizeToContents);
+		tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
+		tvBlockDetails->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
+		tvBlockDetails->header ()->setResizeMode (2, QHeaderView::ResizeToContents);
 	}
 
 	void
-	MainWindow::stbBLselectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
+	MainWindow::stbBLselectionChanged(
+		const QItemSelection &selected,
+		const QItemSelection &deselected)
 	{
 		if (selected.indexes ().count () > 0) {
-			//NSINFO("cnt: " << selected.indexes ().count ())
-			//for (int i = 0; i < selected.indexes ().count (); i++) {
-				void *p = selected.indexes ().value (0).internalPointer ();
-				if (!p)
-					NSINFO(" p is NULL")
-				NifLib::TreeNode<NifLib::Field *> *n =
-					static_cast<NifLib::TreeNode<NifLib::Field *> *>(p);
-				if (!n)
-					NSINFO(" n is NULL")
-				else {
-					NSINFO(n->Value->Name ())
-					QNifModel *mNew = new QNifModel (this);
-					mNew->SetRoot (n);
-					tvBlockDetails->setModel (mNew);
-					delete mBlockDetails;
-					mBlockDetails = mNew;
-				}
-			//}
+			void *p = selected.indexes ().value (0).internalPointer ();
+			if (!p)
+				return;
+			NifLib::TreeNode<NifLib::Field *> *n =
+				static_cast<NifLib::TreeNode<NifLib::Field *> *>(p);
+			if (!n)
+				return;
+			else {
+				NSINFO(n->Value->Name ())
+				QNifModel *mNew = new QNifModel (this);
+				mNew->SetRoot (n);
+				tvBlockDetails->setModel (mNew);
+				delete mBlockDetails;
+				mBlockDetails = mNew;
+			}
 		}
 	}
 

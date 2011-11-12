@@ -39,10 +39,20 @@ namespace NifLib
 	{
 	public:
 		Buffer();
-		int CopyFrom(const char *srcbuf, int srclen);
-		int Equals(const char *srcbuf, int srclen);
+
 		int len;
 		char *buf;
+
+		/*
+		*	Copies "srcbuf" into "buf". Does not release a previous one!
+		*/
+		int CopyFrom(const char *srcbuf, int srclen);
+
+		/*
+		*	Returns true if "srcbuf" is identical to "buf"
+		*/
+		int Equals(const char *srcbuf, int srclen);
+
 		~Buffer();
 	};
 }

@@ -47,10 +47,11 @@ namespace NifLib
 			OwnsValue = 0;
 		}
 
-		~TreeNode()
-		{
-			Clear ();
-		}
+		TreeNode<T> *Parent;
+		NifLib::List< TreeNode<T> *> Nodes;
+		T Value;
+		int OwnsValue;// TODO: find another way - too much memory wasted
+		int Index;
 		
 		void Clear ()
 		{
@@ -63,11 +64,10 @@ namespace NifLib
 			Nodes.Clear ();
 		}
 
-		TreeNode<T> *Parent;
-		NifLib::List< TreeNode<T> *> Nodes;
-		T Value;
-		int OwnsValue;// TODO: find another way - too much memory wasted
-		int Index;
+		~TreeNode()
+		{
+			Clear ();
+		}
 	};
 }
 
