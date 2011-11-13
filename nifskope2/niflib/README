@@ -22,7 +22,7 @@ a hard-coded mapping between tag "basic", attribute "niflibtype" value, and
 		- a tree of lists of fields - Compiler.AsTree()
 
 	The latest version can be found here:
-http://niftools.git.sourceforge.net/git/gitweb.cgi?p=niftools/nifskope;a=tree;f=nifskope2/niflib;h=223ba35a9927f7252b49ddd6169e892754bd8523;hb=refs/heads/ogre3d
+http://niftools.git.sourceforge.net/git/gitweb.cgi?p=niftools/nifskope;a=tree;f=nifskope2/niflib;hb=refs/heads/ogre3d
 
 2. Requirements
 
