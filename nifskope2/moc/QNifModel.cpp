@@ -36,65 +36,42 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace NifSkopeQt4
 {
 #define TREEITEM NifLib::TreeNode<NifLib::Field *>
-	QNifModel::QNifModel(Qt4MainWindow *data, QObject *parent)
-		: QAbstractItemModel (parent)
+	QVariant QNifModel::CId(NifLib::TreeNode<NifLib::Field *> *node)
 	{
-		win = data;
-		headers	<< "N"
-		<< "Name"
-		<< "Type"
-		<< "Value"
-		<< "Argument"
-		<< "Array1"
-		<< "Array2"
-		<< "Condition"
-		<< "Since"
-		<< "Until"
-		<< "Version Condition";
-		rn = win->App->AsTree ();
-	}
-
-   	QNifModel::~QNifModel()
-	{
+		return QVariant (QString ("%0").arg (node->Index));
 	}
 
 	QVariant
-	QNifModel::data(const QModelIndex &index, int role) const
+	QNifModel::CName(NifLib::TreeNode<NifLib::Field *> *node)
 	{
-		// TODO: method pointers to avoid the "else if"s
-		if (!index.isValid ())
-			return QVariant ();
-		if (role != Qt::DisplayRole)
-			return QVariant ();
-		TREEITEM *item = static_cast<TREEITEM *>(index.internalPointer ());
-		//TREEITEM *root = win->App->AsTree ();
-		NifLib::Field *f = item->Value;
-		int col = index.column ();
-		if (col == 0)// No
-			return QVariant (QString ("%0").arg (item->Index));
-		else if (col == 1)// Name
-			return QVariant (QString (f->Name ().c_str ()));
-		else if (col == 2) { // Type
-			if (item->Parent == win->App->AsTree ())
-				return QVariant (QString ("NiBlock"));
-			else
-				return QVariant (QString (f->TagType ().c_str ()));
-		}
-		else if (col == 3) {// Value
-			if (item->Parent == win->App->AsTree ())
-				return QVariant (QString (
-					win->App->GetRootNodeValue (item->Index).c_str ()));
-			else {
+		return QVariant (QString (node->Value->Name ().c_str ()));
+	}
+
+	QVariant
+	QNifModel::CType(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		if (node->Parent == win->App->AsTree ())
+			return QVariant (QString ("NiBlock"));
+		else
+			return QVariant (QString (node->Value->TagType ().c_str ()));
+	}
+
+	QVariant
+	QNifModel::CValue(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		if (node->Parent == win->App->AsTree ())
+			return QVariant (QString (
+				win->App->GetRootNodeValue (node->Index).c_str ()));
+		else {
+			NifLib::Field *f = node->Value;
 			if (f->IsArray1D ()) {
 				if (f->IsArrayJ ())
 					return QVariant (QString ("[1D JAGGED ARRAY]"));
 				else {
 					if (f->IsCharArray ())
 						return QVariant (QString (win->App->ToStr (f).c_str ()));
-					else {
-						//Add1D (fi, f);
+					else
 						return QVariant (QString ("[1D ARRAY]"));
-					}
 				}
 			} else
 			if (f->IsArray2D ()) {
@@ -108,24 +85,86 @@ namespace NifSkopeQt4
 				else
 					return QVariant (QString (win->App->ToStr (f).c_str ()));
 			}
-			}
 		}
-		else if (col == 4)
-			return QVariant (QString (f->TagAttr (AARG).c_str ()));
-		else if (col == 5)
-			return QVariant (QString (f->TagAttr (AARR1).c_str ()));
-		else if (col == 6)
-			return QVariant (QString (f->TagAttr (AARR2).c_str ()));
-		else if (col == 7)
-			return QVariant (QString (f->TagAttr (ACOND).c_str ()));
-		else if (col == 8)
-			return QVariant (QString (f->TagAttr (AVER1).c_str ()));
-		else if (col == 9)
-			return QVariant (QString (f->TagAttr (AVER2).c_str ()));
-		else if (col == 10)
-			return QVariant (QString (f->TagAttr (AVERCOND).c_str ()));
-		else
+	}
+
+	QVariant
+	QNifModel::CArgument(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		return QVariant (QString (node->Value->TagAttr (AARG).c_str ()));
+	}
+
+	QVariant
+	QNifModel::CArray1(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		return QVariant (QString (node->Value->TagAttr (AARR1).c_str ()));
+	}
+
+	QVariant
+	QNifModel::CArray2(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		return QVariant (QString (node->Value->TagAttr (AARR2).c_str ()));
+	}
+
+	QVariant
+	QNifModel::CCondition(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		return QVariant (QString (node->Value->TagAttr (ACOND).c_str ()));
+	}
+
+	QVariant
+	QNifModel::CSince(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		return QVariant (QString (node->Value->TagAttr (AVER1).c_str ()));
+	}
+
+	QVariant
+	QNifModel::CUntil(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		return QVariant (QString (node->Value->TagAttr (AVER2).c_str ()));
+	}
+
+	QVariant
+	QNifModel::CVersionCondition(NifLib::TreeNode<NifLib::Field *> *node)
+	{
+		return QVariant (QString (node->Value->TagAttr (AVERCOND).c_str ()));
+	}
+
+	QNifModel::QNifModel(Qt4MainWindow *data, QObject *parent)
+		: QAbstractItemModel (parent)
+	{
+		cols << Column ("N", &QNifModel::CId)
+		<< Column ("Name", &QNifModel::CName)
+		<< Column ("Type", &QNifModel::CType)
+		<< Column ("Value", &QNifModel::CValue)
+		<< Column ("Argument", &QNifModel::CArgument)
+		<< Column ("Array1", &QNifModel::CArray1)
+		<< Column ("Array2", &QNifModel::CArray2)
+		<< Column ("Condition", &QNifModel::CCondition)
+		<< Column ("Since", &QNifModel::CSince)
+		<< Column ("Until", &QNifModel::CUntil)
+		<< Column ("Version Condition", &QNifModel::CVersionCondition);
+		win = data;
+		rn = win->App->AsTree ();
+	}
+
+   	QNifModel::~QNifModel()
+	{
+	}
+
+	QVariant
+	QNifModel::data(const QModelIndex &index, int role) const
+	{
+		if (!index.isValid ())
 			return QVariant ();
+		if (role != Qt::DisplayRole)
+			return QVariant ();
+		TREEITEM *item = static_cast<TREEITEM *>(index.internalPointer ());
+		int ci = index.column ();
+		if (ci >= 0 && ci < cols.count ())
+			return (((QNifModel *const)this)->*cols[ci].Format) (item);
+		else
+			return QVariant ("[ERROR: unknown column requested]");
 	}
 
 	Qt::ItemFlags
@@ -140,7 +179,7 @@ namespace NifSkopeQt4
 	QNifModel::headerData(int section, Qt::Orientation orientation, int role) const
 	{
 		if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-			return headers.value (section);
+			return cols[section].HeaderName;
 		return QVariant ();
 	}
 
@@ -149,7 +188,6 @@ namespace NifSkopeQt4
 	{
  		if (!hasIndex (row, column, parent))
         	return QModelIndex ();
-		//TREEITEM *rootItem = win->App->AsTree ();
 		TREEITEM *parentItem;
 		if (!parent.isValid ())
 			parentItem = rn;
@@ -169,7 +207,6 @@ namespace NifSkopeQt4
 			return QModelIndex ();
 		TREEITEM *childItem = static_cast<TREEITEM *>(index.internalPointer ());
 		TREEITEM *parentItem = childItem->Parent;
-		//TREEITEM *rootItem = win->App->AsTree ();
 		if (parentItem == rn)
 			return QModelIndex ();
 		return createIndex (parentItem->Index, 0, parentItem);
@@ -181,21 +218,18 @@ namespace NifSkopeQt4
 		TREEITEM *parentItem;
 		if (parent.column () > 0)
 			return 0;
-		//TREEITEM *rootItem = win->App->AsTree ();
 		if (!parent.isValid ())
 			parentItem = rn;
 		else
 			parentItem = static_cast<TREEITEM *>(parent.internalPointer ());
-		
 		win->App->ExpandNode (parentItem);// expand if needed
-
 		return parentItem->Nodes.Count ();
 	}
 
 	int
 	QNifModel::columnCount(const QModelIndex &parent) const
 	{
-		return headers.count ();
+		return cols.count ();
 	}
 
 	void

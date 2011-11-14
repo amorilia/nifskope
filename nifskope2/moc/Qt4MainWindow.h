@@ -52,8 +52,12 @@ namespace NifSkopeQt4
 		QAction *aSaveAs;
 
 		QTreeView *tvBlockList;
+		QAbstractItemModel *mdlBlockList;
 		QTreeView *tvBlockDetails;
-		QNifModel *mBlockDetails;
+		QNifModel *mdlBlockDetails;
+		QTreeView *tvKFM;
+		QDialog *inspect;
+		QTextBrowser *refrbrwsr;
 
 		QDockWidget *dockTVBL;
 		QDockWidget *dockTVBD;
@@ -72,6 +76,7 @@ namespace NifSkopeQt4
 	public:
 		Qt4MainWindow();
 		NifSkope::NifSkopeApp *App;// TODO: init by Qt4App because of NewWindow() only
+		~Qt4MainWindow();
 	protected slots:
 		void stvBLselectionChanged(
 			const QItemSelection &selected,

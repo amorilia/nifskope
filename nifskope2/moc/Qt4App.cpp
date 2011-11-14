@@ -83,9 +83,9 @@ namespace NifSkopeQt4
 		mainWindow.setCentralWidget (&centralWidget);
 		mainWindow.setWindowTitle (
 			QApplication::translate("windowlayout", NS_VERSION));
-		mainWindow.show();
+		mainWindow.show ();
 
 		centralWidget.go ();
-		return app.exec();
+		return app.exec ();
 	}
 }

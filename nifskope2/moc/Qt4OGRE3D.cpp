@@ -103,17 +103,26 @@ rnd(int N)
 
 	Qt4OGRE3D::Qt4OGRE3D(void)
 		: Qt43D (NULL)
-		,ready(0), mRoot(0), mCam(0), mScn(0), mWin(0), progress(0)
+		,handleNifLoaded(0), ready(0), timer(0), mRoot(0), mCam(0), mScn(0)
+		,mWin(0), progress(0)
 	{
 	}
 
 	Qt4OGRE3D::~Qt4OGRE3D(void)
 	{
-		//delete mRoot;
+		ready = false;
+		if (timer) {
+			timer->stop ();
+			delete timer;
+		}
+		if (mRoot)
+			delete mRoot;
 
 		// Release NS event handlers
 		if (handleNifLoaded)
 			delete handleNifLoaded;
+
+		NSINFO("~Qt4OGRE3D ()")
 	}
 
 	bool
@@ -173,6 +182,7 @@ rnd(int N)
 				Ogre::StringConverter::toString ((unsigned long)q_parent->winId ());
 		} else
 			return false;
+		XCloseDisplay (dpy);
 #else
 #error No supported windowing system found
 #endif /* NIFSKOPE_X */
@@ -209,7 +219,8 @@ rnd(int N)
 		mScn->setAmbientLight (Ogre::ColourValue (0.1, 0.1, 0.1));// slight global
 		Ogre::Light* l = mScn->createLight ("lightMain");
 		l->setPosition (100, 100, 100);
-		QTimer *timer = new QTimer(this);
+
+		timer = new QTimer(this);
 		timer->setSingleShot (false);
  		connect(timer, SIGNAL(timeout()), this, SLOT(Render()));
 		ready = 1;
@@ -354,6 +365,8 @@ rnd(int N)
 	OVERRIDE void
 	Qt4OGRE3D::mouseMoveEvent(QMouseEvent *event)
 	{
+		if (!ready)
+			return;
 		// TODO: trackball
 		// behaves like NifSkope right now I hope
 		int dx = event->x () - lastPos.x ();
@@ -396,6 +409,8 @@ rnd(int N)
 	OVERRIDE void
 	Qt4OGRE3D::wheelEvent(QWheelEvent *event)
 	{
+		if (!ready)
+			return;
 		Ogre::Vector3 camp = mCam->getPosition ();
 		camp.z += (Ogre::Real)event->delta ()/-10;// TODO: these "k" are stub
 		mCam->setPosition (camp);
@@ -422,6 +437,9 @@ rnd(int N)
 	void
 	Qt4OGRE3D::Render()
 	{
+		if (!ready)
+			return;
+
 		if (progress) {
 			if (rnd (100) == 42)
 				ar = -ar;
@@ -498,6 +516,7 @@ rnd(int N)
 						if (path[i] == '\\')
 							path[i] = '/';
 					tex = std::string (path, pathlen);
+					delete [] path;
 					NSINFO(tex)
 					//std::stringstream matname;
 					std::stringstream matnamestream;

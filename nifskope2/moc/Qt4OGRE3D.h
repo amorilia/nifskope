@@ -59,6 +59,7 @@ namespace NifSkope
 	private:
 		int ready;
 		QPoint lastPos;
+		QTimer *timer;
 	protected:
 		// Qt delegates
 		void mousePressEvent(QMouseEvent *event);
@@ -70,7 +71,7 @@ namespace NifSkope
 	public:
 		//static Qt4OGRE3D * create();
 		Qt4OGRE3D(void);
-		virtual ~Qt4OGRE3D(void);
+		~Qt4OGRE3D(void);
 		bool go();
 		// handlers
 		void LoadNif(IEvent *sender);

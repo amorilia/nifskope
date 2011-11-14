@@ -39,32 +39,12 @@ namespace NifSkopeQt4
 	QNifBlockModel::QNifBlockModel(Qt4MainWindow *data, QObject *parent)
 		: QNifModel (data, parent)
 	{
-		headers.clear ();
-		headers << "N" << "Name" << "Value";
+		cols.clear ();
+		cols << Column ("N", &QNifBlockModel::CId)
+		<< Column ("Name", &QNifBlockModel::CName)
+		<< Column ("Value", &QNifBlockModel::CValue);
 	}
-	QNifBlockModel::~QNifBlockModel()
-	{
-	}
-	QVariant
-	QNifBlockModel::data(const QModelIndex &index, int role) const
-	{
-		if (!index.isValid ())
-			return QVariant ();
-		if (role != Qt::DisplayRole)
-			return QVariant ();
-		TREEITEM *item = static_cast<TREEITEM *>(index.internalPointer ());
-		NifLib::Field *f = item->Value;
-		int col = index.column ();
-		if (col == 0)// No
-			return QVariant (QString ("%0").arg (item->Index));
-		else if (col == 1)// Name
-			return QVariant (QString (f->Name ().c_str ()));
-		else if (col == 2)// Value
-			return QVariant (QString (
-				win->App->GetRootNodeValue (item->Index).c_str ()));
-		else
-			return QVariant ();
-	}
+
 	int
 	QNifBlockModel::rowCount(const QModelIndex &parent) const
 	{
@@ -75,6 +55,10 @@ namespace NifSkopeQt4
 			return rootItem->Nodes.Count ();
 		else
 			return 0;
+	}
+
+	QNifBlockModel::~QNifBlockModel()
+	{
 	}
 #undef TREEITEM
 }

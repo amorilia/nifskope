@@ -46,52 +46,30 @@ namespace NifSkopeQt4
 {
 	void Qt4MainWindow::createMainMenu()
 	{
-		// &File
-		//  &Load... Ctrl+O
-		//  &Save As... Ctrl+S
-		//  -
-		//  Import ->
-		//	 Import.3DS
-		//   Import.OBJ
-		//  Export ->
-		//	 Export.OBJ
-		//  -
-		//  [] &Auto Sanitize Before Save addAction(QAction *
-		//  -
-		//  &New Window Ctrl-N
-		//  -
-		//  Reload &XML
-		//  &Reload XML + Nif Alt+X
-		//  XML Checker
-		//  -
-		//  Resource Files
-		//  -
-		//  &Quit
-
-		// TODO: should be/could be generated from "nifskopeqt.xml" or something ... :
-		aLoad = new QAction (tr("&Load..."), this);
-		aSaveAs = new QAction (tr("&Save As..."), this);
-		QMenu *mImport = new QMenu (tr("Import"), this);
-		QAction *aImport3ds = new QAction (tr("Import.3DS..."), this);
-		QAction *aImportobj = new QAction (tr("Import.OBJ..."), this);
+		// TODO: QML
+		aLoad = new QAction (tr ("&Load..."), this);
+		aSaveAs = new QAction (tr ("&Save As..."), this);
+		QMenu *mImport = new QMenu (tr ("Import"), this);
+		QAction *aImport3ds = new QAction (tr ("Import.3DS..."), this);
+		QAction *aImportobj = new QAction (tr ("Import.OBJ..."), this);
 		QMenu *mExport = new QMenu (tr("Export"), this);
-		QAction *aExportobj = new QAction (tr("Export.OBJ..."), this);
-		QAction *aAutoSanitize = new QAction (tr("&Auto Sanitize Before Save"), this);
-		QAction *aNewWindow = new QAction (tr("&New Window"), this);
-		QAction *aReloadXML = new QAction (tr("Reload &XML"), this);
-		QAction *aReloadXMLNif = new QAction (tr("&Reload XML + Nif"), this);
-		QAction *aXMLChecker = new QAction (tr("XML Checker"), this);
-		QAction *aResFiles = new QAction (tr("Resource Files"), this);
-		QAction *aQuit = new QAction (tr("&Quit"), this);
+		QAction *aExportobj = new QAction (tr ("Export.OBJ..."), this);
+		QAction *aAutoSanitize = new QAction (tr ("&Auto Sanitize Before Save"), this);
+		QAction *aNewWindow = new QAction (tr ("&New Window"), this);
+		QAction *aReloadXML = new QAction (tr ("Reload &XML"), this);
+		QAction *aReloadXMLNif = new QAction (tr ("&Reload XML + Nif"), this);
+		QAction *aXMLChecker = new QAction (tr ("XML Checker"), this);
+		QAction *aResFiles = new QAction (tr ("Resource Files"), this);
+		QAction *aQuit = new QAction (tr ("&Quit"), this);
 		
-		aLoad->setShortcut (QKeySequence (tr("Ctrl+L")));
-		aSaveAs->setShortcut (QKeySequence (tr("Ctrl+S")));
+		aLoad->setShortcut (QKeySequence (tr ("Ctrl+L")));
+		aSaveAs->setShortcut (QKeySequence (tr ("Ctrl+S")));
 		aAutoSanitize->setCheckable(true);
 		aAutoSanitize->setChecked(true);
 		aNewWindow->setShortcut (QKeySequence::New );
-		aReloadXMLNif->setShortcut (QKeySequence (tr("Alt+X")) );
+		aReloadXMLNif->setShortcut (QKeySequence (tr ("Alt+X")) );
 
-		QMenu *mFile = menuBar ()->addMenu (tr("&File"));
+		QMenu *mFile = menuBar ()->addMenu (tr ("&File"));
 		mFile->addAction (aLoad);
 		mFile->addAction (aSaveAs);
 		mFile->addSeparator();
@@ -112,20 +90,19 @@ namespace NifSkopeQt4
 		mFile->addAction (aResFiles);
 		mFile->addSeparator();
 		mFile->addAction (aQuit);
-		//connect( aWindow, SIGNAL( triggered() ), this, SLOT( sltWindow() ) );
 		connect(aLoad, SIGNAL(triggered()), this, SLOT(sFileLoad()));
 
 		// View
 		createDockWidgets ();
-		QMenu *mView = menuBar ()->addMenu (tr("&View"));
+		QMenu *mView = menuBar ()->addMenu (tr ("&View"));
 		mView->addAction (dockRefr->toggleViewAction ());
 		mView->addAction (dockTVBL->toggleViewAction ());
 		mView->addAction (dockTVBD->toggleViewAction ());
 		mView->addAction (dockTVKFM->toggleViewAction ());
 		mView->addAction (dockInsp->toggleViewAction ());
 		mView->addSeparator ();
-		QMenu *mToolbars = new QMenu (tr("&Toolbars") );
-		mView->addMenu (mToolbars);
+		QMenu *mToolbars = mView->addMenu (tr ("&Toolbars"));
+		mToolbars->setTitle (tr ("&Toolbars"));
 		createToolbars ();
 		foreach (QObject *o, children ()) {
 			QToolBar *tb = qobject_cast<QToolBar*>(o);
@@ -133,16 +110,16 @@ namespace NifSkopeQt4
 				mToolbars->addAction (tb->toggleViewAction ());
 		}
 		mView->addSeparator ();
-		QMenu *mBlockList = new QMenu (tr("Block List"));
-		mView->addMenu (mBlockList);
+		QMenu *mBlockList = mView->addMenu (tr ("Block List"));
+		mBlockList->setTitle (tr ("Block List"));
 		QActionGroup *gListMode = new QActionGroup (this);
-		QAction *aHierarchy = new QAction (tr("Show Blocks in Tree"), this);
+		QAction *aHierarchy = new QAction (tr ("Show Blocks in Tree"), this);
 		aHierarchy->setCheckable (true);
 		aHierarchy->setEnabled (false);//TODO: implement me
-		QAction *aList = new QAction (tr("Show Blocks in List"), this);
+		QAction *aList = new QAction (tr ("Show Blocks in List"), this);
 		aList->setCheckable (true);
 		aList->setEnabled (false);//TODO: implement me
-		QAction *aBlockView = new QAction (tr("Block View"), this);
+		QAction *aBlockView = new QAction (tr ("Block View"), this);
 		aBlockView->setCheckable (true);
 		gListMode->addAction (aList);
 		gListMode->addAction (aHierarchy);
@@ -152,26 +129,26 @@ namespace NifSkopeQt4
 		mBlockList->addAction (aList);
 		mBlockList->addAction (aBlockView);
 		aBlockView->setChecked (true);
-		QMenu *mBlockDetails = new QMenu (tr("Block Details"));
-		mView->addMenu (mBlockDetails);
-		QAction *aCondition = new QAction (tr("Hide Version Mismatched Rows"), this);
+		QMenu *mBlockDetails = mView->addMenu (tr ("Block Details"));
+		mBlockDetails->setTitle (tr ("Block Details"));
+		QAction *aCondition = new QAction (tr ("Hide Version Mismatched Rows"), this);
 		aCondition->setCheckable (true);
 		aCondition->setChecked (false);
 		QAction *aRCondition =
-			new QAction (tr("Realtime Row Version Updating (slow)"), this);
+			new QAction (tr ("Realtime Row Version Updating (slow)"), this);
 		aRCondition->setCheckable (true);
 		aRCondition->setChecked (false);
 		aRCondition->setEnabled (false);
 		mBlockDetails->addAction (aCondition);
 		mBlockDetails->addAction (aRCondition);
 		mView->addSeparator ();
-		QAction *aSelectFont = new QAction (tr("Select Font ..."), this);
-		connect(aSelectFont, SIGNAL(triggered()), this, SLOT(sltSelectFont()));
+		QAction *aSelectFont = new QAction (tr ("Select Font ..."), this);
+		connect(aSelectFont, SIGNAL(triggered()), this, SLOT(sSelectFont()));
 		mView->addAction (aSelectFont);
 
 		// Render - the actions are created by createToolbars ()
 		// TODO: all actions should be created in one place
-		QMenu *mRender = menuBar ()->addMenu (tr("&Render"));
+		QMenu *mRender = menuBar ()->addMenu (tr ("&Render"));
 		mRender->addAction (aViewTop);
 		mRender->addAction (aViewFront);
 		mRender->addAction (aViewSide);
@@ -180,35 +157,35 @@ namespace NifSkopeQt4
 		mRender->addSeparator();
 		mRender->addAction (aViewFlip);
 		mRender->addAction (aViewPerspective);
-		QAction *aViewUserSave = new QAction (tr("Save User View"), this);
-		aViewUserSave->setToolTip (tr("Save current view rotation, position and distance"));
+		QAction *aViewUserSave = new QAction (tr ("Save User View"), this);
+		aViewUserSave->setToolTip (tr ("Save current view rotation, position and distance"));
 		aViewUserSave->setShortcut (Qt::CTRL + Qt::Key_F9);
 		mRender->addAction (aViewUserSave);
 		mRender->addSeparator ();
 		//
-		QAction *aDrawAxes = new QAction (tr("Draw &Axes"), this);
-		aDrawAxes->setToolTip (tr("draw xyz-Axes"));
+		QAction *aDrawAxes = new QAction (tr ("Draw &Axes"), this);
+		aDrawAxes->setToolTip (tr ("draw xyz-Axes"));
 		aDrawAxes->setCheckable (true);
-		QAction *aDrawNodes = new QAction (tr("Draw &Nodes"), this);
-		aDrawNodes->setToolTip (tr("draw bones/nodes"));
+		QAction *aDrawNodes = new QAction (tr ("Draw &Nodes"), this);
+		aDrawNodes->setToolTip (tr ("draw bones/nodes"));
 		aDrawNodes->setCheckable (true);
-		QAction *aDrawHavok = new QAction (tr("Draw &Havok"), this);
-		aDrawHavok->setToolTip (tr("draw the havok shapes"));
+		QAction *aDrawHavok = new QAction (tr ("Draw &Havok"), this);
+		aDrawHavok->setToolTip (tr ("draw the havok shapes"));
 		aDrawHavok->setCheckable (true);
-		QAction *aDrawConstraints = new QAction (tr("Draw &Constraints"), this);
-		aDrawConstraints->setToolTip (tr("draw the havok constraints"));
+		QAction *aDrawConstraints = new QAction (tr ("Draw &Constraints"), this);
+		aDrawConstraints->setToolTip (tr ("draw the havok constraints"));
 		aDrawConstraints->setCheckable (true);
-		QAction *aDrawFurn = new QAction (tr("Draw &Furniture"), this);
-		aDrawFurn->setToolTip (tr("draw the furniture markers"));
+		QAction *aDrawFurn = new QAction (tr ("Draw &Furniture"), this);
+		aDrawFurn->setToolTip (tr ("draw the furniture markers"));
 		aDrawFurn->setCheckable (true);
-		QAction *aDrawHidden = new QAction (tr("Show Hid&den"), this);
-		aDrawHidden->setToolTip (tr("always draw nodes and meshes"));
+		QAction *aDrawHidden = new QAction (tr ("Show Hid&den"), this);
+		aDrawHidden->setToolTip (tr ("always draw nodes and meshes"));
 		aDrawHidden->setCheckable (true);
-		QAction *aDrawStats = new QAction (tr("Show S&tats"), this);
-		aDrawStats->setToolTip (tr("display some statistics about the selected node"));
+		QAction *aDrawStats = new QAction (tr ("Show S&tats"), this);
+		aDrawStats->setToolTip (tr ("display some statistics about the selected node"));
 		aDrawStats->setCheckable (true);
-		QAction *aSettings = new QAction (tr("&Settings..."), this);
-		aSettings->setToolTip (tr("show the settings dialog"));
+		QAction *aSettings = new QAction (tr ("&Settings..."), this);
+		aSettings->setToolTip (tr ("show the settings dialog"));
 		//
 		mRender->addActions (
 			QList<QAction*>()
@@ -223,70 +200,50 @@ namespace NifSkopeQt4
 		);
 
 		// Tools ("Spells")
-		//  Animation
-		//   Attach .KF
-		//   Edit String Palettes
-		//  Block
-		//   Insert
-		//   Remove By Id
-		//   Sort By Name
-		//  Sanitize
-		//   Reorder Link Arrays
-		//   Collapse Link Arrays
-		//   Adjust Texture Sources
-		//   Reorder Blocks
-		//   Check Links
-		//  Optimize
-		//   Combine Properties
-		//   Split Properties
-		//   Remove Bogus Nodes
-		//   Stripify All TriShapes
-		//  Batch
-		//   Make All Skin Partitions
-		//   Update All Tangent Spaces
-		//   Multi Apply Mode
-		QMenu *mTools = menuBar ()->addMenu (tr("&Tools"));
-		QMenu *mAnimation = new QMenu (tr("Animation"), this);
-		QAction *aAttach_KF = new QAction (tr("Attach .KF"), this);
-		QAction *aEditStringPalettes = new QAction (tr("Edit String Palettes"), this);
+		// TODO: automatic creation based on a list of "registered"
+		// TODO: script-based plug-ins
+		QMenu *mTools = menuBar ()->addMenu (tr ("&Tools"));
+		QMenu *mAnimation = new QMenu (tr ("Animation"), this);
+		QAction *aAttach_KF = new QAction (tr ("Attach .KF"), this);
+		QAction *aEditStringPalettes = new QAction (tr ("Edit String Palettes"), this);
 		mAnimation->addActions (QList<QAction*>()
 			<< aAttach_KF << aEditStringPalettes);
-		QMenu *mBlock = new QMenu (tr("Block"), this);
-		QAction *aInsert = new QAction (tr("Insert"), this);
-		QAction *aRemoveById = new QAction (tr("Remove By Id"), this);
-		QAction *aSortByName = new QAction (tr("Sort By Name"), this);
+		QMenu *mBlock = new QMenu (tr ("Block"), this);
+		QAction *aInsert = new QAction (tr ("Insert"), this);
+		QAction *aRemoveById = new QAction (tr ("Remove By Id"), this);
+		QAction *aSortByName = new QAction (tr ("Sort By Name"), this);
 		mBlock->addActions (QList<QAction*>()
 			<< aInsert << aRemoveById << aSortByName);
-		QMenu *mSanitize = new QMenu (tr("Sanitize"), this);
-		QAction *aReorderLinkArrays = new QAction (tr("Reorder Link Arrays"), this);
-		QAction *aCollapseLinkArrays = new QAction (tr("Collapse Link Arrays"), this);
+		QMenu *mSanitize = new QMenu (tr ("Sanitize"), this);
+		QAction *aReorderLinkArrays = new QAction (tr ("Reorder Link Arrays"), this);
+		QAction *aCollapseLinkArrays = new QAction (tr ("Collapse Link Arrays"), this);
 		QAction *aAdjustTextureSources =
-			new QAction (tr("Adjust Texture Sources"), this);
-		QAction *aReorderBlocks = new QAction (tr("Reorder Blocks"), this);
-		QAction *aCheckLinks = new QAction (tr("Check Links"), this);
+			new QAction (tr ("Adjust Texture Sources"), this);
+		QAction *aReorderBlocks = new QAction (tr ("Reorder Blocks"), this);
+		QAction *aCheckLinks = new QAction (tr ("Check Links"), this);
 		mSanitize->addActions (QList<QAction*>()
 			<< aReorderLinkArrays
 			<< aCollapseLinkArrays
 			<< aAdjustTextureSources
 			<< aReorderBlocks
 			<< aCheckLinks);
-		QMenu *mOptimize = new QMenu (tr("Export"), this);
-		QAction *aCombineProperties = new QAction (tr("Combine Properties"), this);
-		QAction *aSplitProperties = new QAction (tr("Split Properties"), this);
-		QAction *aRemoveBogusNodes = new QAction (tr("Remove Bogus Nodes"), this);
+		QMenu *mOptimize = new QMenu (tr ("Export"), this);
+		QAction *aCombineProperties = new QAction (tr ("Combine Properties"), this);
+		QAction *aSplitProperties = new QAction (tr ("Split Properties"), this);
+		QAction *aRemoveBogusNodes = new QAction (tr ("Remove Bogus Nodes"), this);
 		QAction *aStripifyAllTriShapes =
-			new QAction (tr("Stripify All TriShapes"), this);
+			new QAction (tr ("Stripify All TriShapes"), this);
 		mOptimize->addActions (QList<QAction*>()
 			<< aCombineProperties
 			<< aSplitProperties
 			<< aRemoveBogusNodes
 			<< aStripifyAllTriShapes);
-		QMenu *mBatch = new QMenu (tr("Export"), this);
+		QMenu *mBatch = new QMenu (tr ("Export"), this);
 		QAction *MakeAllSkinPartitions =
-			new QAction (tr("Make All Skin Partitions"), this);
+			new QAction (tr ("Make All Skin Partitions"), this);
 		QAction *aUpdateAllTangentSpaces =
-			new QAction (tr("Update All Tangent Spaces"), this);
-		QAction *aMultiApplyMode = new QAction (tr("Multi Apply Mode"), this);
+			new QAction (tr ("Update All Tangent Spaces"), this);
+		QAction *aMultiApplyMode = new QAction (tr ("Multi Apply Mode"), this);
 		mBatch->addActions (QList<QAction*>()
 			<< MakeAllSkinPartitions
 			<< aUpdateAllTangentSpaces
@@ -334,53 +291,48 @@ namespace NifSkopeQt4
 	void
 	Qt4MainWindow::createDockWidgets()
 	{
-		// TODO: list or something
-		// core layout - main widgets
-		// 1 TODO: createListView ("Block List", true);
+		// Block List
 		tvBlockList = new QTreeView;
 		tvBlockList->setUniformRowHeights (true);
 		tvBlockList->setAlternatingRowColors (true);
 		tvBlockList->setContextMenuPolicy (Qt::CustomContextMenu);
 		tvBlockList->setHorizontalScrollBarPolicy (Qt::ScrollBarAsNeeded);
-		dockTVBL = new QDockWidget (tr("Block List"));
+		dockTVBL = new QDockWidget (tr ("Block List"));
 		dockTVBL->setObjectName ("dockTVBL");
 		dockTVBL->setWidget (tvBlockList);
 
-		// 2 TODO: createListView ("Block Details", true);
+		// Block Details
 		tvBlockDetails = new QTreeView;
 		tvBlockDetails->setUniformRowHeights (true);
 		tvBlockDetails->setAlternatingRowColors (true);
 		tvBlockDetails->setHorizontalScrollBarPolicy (Qt::ScrollBarAsNeeded);
-		dockTVBD = new QDockWidget (tr("Block Details"));
+		dockTVBD = new QDockWidget (tr ("Block Details"));
 		dockTVBD->setObjectName ("dockTVBD");
 		dockTVBD->setWidget (tvBlockDetails);
 
-		// 3
-		QTreeView *tvKFM = new QTreeView;
+		// KFM
+		tvKFM = new QTreeView;
 		tvKFM->header ()->setStretchLastSection (false);
-		dockTVKFM = new QDockWidget (tr("KFM"));
+		dockTVKFM = new QDockWidget (tr ("KFM"));
 		dockTVKFM->setObjectName ("dockTVKFM");
 		dockTVKFM->setWidget (tvKFM);
 		dockTVKFM->toggleViewAction ()->setShortcut (Qt::Key_F4);
 		dockTVKFM->toggleViewAction ()->setChecked (false);
-		//dockTVKFM->setVisible (false);
 
-		// 4
-		QDialog *inspect = new QDialog;
-		dockInsp = new QDockWidget (tr("Inspect"));
+		// Inspect
+		inspect = new QDialog;
+		dockInsp = new QDockWidget (tr ("Inspect"));
 		dockInsp->setObjectName ("InspectDock");
 		dockInsp->setWidget (inspect);
 		dockInsp->toggleViewAction ()->setChecked (false);
-		//dInsp->setVisible (false);
 
-		// 5
-		QTextBrowser *refrbrwsr = new QTextBrowser;
-		dockRefr = new QDockWidget (tr("Interactive Help"));
+		// Interactive Help
+		refrbrwsr = new QTextBrowser;
+		dockRefr = new QDockWidget (tr ("Interactive Help"));
 		dockRefr->setObjectName ("RefrDock");
 		dockRefr->setWidget (refrbrwsr);
 		dockRefr->toggleViewAction ()->setShortcut (Qt::Key_F1);
 		dockRefr->toggleViewAction ()->setChecked (false);
-		//dRefr->setVisible (false);
 
 		addDockWidget (Qt::BottomDockWidgetArea, dockTVBD);
 		addDockWidget (Qt::LeftDockWidgetArea, dockTVBL);
@@ -393,7 +345,7 @@ namespace NifSkopeQt4
 	Qt4MainWindow::createToolbars()
 	{
 		// core layout - main toolbars
-		QToolBar *tCommon = new QToolBar (tr("Load && Save"));
+		QToolBar *tCommon = new QToolBar (tr ("Load && Save"));
 		tCommon->setObjectName ("tCommon");
 		tCommon->setAllowedAreas (Qt::TopToolBarArea | Qt::BottomToolBarArea);
 		tCommon->addAction (aLoad);
@@ -403,19 +355,19 @@ namespace NifSkopeQt4
 		tCommon->addWidget (leSaveFile);
 		tCommon->addAction (aSaveAs);
 
-		QToolBar *tAnim = new QToolBar (tr("Animation"));
+		QToolBar *tAnim = new QToolBar (tr ("Animation"));
 		tAnim->setObjectName ("tAnim");
 		tAnim->setAllowedAreas (Qt::TopToolBarArea | Qt::BottomToolBarArea);
 		tAnim->setIconSize (QSize (16, 16));
 		// actions
-		QAction *aAnimPlay = new QAction (QIcon (":/btn/play"), tr("&Play"), this);
+		QAction *aAnimPlay = new QAction (QIcon (":/btn/play"), tr ("&Play"), this);
 		aAnimPlay->setCheckable (true);
 		aAnimPlay->setChecked (true);
 		aAnimPlay->setToolTip (tr("Start Animation"));
-		QAction *aAnimLoop = new QAction (QIcon (":/btn/loop"), tr("&Loop"), this);
+		QAction *aAnimLoop = new QAction (QIcon (":/btn/loop"), tr ("&Loop"), this);
 		aAnimLoop->setCheckable (true);
 		aAnimLoop->setChecked (true);
-		QAction *aAnimSwitch = new QAction (QIcon (":/btn/switch"), tr("&Switch"), this);
+		QAction *aAnimSwitch = new QAction (QIcon (":/btn/switch"), tr ("&Switch"), this);
 		aAnimSwitch->setCheckable (true);
 		aAnimSwitch->setChecked (true);
 		// toolbar
@@ -428,7 +380,7 @@ namespace NifSkopeQt4
 		animGroups->setMinimumWidth (100);
 		tAnim->addWidget (animGroups);
 
-		QToolBar *tView = new QToolBar (tr("View"));
+		QToolBar *tView = new QToolBar (tr ("View"));
 		tView->setObjectName ("tView" );
 		tView->setAllowedAreas (Qt::TopToolBarArea | Qt::BottomToolBarArea);
 		tView->setIconSize (QSize (16, 16));
@@ -437,41 +389,41 @@ namespace NifSkopeQt4
 		grpView->setExclusive (true);
 		/*connect(grpView, SIGNAL(triggered(QAction *)),
 				this, SLOT(viewAction(QAction *)));*/
-		aViewTop = new QAction (QIcon (":/btn/viewTop"), tr("Top"), grpView);
-		aViewTop->setToolTip (tr("View from above") );
+		aViewTop = new QAction (QIcon (":/btn/viewTop"), tr ("Top"), grpView);
+		aViewTop->setToolTip (tr ("View from above") );
 		aViewTop->setCheckable (true);
 		aViewTop->setShortcut (Qt::Key_F5);
 		grpView->addAction (aViewTop);
 		aViewFront =
 			new QAction (QIcon (":/btn/viewFront"), tr("Front"), grpView);
-		aViewFront->setToolTip (tr("View from the front"));
+		aViewFront->setToolTip (tr ("View from the front"));
 		aViewFront->setCheckable (true);
 		aViewFront->setChecked (true);
 		aViewFront->setShortcut (Qt::Key_F6);
 		grpView->addAction (aViewFront);
-		aViewSide = new QAction (QIcon (":/btn/viewSide"), tr("Side"), grpView);
-		aViewSide->setToolTip (tr("View from the side"));
+		aViewSide = new QAction (QIcon (":/btn/viewSide"), tr ("Side"), grpView);
+		aViewSide->setToolTip (tr ("View from the side"));
 		aViewSide->setCheckable (true);
 		aViewSide->setShortcut (Qt::Key_F7);
 		grpView->addAction (aViewSide);
-		aViewUser = new QAction (QIcon (":/btn/viewUser" ), tr("User"), grpView);
-		aViewUser->setToolTip (tr("Restore the view as it was when Save User View was activated"));
+		aViewUser = new QAction (QIcon (":/btn/viewUser" ), tr ("User"), grpView);
+		aViewUser->setToolTip (tr ("Restore the view as it was when Save User View was activated"));
 		aViewUser->setCheckable (true);
 		aViewUser->setShortcut (Qt::Key_F8);
 		grpView->addAction (aViewUser);
-		aViewWalk = new QAction (QIcon (":/btn/viewWalk"), tr("Walk"), grpView);
-		aViewWalk->setToolTip (tr("Enable walk mode"));
+		aViewWalk = new QAction (QIcon (":/btn/viewWalk"), tr ("Walk"), grpView);
+		aViewWalk->setToolTip (tr ("Enable walk mode"));
 		aViewWalk->setCheckable (true);
 		aViewWalk->setShortcut (Qt::Key_F9);
 		grpView->addAction (aViewWalk);
-		aViewFlip = new QAction (QIcon (":/btn/viewFlip"), tr("Flip"), this);
-		aViewFlip->setToolTip (tr("Flip View from Front to Back, Top to Bottom, Side to Other Side"));
+		aViewFlip = new QAction (QIcon (":/btn/viewFlip"), tr ("Flip"), this);
+		aViewFlip->setToolTip (tr ("Flip View from Front to Back, Top to Bottom, Side to Other Side"));
 		aViewFlip->setCheckable (true);
 		aViewFlip->setShortcut (Qt::Key_F11);
 		grpView->addAction (aViewFlip);
 		aViewPerspective =
-			new QAction (QIcon (":/btn/viewPers"), tr("Perspective"), this);
-		aViewPerspective->setToolTip (tr("Perspective View Transformation or Orthogonal View Transformation"));
+			new QAction (QIcon (":/btn/viewPers"), tr ("Perspective"), this);
+		aViewPerspective->setToolTip (tr ("Perspective View Transformation or Orthogonal View Transformation"));
 		aViewPerspective->setCheckable (true);
 		aViewPerspective->setShortcut (Qt::Key_F10);
 		grpView->addAction (aViewPerspective);
@@ -495,7 +447,7 @@ namespace NifSkopeQt4
 	{
 		// UI part of the handler
 		QString fileName = QFileDialog::getOpenFileName (
-			this, tr("Open File"), "",
+			this, tr ("Open File"), "",
 			QString::fromStdString (App->File.GetLoadFormats (" ", ";;")));
 		if (fileName == NULL)
 			return;
@@ -504,9 +456,8 @@ namespace NifSkopeQt4
 		App->File.Load ();
 		// UI part of the handler
 		//  Display it in "Block List" "As Blocks"
-		//  BlockTag name="", SubTag with name="Value"
-		QAbstractItemModel *mBlockList = new QNifBlockModel (this);
-		tvBlockList->setModel (mBlockList);
+		mdlBlockList = new QNifBlockModel (this);
+		tvBlockList->setModel (mdlBlockList);
 		tvBlockList->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
 		tvBlockList->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
 		tvBlockList->header ()->setResizeMode (2, QHeaderView::Interactive);
@@ -516,10 +467,10 @@ namespace NifSkopeQt4
 			SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 			this,
 			SLOT(stvBLselectionChanged(const QItemSelection &, const QItemSelection &)));
-		
+
 		// Block Details
-		mBlockDetails = new QNifModel (this);
- 		tvBlockDetails->setModel (mBlockDetails);
+		mdlBlockDetails = new QNifModel (this);
+ 		tvBlockDetails->setModel (mdlBlockDetails);
 		tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
 		tvBlockDetails->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
 		tvBlockDetails->header ()->setResizeMode (2, QHeaderView::ResizeToContents);
@@ -539,12 +490,11 @@ namespace NifSkopeQt4
 			if (!n)
 				return;
 			else {
-				NSINFO(n->Value->Name ())
-				QNifModel *mNew = new QNifModel (this);
-				mNew->SetRoot (n);
-				tvBlockDetails->setModel (mNew);
-				delete mBlockDetails;
-				mBlockDetails = mNew;
+				QNifModel *mdlNew = new QNifModel (this);
+				mdlNew->SetRoot (n);
+				tvBlockDetails->setModel (mdlNew);
+				delete mdlBlockDetails;
+				mdlBlockDetails = mdlNew;
 			}
 		}
 	}
@@ -613,6 +563,7 @@ namespace NifSkopeQt4
 
 	Qt4MainWindow::Qt4MainWindow()
 		: QMainWindow()
+		,mdlBlockList(0), mdlBlockDetails(0)
 	{
 		resize (800, 600);
 		// f.InitialPosition = DesktopCenter
@@ -620,5 +571,14 @@ namespace NifSkopeQt4
 			QApplication::desktop ()->screen ()->rect ().center () -
 			this->rect ().center ());
 		createMainMenu ();
+	}
+
+	Qt4MainWindow::~Qt4MainWindow()
+	{
+		NSINFO("~Qt4MainWindow ()")
+		if (mdlBlockDetails)
+			delete mdlBlockDetails;
+		if (mdlBlockList)
+			delete mdlBlockList;
 	}
 }

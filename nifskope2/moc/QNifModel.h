@@ -48,13 +48,39 @@ namespace NifSkopeQt4
 {
 	class Qt4MainWindow;
 
-	// TODO: class per file
 	class QNifModel: public QAbstractItemModel
 	{
 	protected:
+		struct Column {
+			Column(
+				QVariant hn,
+				QVariant (QNifModel::*fmt)(NifLib::TreeNode<NifLib::Field *> *))
+			{
+				HeaderName = hn;
+				Format = fmt;
+			}
+			QVariant HeaderName;
+			QVariant (QNifModel::*Format)(NifLib::TreeNode<NifLib::Field *> *);
+		};
 		Qt4MainWindow *win;
-		QList<QVariant> headers;
+		QList<Column> cols;
 		NifLib::TreeNode<NifLib::Field *> *rn;
+
+		/*
+		*	Each function returns data for the column its named after
+		*/
+		QVariant CId(NifLib::TreeNode<NifLib::Field *> *node);
+		QVariant CName(NifLib::TreeNode<NifLib::Field *> *node);
+		QVariant CType(NifLib::TreeNode<NifLib::Field *> *node);
+		QVariant CValue(NifLib::TreeNode<NifLib::Field *> *node);
+		QVariant CArgument(NifLib::TreeNode<NifLib::Field *> *node);
+		QVariant CArray1(NifLib::TreeNode<NifLib::Field *> *node);
+		QVariant CArray2(NifLib::TreeNode<NifLib::Field *> *node);
+		QVariant CCondition(NifLib::TreeNode<NifLib::Field *> *node);
+		QVariant CSince(NifLib::TreeNode<NifLib::Field *> *node);
+		QVariant CUntil(NifLib::TreeNode<NifLib::Field *> *node);
+		QVariant CVersionCondition(NifLib::TreeNode<NifLib::Field *> *node);
+
 	public:
 		QNifModel(Qt4MainWindow *data, QObject *parent = 0);
 

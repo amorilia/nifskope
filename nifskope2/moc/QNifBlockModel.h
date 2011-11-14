@@ -41,10 +41,6 @@ namespace NifSkopeQt4
 	{
 	public:
 		QNifBlockModel(Qt4MainWindow *data, QObject *parent = 0);
-		
-		QVariant data(
-			const QModelIndex &index,
-			int role = Qt::DisplayRole) const;
 
 		int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
