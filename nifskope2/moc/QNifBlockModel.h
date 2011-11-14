@@ -30,64 +30,26 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#ifndef __QT4MAINWINDOW_H__
-#define __QT4MAINWINDOW_H__
+#ifndef __QNIFBLOCKMODEL_H__
+#define __QNIFBLOCKMODEL_H__
 
-// NifSkope
-#include <NifSkopeApp.h>
 #include "QNifModel.h"
-#include "QNifBlockModel.h"
-
-// Qt
-#include <QtGui>
 
 namespace NifSkopeQt4
 {
-	class Qt4MainWindow: public QMainWindow
+	class QNifBlockModel: public QNifModel
 	{
-		void createMainMenu();
-		void createDockWidgets();
-		void createToolbars();
-		QAction *aLoad;
-		QAction *aSaveAs;
-
-		QTreeView *tvBlockList;
-		QTreeView *tvBlockDetails;
-		QNifModel *mBlockDetails;
-
-		QDockWidget *dockTVBL;
-		QDockWidget *dockTVBD;
-		QDockWidget *dockTVKFM;
-		QDockWidget *dockInsp;
-		QDockWidget *dockRefr;
-
-		QAction *aViewTop;
-		QAction *aViewFront;
-		QAction *aViewSide;
-		QAction *aViewUser;
-		QAction *aViewWalk;
-		QAction *aViewFlip;
-		QAction *aViewPerspective;
-	Q_OBJECT
 	public:
-		Qt4MainWindow();
-		NifSkope::NifSkopeApp *App;// TODO: init by Qt4App because of NewWindow() only
-	protected slots:
-		void stvBLselectionChanged(
-			const QItemSelection &selected,
-			const QItemSelection &deselected);
+		QNifBlockModel(Qt4MainWindow *data, QObject *parent = 0);
+		
+		QVariant data(
+			const QModelIndex &index,
+			int role = Qt::DisplayRole) const;
 
-		/*
-		*	Load a .nif file
-		*/
-		void sFileLoad();
+		int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
-		void sSelectFont();
-
-		void sOpenURL();
-	public slots:
-		void About();
+		~QNifBlockModel();
 	};
 }
 
-#endif /*__QT4MAINWINDOW_H__*/
+#endif /*__QNIFBLOCKMODEL_H__*/

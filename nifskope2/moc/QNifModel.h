@@ -30,64 +30,63 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#ifndef __QT4MAINWINDOW_H__
-#define __QT4MAINWINDOW_H__
+#ifndef __QNIFMODEL_H__
+#define __QNIFMODEL_H__
 
 // NifSkope
 #include <NifSkopeApp.h>
-#include "QNifModel.h"
-#include "QNifBlockModel.h"
 
 // Qt
 #include <QtGui>
+#include <QtCore/qabstractitemmodel.h>
+
+// "NifLib"
+#include "Field.h"
+#include "TreeNode.h"
 
 namespace NifSkopeQt4
 {
-	class Qt4MainWindow: public QMainWindow
+	class Qt4MainWindow;
+
+	// TODO: class per file
+	class QNifModel: public QAbstractItemModel
 	{
-		void createMainMenu();
-		void createDockWidgets();
-		void createToolbars();
-		QAction *aLoad;
-		QAction *aSaveAs;
-
-		QTreeView *tvBlockList;
-		QTreeView *tvBlockDetails;
-		QNifModel *mBlockDetails;
-
-		QDockWidget *dockTVBL;
-		QDockWidget *dockTVBD;
-		QDockWidget *dockTVKFM;
-		QDockWidget *dockInsp;
-		QDockWidget *dockRefr;
-
-		QAction *aViewTop;
-		QAction *aViewFront;
-		QAction *aViewSide;
-		QAction *aViewUser;
-		QAction *aViewWalk;
-		QAction *aViewFlip;
-		QAction *aViewPerspective;
-	Q_OBJECT
+	protected:
+		Qt4MainWindow *win;
+		QList<QVariant> headers;
+		NifLib::TreeNode<NifLib::Field *> *rn;
 	public:
-		Qt4MainWindow();
-		NifSkope::NifSkopeApp *App;// TODO: init by Qt4App because of NewWindow() only
-	protected slots:
-		void stvBLselectionChanged(
-			const QItemSelection &selected,
-			const QItemSelection &deselected);
+		QNifModel(Qt4MainWindow *data, QObject *parent = 0);
+
+		QVariant data(
+			const QModelIndex &index,
+			int role = Qt::DisplayRole) const;
+
+		Qt::ItemFlags flags(const QModelIndex &index) const;
+
+		QVariant headerData(
+			int section,
+			Qt::Orientation orientation,
+			int role = Qt::DisplayRole) const;
+
+		QModelIndex index(
+			int row,
+			int column,
+			const QModelIndex &parent = QModelIndex()) const;
+
+		QModelIndex parent(const QModelIndex &index) const;
+
+		int rowCount(const QModelIndex &parent = QModelIndex()) const;
+
+		int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
 		/*
-		*	Load a .nif file
+		*	Set root node. TODO: doesn't work as "change root node"
 		*/
-		void sFileLoad();
+		void SetRoot(NifLib::TreeNode<NifLib::Field *> *node);
 
-		void sSelectFont();
-
-		void sOpenURL();
-	public slots:
-		void About();
+		~QNifModel();
 	};
 }
 
-#endif /*__QT4MAINWINDOW_H__*/
+#endif /*__QNIFMODEL_H__*/

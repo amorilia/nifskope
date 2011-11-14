@@ -128,7 +128,7 @@ main(int argc, char **argv)
 
 	/*const char *pfix = "/mnt/archive/rain/temp/nif/";
 	std::string line;
-	std::ifstream myf("flist_nif.txt");
+	std::ifstream myf("flist_nif2.txt");
 	int cnt = 0;
 	if ( myf.is_open() ) {
 		p.Build ();
@@ -145,7 +145,7 @@ main(int argc, char **argv)
 				}
 				if (i != l)
 					continue;
-				//if (l > 3 && !NifLib::Parser::StartsWith ("loki", 4, buf, 4))
+				//if (l > 3 && !NifLib::Parser::StartsWith ("tes5", 4, buf, 4))
 				//	continue;
 				std::stringstream fname;
 				fname << std::string (pfix) << line;
@@ -153,8 +153,9 @@ main(int argc, char **argv)
 				cnt++;
 				INFO(cnt << ":\"" << fname2 << "\"");
 				if (!p.ReadNif (fname2.c_str ())) {
+					p.DbgPrintFields ();
 					INFO ("files done: " << cnt)
-					break;
+					//break;
 				} else {// it was read, write it and md5sum compare it to the original
 					p.WriteNif ("aaa.nif");
 					if (!md5filesareequal (fname2.c_str () , "aaa.nif")) {

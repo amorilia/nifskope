@@ -30,64 +30,51 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#ifndef __QT4MAINWINDOW_H__
-#define __QT4MAINWINDOW_H__
-
-// NifSkope
-#include <NifSkopeApp.h>
-#include "QNifModel.h"
 #include "QNifBlockModel.h"
-
-// Qt
-#include <QtGui>
+#include "Qt4MainWindow.h"
 
 namespace NifSkopeQt4
 {
-	class Qt4MainWindow: public QMainWindow
+#define TREEITEM NifLib::TreeNode<NifLib::Field *>
+	QNifBlockModel::QNifBlockModel(Qt4MainWindow *data, QObject *parent)
+		: QNifModel (data, parent)
 	{
-		void createMainMenu();
-		void createDockWidgets();
-		void createToolbars();
-		QAction *aLoad;
-		QAction *aSaveAs;
-
-		QTreeView *tvBlockList;
-		QTreeView *tvBlockDetails;
-		QNifModel *mBlockDetails;
-
-		QDockWidget *dockTVBL;
-		QDockWidget *dockTVBD;
-		QDockWidget *dockTVKFM;
-		QDockWidget *dockInsp;
-		QDockWidget *dockRefr;
-
-		QAction *aViewTop;
-		QAction *aViewFront;
-		QAction *aViewSide;
-		QAction *aViewUser;
-		QAction *aViewWalk;
-		QAction *aViewFlip;
-		QAction *aViewPerspective;
-	Q_OBJECT
-	public:
-		Qt4MainWindow();
-		NifSkope::NifSkopeApp *App;// TODO: init by Qt4App because of NewWindow() only
-	protected slots:
-		void stvBLselectionChanged(
-			const QItemSelection &selected,
-			const QItemSelection &deselected);
-
-		/*
-		*	Load a .nif file
-		*/
-		void sFileLoad();
-
-		void sSelectFont();
-
-		void sOpenURL();
-	public slots:
-		void About();
-	};
+		headers.clear ();
+		headers << "N" << "Name" << "Value";
+	}
+	QNifBlockModel::~QNifBlockModel()
+	{
+	}
+	QVariant
+	QNifBlockModel::data(const QModelIndex &index, int role) const
+	{
+		if (!index.isValid ())
+			return QVariant ();
+		if (role != Qt::DisplayRole)
+			return QVariant ();
+		TREEITEM *item = static_cast<TREEITEM *>(index.internalPointer ());
+		NifLib::Field *f = item->Value;
+		int col = index.column ();
+		if (col == 0)// No
+			return QVariant (QString ("%0").arg (item->Index));
+		else if (col == 1)// Name
+			return QVariant (QString (f->Name ().c_str ()));
+		else if (col == 2)// Value
+			return QVariant (QString (
+				win->App->GetRootNodeValue (item->Index).c_str ()));
+		else
+			return QVariant ();
+	}
+	int
+	QNifBlockModel::rowCount(const QModelIndex &parent) const
+	{
+		if (parent.column () > 0)
+			return 0;
+		TREEITEM *rootItem = win->App->AsTree ();
+		if (!parent.isValid ())
+			return rootItem->Nodes.Count ();
+		else
+			return 0;
+	}
+#undef TREEITEM
 }
-
-#endif /*__QT4MAINWINDOW_H__*/

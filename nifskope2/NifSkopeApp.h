@@ -112,7 +112,7 @@ namespace NifSkope
 		void ExpandToAArr1(NifLib::TreeNode<NifLib::Field *> *node, int itemsize);
 
 		/*
-		*	Expand on demand. Expands a node into subfields.
+		*	Expand on demand. Expands a node into sub-fields.
 		*	Supports AARR1
 		*	TODO: AARR2 J, AARR2, AARR3
 		*/
