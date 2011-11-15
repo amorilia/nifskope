@@ -42,9 +42,24 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "List.h"
 #include "Field.h"
 #include "TreeNode.h"
+#include "Tag.h"
 
 namespace NifSkope
 {
+	/*
+	*	Same as Field, just owns the "Tag" field.
+	*	Used for array dimentions > 1 where an artifical tag is needed
+	*	for correct "display".
+	*/
+	class TagOwnerField: public NifLib::Field
+	{
+	public:
+		~TagOwnerField()
+		{
+			delete Tag;
+		}
+	};
+
 	/*
 	*	@brief main application class
 	*   State engine
@@ -62,7 +77,6 @@ namespace NifSkope
 			NifLib::TreeNode<NifLib::Field *> *node,
 			int (NifSkopeApp::*actn) (NifLib::TreeNode<NifLib::Field *> *node));
 		int wFindFieldByName(NifLib::TreeNode<NifLib::Field *> *node);
-
 	public:
 		NifSkopeApp();
 

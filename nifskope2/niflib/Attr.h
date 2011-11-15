@@ -40,8 +40,11 @@ namespace NifLib
 {
 	class Attr
 	{
+		Attr& operator=(const Attr& src);
 	public:
 		Attr();
+		Attr(int name);
+		Attr(const Attr& src);
 
 		Buffer Value;
 		int Id;// seq. id in order of parsing from the XML document

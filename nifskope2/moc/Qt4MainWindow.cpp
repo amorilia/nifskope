@@ -471,7 +471,7 @@ namespace NifSkopeQt4
 		// Block Details
 		mdlBlockDetails = new QNifModel (this);
  		tvBlockDetails->setModel (mdlBlockDetails);
-		tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
+		//tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
 		tvBlockDetails->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
 		tvBlockDetails->header ()->setResizeMode (2, QHeaderView::ResizeToContents);
 	}

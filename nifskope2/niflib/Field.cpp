@@ -274,4 +274,8 @@ namespace NifLib
 	{
 		return Tag->TypeTag->FixedSize;
 	}
+
+	Field::~Field()
+	{
+	}
 }

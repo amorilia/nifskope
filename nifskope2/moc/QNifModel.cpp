@@ -133,6 +133,8 @@ namespace NifSkopeQt4
 	QNifModel::QNifModel(Qt4MainWindow *data, QObject *parent)
 		: QAbstractItemModel (parent)
 	{
+		// TODO: can this become "what is available" instead of
+		// "what should be available"? A.k.a. dynamic columns.
 		cols << Column ("N", &QNifModel::CId)
 		<< Column ("Name", &QNifModel::CName)
 		<< Column ("Type", &QNifModel::CType)

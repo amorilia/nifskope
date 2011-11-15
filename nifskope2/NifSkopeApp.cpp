@@ -214,7 +214,7 @@ namespace NifSkope
 		} else
 		if (f->TypeId () == BTN_BOOL) {
 			NIFbyte *buf = (NIFbyte *)&(f->Value.buf[0]);
-			return ToStrBool (buf[f->ItemSize ()*ofs]);
+			return ToStrBool (buf[f->FixedSize ()*ofs]);
 		} else
 		if (f->TypeId () == NIFT_T && f->FixedSize () > 0) {
 			return ToStrFixedSizeStruct (f);
@@ -253,12 +253,57 @@ namespace NifSkope
 			return;// nothing to expand
 		NifLib::Field *f = node->Value;
 		if (f->IsArray1D () && !f->IsArrayJ () && !f->IsCharArray ()) {// AARR1
-			if (f->ItemSize() > 0)
-				ExpandToAArr1 (node, f->ItemSize ());
-			else if (f->FixedSize () > 0)
+			if (f->FixedSize () > 0)
 				ExpandToAArr1 (node, f->FixedSize ());
-			else
+		} else
+		if (f->IsArray2D () && f->IsArrayJ () && !f->IsCharArray ()) {// AARR2 J
+/*#define BTN_BYTE 1
+#define BTN_UINT 2
+#define BTN_USHORT 3
+#define BTN_INT 4
+#define BTN_SHORT 5*/
+			if (f->FixedSize () <= 0)
 				return;
+			char *buf = (char *)&(f->Value.buf[0]);
+			int itemsize = f->FixedSize ();
+			//int cnt = f->Value.len/f-FixedSize ();
+			if (f->JField->TypeId () == BTN_USHORT) {
+				NIFushort *lengths = (NIFushort *)&(f->JField->Value.buf[0]);
+				int cnt = f->JField->Value.len / f->JField->FixedSize ();
+				NSINFO("cnt: " << cnt)
+				int base = 0;
+				for (int i = 0; i < cnt; i++) {
+					int cnt2 = lengths[i];
+
+					NifLib::TreeNode<NifLib::Field *> *n1 =
+						new NifLib::OwnerTreeNode<NifLib::Field *>;
+					n1->Parent = node;
+					NifLib::Field *nf1 = new TagOwnerField ();
+					nf1->BlockTag = f->BlockTag;
+					nf1->JField = NULL;
+
+					nf1->Tag = new NifLib::Tag;
+					nf1->Tag->TypeTag = f->TypeTag ();
+					nf1->Tag->NLType = nf1->Tag->TypeTag->NLType;
+					NifLib::Attr *aname = new NifLib::Attr (*f->Tag->AttrById (ANAME));
+					NifLib::Attr *atype = new NifLib::Attr (*f->Tag->AttrById (ATYPE));
+					NifLib::Attr *aarr1 = new NifLib::Attr (AARR1);
+					std::stringstream conv;
+					conv << "\"" << f->JField->Name () << "\"[" << i << "]=" << cnt2;
+					std::string asstr = conv.str ();
+					aarr1->Value.CopyFrom (asstr.c_str (), asstr.length ());
+					nf1->Tag->Attr.Add (aname);
+					nf1->Tag->Attr.Add (atype);
+					nf1->Tag->Attr.Add (aarr1);
+
+					nf1->Value.CopyFrom (&(buf[base]), itemsize*cnt2);
+					n1->Value = nf1;
+					node->Nodes.Add (n1);
+					n1->Index = node->Nodes.Count () - 1;
+
+					base += (itemsize*cnt2);
+				}
+			}
 		}
 	}
 

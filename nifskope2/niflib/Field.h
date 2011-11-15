@@ -151,28 +151,30 @@ namespace NifLib
 		*	is stored in the field.
 		*	Will not work for (TypeTag->FixedSize > 0) fields.
 		*/
-		inline int ItemSize()
+		/*inline int ItemSize()
 		{
 			return NLType () & NIFT_SIZE;
-		}
+		}*/
 
 		/*
 		*	Returns the size of the array in case an array of const size items
 		*	is stored in the field.
 		*/
-		inline int ArraySize()
+		/*inline int ArraySize()
 		{
 			int s = ItemSize ();
 			if (s)
 				return Value.len / s;
 			else
 				return 0;
-		}
+		}*/
 
 		/*
 		*	Returns this field fixed size, > 0 when its a fixed size field
 		*/
 		int FixedSize();
+
+		virtual ~Field();
 	};
 }
 

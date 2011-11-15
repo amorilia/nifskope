@@ -34,9 +34,29 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifLib
 {
+	Attr& Attr::operator=(const Attr& src)
+	{
+		Name = src.Name;
+		Id = src.Id;
+		Value.CopyFrom (src.Value.buf, src.Value.len);
+		return *this;
+	}
+
 	Attr::Attr()
 	{
 		Name = -1;
+	}
+
+	Attr::Attr(int name)
+	{
+		Name = name;
+	}
+
+	Attr::Attr(const Attr& src)
+	{
+		Name = src.Name;
+		Id = -1;
+		Value.CopyFrom (src.Value.buf, src.Value.len);
 	}
 
 	std::string
