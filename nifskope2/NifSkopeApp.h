@@ -95,6 +95,11 @@ namespace NifSkope
 		std::string ToStrBool(NIFbyte value);
 
 		/*
+		*	Defines how the packed structures "look" like
+		*/
+		std::string ToStrFixedSizeStruct(NifLib::Field *f);
+
+		/*
 		*	Returns string representation of a field
 		*/
 		std::string ToStr(NifLib::Field *f, int ofs = 0);

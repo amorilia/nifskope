@@ -103,7 +103,7 @@ rnd(int N)
 
 	Qt4OGRE3D::Qt4OGRE3D(void)
 		: Qt43D (NULL)
-		,handleNifLoaded(0), ready(0), timer(0), mRoot(0), mCam(0), mScn(0)
+		,handleNifLoaded(0), ready(0), mRoot(0), mCam(0), mScn(0)
 		,mWin(0), progress(0)
 	{
 	}
@@ -111,10 +111,7 @@ rnd(int N)
 	Qt4OGRE3D::~Qt4OGRE3D(void)
 	{
 		ready = false;
-		if (timer) {
-			timer->stop ();
-			delete timer;
-		}
+
 		if (mRoot)
 			delete mRoot;
 
@@ -220,7 +217,7 @@ rnd(int N)
 		Ogre::Light* l = mScn->createLight ("lightMain");
 		l->setPosition (100, 100, 100);
 
-		timer = new QTimer(this);
+		QTimer *timer = new QTimer(this);
 		timer->setSingleShot (false);
  		connect(timer, SIGNAL(timeout()), this, SLOT(Render()));
 		ready = 1;

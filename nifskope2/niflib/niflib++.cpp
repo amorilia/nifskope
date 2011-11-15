@@ -120,7 +120,7 @@ main(int argc, char **argv)
 			"aaa.nif")) {
 			INFO ("differ")
 		}
-		p.DbgPrintFields ();
+		//p.DbgPrintFields ();
 	} else {
 		INFO("ReadNif failed")
 		p.DbgPrintFields ();
@@ -145,8 +145,8 @@ main(int argc, char **argv)
 				}
 				if (i != l)
 					continue;
-				//if (l > 3 && !NifLib::Parser::StartsWith ("tes5", 4, buf, 4))
-				//	continue;
+				if (l > 3 && !NifLib::Parser::StartsWith ("tes5", 4, buf, 4))
+					continue;
 				std::stringstream fname;
 				fname << std::string (pfix) << line;
 				std::string fname2 = fname.str ();

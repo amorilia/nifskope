@@ -61,7 +61,11 @@ namespace NifLib
 		NifLib::Tag *Tag;		// type and other attributes
 		NifLib::Tag *BlockTag;	// file block tag
 		NifLib::Field *JField;	// jagged array field, if this is jagged array
-		int NLType;// NifLib Type
+
+		/*
+		*	Return NifLib Type
+		*/
+		int NLType();
 
 		/*
 		*	Safe cast to NIFuint at offset 0. Used by "Compiler::Evaluate ()".
@@ -134,7 +138,7 @@ namespace NifLib
 		*	Returns field ATYPE value:
 		*	type="Vector3", Vector3 Tag
 		*/
-		NifLib::Tag *TypeTag(Compiler *typesprovider);
+		NifLib::Tag *TypeTag();
 
 		/*
 		*	Returns field tag attribute value as a string:
@@ -149,7 +153,7 @@ namespace NifLib
 		*/
 		inline int ItemSize()
 		{
-			return NLType & NIFT_SIZE;
+			return NLType () & NIFT_SIZE;
 		}
 
 		/*
@@ -164,6 +168,11 @@ namespace NifLib
 			else
 				return 0;
 		}
+
+		/*
+		*	Returns this field fixed size, > 0 when its a fixed size field
+		*/
+		int FixedSize();
 	};
 }
 

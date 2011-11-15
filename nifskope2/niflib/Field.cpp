@@ -58,34 +58,34 @@ namespace NifLib
 		NifLib::Attr *_ta = btype->AttrById (ANIFLIBTYPE);
 		if (!_ta)
 			result << "[UNKNOWN TBASIC ANIFLIBTYPE]";
-		else if (NLType & NIFT_T) {// can handle two NIFT_T
-			if (NIFT(NLType, BTN_HEADERSTRING) ||
-				NIFT(NLType, BTN_LINESTRING))
+		else if (NLType () & NIFT_T) {// can handle two NIFT_T
+			if (NIFT(NLType (), BTN_HEADERSTRING) ||
+				NIFT(NLType (), BTN_LINESTRING))
 				result << std::string (Value.buf, Value.len - 1);// avoid '\n'
 			else // unknown dynamic
 				result << StreamBlockB (Value.buf, Value.len, Value.len + 1);
-		} else if ((NLType & BtnType (BTN_FLOAT)) == BtnType (BTN_FLOAT))
+		} else if ((NLType () & BtnType (BTN_FLOAT)) == BtnType (BTN_FLOAT))
  			result << (NIFfloat)*(NIFfloat *)&Value.buf[0];
-		else if (NIFT(NLType, BTN_FILEVERSION)) {
-			if ((Value.len == (NLType & NIFT_SIZE)) && (Value.len > 0)) {
+		else if (NIFT(NLType (), BTN_FILEVERSION)) {
+			if ((Value.len == (NLType () & NIFT_SIZE)) && (Value.len > 0)) {
 				result << (NIFint)Value.buf[Value.len-1];
 				for (int i = Value.len - 2; i > -1; i--)
 					result << "." << (NIFint)Value.buf[i];
 			} else
 				result << "[Unknown FILEVERSION type]";
 		}
-		else if (NIFT(NLType, BTN_CHAR))
+		else if (NIFT(NLType (), BTN_CHAR))
 			result << std::string (Value.buf, Value.len).c_str ();
 		else {
-			if ((NLType & NIFT_BT) == BtnType (BTN_UINT))
+			if ((NLType () & NIFT_BT) == BtnType (BTN_UINT))
 				result << (NIFuint)*(NIFuint *)&Value.buf[0];
-			else if ((NLType & NIFT_BT) == BtnType (BTN_USHORT))
+			else if ((NLType () & NIFT_BT) == BtnType (BTN_USHORT))
 				result << (NIFushort)*(NIFushort *)&Value.buf[0];
-			else if ((NLType & NIFT_BT) == BtnType (BTN_BYTE))
+			else if ((NLType () & NIFT_BT) == BtnType (BTN_BYTE))
 				result << (NIFint)*(NIFbyte *)&Value.buf[0];
-			else if ((NLType & NIFT_BT) == BtnType (BTN_INT))
+			else if ((NLType () & NIFT_BT) == BtnType (BTN_INT))
 				result << (NIFint)*(NIFint *)&Value.buf[0];
-			else if ((NLType & NIFT_BT) == BtnType (BTN_SHORT))
+			else if ((NLType () & NIFT_BT) == BtnType (BTN_SHORT))
 				result << (NIFshort)*(NIFshort *)&Value.buf[0];
 			else
 				result << "[" << std::string (_ta->Value.buf, _ta->Value.len) << "]";
@@ -98,7 +98,12 @@ namespace NifLib
 		Tag = NULL;
 		BlockTag = NULL;
 		JField = NULL;
-		NLType = NIFT_T;
+	}
+
+	int
+	Field::NLType()
+	{
+		return Tag->NLType;
 	}
 
 	NIFuint
@@ -230,16 +235,16 @@ namespace NifLib
 	Field::IsCharArray()
 	{
 		return (Tag->AttrById (AARR1) != NULL) &&
-				NIFT(NLType, BTN_CHAR);
+				NIFT(NLType (), BTN_CHAR);
 	}
 
 	int
 	Field::TypeId()
 	{
-		if (NLType & NIFT_T)
+		if (NLType () & NIFT_T)
 			return NIFT_T;
 		else
-			return (NLType & NIFT_ID) >> 8;
+			return (NLType () & NIFT_ID) >> 8;
 	}
 
 	std::string
@@ -249,26 +254,9 @@ namespace NifLib
 	}
 
 	NifLib::Tag *
-	Field::TypeTag(Compiler *typesprovider)
+	Field::TypeTag()
 	{
-		NifLib::Attr *atype = Type ();
-		if (!atype)
-			return NULL;
-		NifLib::Tag *result = NULL;
-		result = typesprovider->Find (TBASIC, atype->Value.buf, atype->Value.len);
-		if (result)
-			return result;
-		result = typesprovider->Find (TENUM, atype->Value.buf, atype->Value.len);
-		if (result)
-			return result;
-		result = typesprovider->Find (TBITFLAGS, atype->Value.buf, atype->Value.len);
-		if (result)
-			return result;
-		result = typesprovider->Find (TCOMPOUND, atype->Value.buf, atype->Value.len);
-		if (result)
-			return result;
-		result = typesprovider->Find (TNIOBJECT, atype->Value.buf, atype->Value.len);
-		return result;
+		return Tag->TypeTag;
 	}
 
 	std::string
@@ -279,5 +267,11 @@ namespace NifLib
 			return a->ToString ();
 		else
 			return "";
+	}
+
+	int
+	Field::FixedSize()
+	{
+		return Tag->TypeTag->FixedSize;
 	}
 }

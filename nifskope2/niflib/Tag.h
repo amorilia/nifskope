@@ -48,6 +48,8 @@ namespace NifLib
 		int Name;// reference to tag name - see niflib.h
 		int FixedSize;// > 0 when calculated and possible
 		Buffer Value;// XML document value - a free form text for UIs
+		int NLType;// NifLib Type - init by Build ()
+		NifLib::Tag *TypeTag;// Type - init by Build ()
 		NifLib::Tag *Owner;
 		NifLib::List<NifLib::Attr *> Attr;
 		NifLib::List<NifLib::Tag *> Tags;

@@ -87,7 +87,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		f->BlockTag = blockTag;
 		f->JField = i2j;
 		f->Tag = field;
-		f->NLType = type;
+		f->Tag->NLType = type;// take care for dynamic TBASIC BTN_BOOL
 		if (buf && bl > 0)
 			f->Value.CopyFrom (buf, bl);
 		flist.Add (f);
@@ -109,16 +109,17 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 			NifLib::TreeNode<NifLib::Field *> *pnode)
 	{
 		A(1)
-		NifLib::TreeNode<NifLib::Field *> *node = new NifLib::TreeNode<NifLib::Field *>;
-		node->Parent = pnode;
+		NifLib::TreeNode<NifLib::Field *> *node = NULL;
 		if (!f) {
+			node = new NifLib::OwnerTreeNode<NifLib::Field *>;
 			f = new NifLib::Field ();
 			f->BlockTag = blockTag;
 			f->JField = i2j;
 			f->Tag = t;
 			f->Value.CopyFrom ("", 1);
-			node->OwnsValue = 1;// indicate that the node destructor should release
-		}
+		} else
+			node = new NifLib::TreeNode<NifLib::Field *>;
+		node->Parent = pnode;
 		node->Value = f;
 		pnode->Nodes.Add (node);
 		node->Index = pnode->Nodes.Count () - 1;
@@ -959,18 +960,18 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 }
 #define READJBASICALL(SZ, RPROC, TYPE)\
 {\
-	if ((i2j->NLType & NIFT_BT) == BtnType (BTN_UINT))\
+	if ((i2j->NLType () & NIFT_BT) == BtnType (BTN_UINT))\
 		RPROC(NIFuint, SZ, TYPE)\
-	else if ((i2j->NLType & NIFT_BT) == BtnType (BTN_INT))\
+	else if ((i2j->NLType () & NIFT_BT) == BtnType (BTN_INT))\
 		RPROC(NIFint, SZ, TYPE)\
-	else if ((i2j->NLType & NIFT_BT) == BtnType (BTN_BYTE))\
+	else if ((i2j->NLType () & NIFT_BT) == BtnType (BTN_BYTE))\
 		RPROC(NIFbyte, SZ, TYPE)\
-	else if ((i2j->NLType & NIFT_BT) == BtnType (BTN_USHORT))\
+	else if ((i2j->NLType () & NIFT_BT) == BtnType (BTN_USHORT))\
 		RPROC(NIFushort, SZ, TYPE)\
-	else if ((i2j->NLType & NIFT_BT) == BtnType (BTN_SHORT))\
+	else if ((i2j->NLType () & NIFT_BT) == BtnType (BTN_SHORT))\
 		RPROC(NIFshort, SZ, TYPE)\
 	else {\
-		ERR("R: unknown jagged array type: " << NIFT2Str (i2j->NLType))\
+		ERR("R: unknown jagged array type: " << NIFT2Str (i2j->NLType ()))\
 		return 0;\
 	}\
 }
@@ -984,7 +985,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 					ERR("R: TBASIC is missing ANIFLIBTYPE")
 					return 0;
 				}
-				int btypeid = BType (taname->Value.buf, taname->Value.len);
+				int btypeid = tt->NLType;
 				//INFO ("btypeid: " << HEX(8) << btypeid << DEC
 				//	<< " FixedSize: " << tt->FixedSize
 				//	<< ", t: " << std::string (ta->Value.buf, ta->Value.len))
@@ -1293,7 +1294,8 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				ERR("B: " << TAG(TBASIC) << " without " << ATTR(ANAME))
 				continue;
 			}
-			t->FixedSize = BType (ta->Value.buf, ta->Value.len) & NIFT_SIZE;
+			t->NLType = BType (tn->Value.buf, tn->Value.len);
+			t->FixedSize = t->NLType & NIFT_SIZE;
 			//if (t->FixedSize <= 0)
 			//	INFO(" dynamic: " << TAG(TBASIC) << " \""
 			//		<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\"")
@@ -1319,6 +1321,9 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				continue;
 			}
 			t->FixedSize = btag->FixedSize;
+			t->NLType = btag->NLType;
+			t->TypeTag = btag;
+			//INFO(STDSTR(tn->Value) << " " << NIFT2Str(t->NLType))
 			//if (t->FixedSize <= 0)
 			//	INFO(" dynamic: " << TAG(TENUM) << " \""
 			//		<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\"")
@@ -1344,6 +1349,8 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				continue;
 			}
 			t->FixedSize = btag->FixedSize;
+			t->NLType = btag->NLType;
+			t->TypeTag = btag;
 			//if (t->FixedSize <= 0)
 			//	INFO(" dynamic: " << TAG(TBITFLAGS) << " \""
 			//		<< STDSTR(ta->Value) << " " << STDSTR(tn->Value) << "\"")
@@ -1361,6 +1368,22 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 			}
 			t->FixedSize = 0;
 			int fs = 0;
+			// field tags (TADD): init TypeTag and NLType
+			for (j = 0; j < t->Tags.Count (); j++) {
+				NifLib::Tag *t1 = t->Tags[j];
+				NifLib::Attr *type = t1->AttrById (ATYPE);
+				NifLib::Tag *t2 = GetBasicType (type);
+				if (!t2)// when not basic try to find "complex"
+					t2 = Find(TCOMPOUND, type->Value.buf, type->Value.len);
+				if (t2)// it should not be NULL, change if not NULL only
+					t1->TypeTag = t2;
+				type = t1->TypeTag->AttrById (ATYPE);
+				if (!type)// handle TBASIC BTN_CHAR
+					type = t1->TypeTag->AttrById (ANAME);
+				if (!type)// handle no ATYPE
+					type = t1->TypeTag->AttrById (ANIFLIBTYPE);
+				t1->NLType = t1->TypeTag->NLType;
+			}
 			for (j = 0; j < t->Tags.Count (); j++) {// TCOMPOUND fields
 				NifLib::Tag *t1 = t->Tags[j];
 				NifLib::Attr *name = t1->AttrById (ANAME);
@@ -1371,8 +1394,8 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				int arr1v = 1;
 				if (arr1) {
 					if (IsUInt (arr1->Value.buf, arr1->Value.len))
-						arr1v =
-							str2<NIFint> (std::string (arr1->Value.buf, arr1->Value.len));
+						arr1v =	str2<NIFint> (
+							std::string (arr1->Value.buf, arr1->Value.len));
 				}
 				if (name && type) {
 					if (def) {// allow 'name', 'type' and 'default'
@@ -1421,6 +1444,24 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 			// check if empty
 			if (t->Tags.Count () <= 0)
 				continue;
+			// field tags (TADD): init TypeTag and NLType
+			for (j = 0; j < t->Tags.Count (); j++) {
+				NifLib::Tag *t1 = t->Tags[j];
+				NifLib::Attr *type = t1->AttrById (ATYPE);
+				NifLib::Tag *t2 = GetBasicType (type);
+				if (!t2)// when not basic try to find "complex"
+					t2 = Find(TCOMPOUND, type->Value.buf, type->Value.len);
+				if (!t2)// when not basic try to find "complex"
+					t2 = Find(TNIOBJECT, type->Value.buf, type->Value.len);
+				if (t2)// it should not be NULL, change if not NULL only
+					t1->TypeTag = t2;
+				type = t1->TypeTag->AttrById (ATYPE);
+				if (!type)// handle TBASIC BTN_CHAR
+					type = t1->TypeTag->AttrById (ANAME);
+				if (!type)// handle no ATYPE
+					type = t1->TypeTag->AttrById (ANIFLIBTYPE);
+				t1->NLType = t1->TypeTag->NLType;
+			}
 			// check if parent(s) are empty too
 			NifLib::Attr *tinh = t->AttrById (AINHERIT);
 			int tagcount = 0;
@@ -1508,10 +1549,14 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		static int bIdx = -1;
 		for (int i = 0; i < node->Nodes.Count (); i++) {
 			NifLib::Field *f = node->Nodes[i]->Value;
+			std::stringstream ha;
+			if (node->Value != NULL)
+				ha << node->Value->Name ();
 			if (node->Parent == NULL)
 				bIdx = i - 1;
-			INFO(ofs << "f (" << NIFT2Str (f->NLType) << ") #" << bIdx
+			INFO(ofs << "f (" << NIFT2Str (f->NLType ()) << ") #" << bIdx
 			<< " (" << f->BlockName () << ")" << ": \""
+			<< " {" << ha.str () << "} "
 			<< f->OwnerName () << "."
 			<< f->Name () << "\": "
 			<< f->Value.len << " \"" << f->AsString (this) << "\"")
@@ -1524,6 +1569,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 	Compiler::DbgPrintFields()
 	{
 		std::string ofs = "";;
+		//PrintNode (ftree.Nodes[0], ofs);
 		PrintNode (&ftree, ofs);
 		return;
 		int bIdx = -1;

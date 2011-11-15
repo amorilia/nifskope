@@ -59,7 +59,6 @@ namespace NifSkope
 	private:
 		int ready;
 		QPoint lastPos;
-		QTimer *timer;
 	protected:
 		// Qt delegates
 		void mousePressEvent(QMouseEvent *event);

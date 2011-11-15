@@ -42,6 +42,8 @@ namespace NifLib
 		Name = -1;
 		Owner = NULL;
 		FixedSize = 0;
+		NLType = NIFT_T;
+		TypeTag = this;
 	}
 
 	bool

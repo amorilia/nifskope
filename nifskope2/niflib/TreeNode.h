@@ -44,29 +44,38 @@ namespace NifLib
 		{
 			Parent = NULL;
 			Value = (T)NULL;
-			OwnsValue = 0;
 		}
 
 		TreeNode<T> *Parent;
 		NifLib::List< TreeNode<T> *> Nodes;
 		T Value;
-		int OwnsValue;// TODO: find another way - too much memory wasted
 		int Index;
 		
-		void Clear ()
+		void Clear()
 		{
 			for (int i = 0; i < Nodes.Count (); i++) {
 				TreeNode<T> *node = Nodes[i];
-				if (node->OwnsValue)
-					delete node->Value;
 				delete node;
 			}
 			Nodes.Clear ();
 		}
 
-		~TreeNode()
+		virtual ~TreeNode()
 		{
 			Clear ();
+		}
+	};
+
+	/*
+	*	The same as the above, but it owns "Value" and should release it
+	*/
+	template <typename T> class OwnerTreeNode: public TreeNode<T>
+	{
+	public:
+		virtual ~OwnerTreeNode()
+		{
+			delete this->Value;
+			this->Clear ();
 		}
 	};
 }
