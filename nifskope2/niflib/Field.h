@@ -61,6 +61,7 @@ namespace NifLib
 		NifLib::Tag *Tag;		// type and other attributes
 		NifLib::Tag *BlockTag;	// file block tag
 		NifLib::Field *JField;	// jagged array field, if this is jagged array
+		int Arr1;// Arr1 size - needed for 2d arrays handling
 
 		/*
 		*	Return NifLib Type
@@ -142,7 +143,7 @@ namespace NifLib
 
 		/*
 		*	Returns field tag attribute value as a string:
-		*	TagAttr (ANAME), "Vector3"
+		*	TagAttr (ATYPE), "Vector3"
 		*/
 		std::string TagAttr(int attrId);
 

@@ -37,9 +37,10 @@ namespace NifSkope
 	Qt43D::Qt43D(QWidget *)
 		: QWidget ()
 	{
-		setAttribute(Qt::WA_PaintOnScreen, true);// prevent X from doing anything
-		setAttribute(Qt::WA_NoSystemBackground, true);
-		setAttribute(Qt::WA_NoBackground, true);
+		setAttribute (Qt::WA_PaintOnScreen, true);// prevent X from doing anything
+		setAttribute (Qt::WA_NoSystemBackground, true);
+		setAttribute (Qt::WA_NoBackground, true);
+		setAttribute (Qt::WA_DeleteOnClose, false);
 	}
 
 	void

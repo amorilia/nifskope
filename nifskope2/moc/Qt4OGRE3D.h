@@ -35,7 +35,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Qt43D.h"
 
-// 2.add OGRE
+// OGRE
 #include <OgreRoot.h>
 #include <OgreCamera.h>
 #include <OgreSceneManager.h>
@@ -82,8 +82,9 @@ namespace NifSkope
 		Ogre::SceneManager *mScn;
 		Ogre::RenderWindow *mWin;
 		Ogre::Viewport *mVp;
-		Ogre::SceneNode* progress;
+		Ogre::SceneNode *progress;
 		Ogre::Real ar, br, cr;
+		Ogre::NameValuePairList *misc;
 	};
 }
 

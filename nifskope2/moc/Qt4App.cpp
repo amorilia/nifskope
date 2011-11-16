@@ -67,25 +67,21 @@ namespace NifSkopeQt4
 	int
 	Qt4App::Run(int argc, char **argv)
 	{
-		// init qt
 		QApplication app (argc, argv);
 		app.setOrganizationName (NS_ORG);
 		app.setApplicationName (NS_NAME);
 		app.setOrganizationDomain (NS_URL);
-		// beautify
-		LoadStyle (app);
-		// create main window and pass the control to it
+		//LoadStyle (app); - "merge" in the current user theme, don't "enforce"
 		NifSkopeQt4::Qt4MainWindow mainWindow;
 		mainWindow.App = this;// static list of commands
-		NifSkope::Qt4OGRE3D centralWidget;
-		centralWidget.App = this;// static list of commands
-		
-		mainWindow.setCentralWidget (&centralWidget);
+		NifSkope::Qt4OGRE3D *centralWidget = new NifSkope::Qt4OGRE3D;
+		centralWidget->App = this;// static list of commands
+		mainWindow.setCentralWidget (centralWidget);
 		mainWindow.setWindowTitle (
 			QApplication::translate("windowlayout", NS_VERSION));
 		mainWindow.show ();
-
-		centralWidget.go ();
+		if (!centralWidget->go ())
+			return 1;
 		return app.exec ();
 	}
 }

@@ -36,47 +36,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "nifskope.h"
 #include "NifSkopeApp.h"
+
 // windowing system selection
 #ifdef NIFSKOPE_QT
 #include "moc/Qt4App.h"
 #endif
-
-namespace NifSkope
-{
-	class NSC
-	{
-		/*bool LoadNif  (NifSkope::FileType *, std::string);
-		bool SaveNifAs(NifSkope::FileType *, std::string);
-		// These work on nif nodes - selected in the tree/list view
-		bool Import   (NifSkope::FileType *, std::string);
-		bool Export   (NifSkope::FileType *, std::string);
-
-		bool SanitizeBeforeSave;
-		bool NewWindow();// creates new mainwindow
-		bool ReloadXML();// reloads nif.xml and kfm.xml
-		bool ReloadXMLAndNif(); // ReloadXML() + current .nif
-		bool XMLChecker(// opens a dialog
-			std::string dir
-			bool recursive
-			bool *.nif
-			bool *.kf(a)
-			bool *.kfm
-			NiNode block_match
-			bool report_errors_only
-			int threads = 2
-			std::string version_match
-			Run()
-			ReloadXML()
-			Close()
- 		);// reports progress, is not modal
-		bool ResourceFiles(// opens a modal dialog
-			bool automatic_selection
-			Add(std::tring *.bsa)
-			Remove(std::tring *.bsa)
-		);
-		void Quit();*/
-	};
-}
 
 /*
 *   main

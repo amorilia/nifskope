@@ -88,6 +88,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		f->JField = i2j;
 		f->Tag = field;
 		f->Tag->NLType = type;// take care for dynamic TBASIC BTN_BOOL
+		f->Arr1 = i1;
 		if (buf && bl > 0)
 			f->Value.CopyFrom (buf, bl);
 		flist.Add (f);
@@ -116,6 +117,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 			f->BlockTag = blockTag;
 			f->JField = i2j;
 			f->Tag = t;
+			f->Arr1 = i1;
 			f->Value.CopyFrom ("", 1);
 		} else
 			node = new NifLib::TreeNode<NifLib::Field *>;
@@ -910,7 +912,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 			i2j = NULL;
 			// AARR1
 			// can be const uint, field, expression
-			NIFint i1 = InitArr (field->AttrById (AARR1));// 1d size
+			i1 = InitArr (field->AttrById (AARR1));// 1d size
 			if (i1 <= 0)
 				continue;// nothing to read
 			// AARR1
@@ -1041,8 +1043,12 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 							NIFT_T)
 						n = nn;
 					} else
-						for (int idx = 0; idx < izise; idx++) {// 1d/2d/3d array
+						if (!field->AttrById (AARR1)) {//
 							if (!ReadObject (s, tt, newnode))
+								return 0;
+						} else
+						for (int idx = 0; idx < izise; idx++) {// 1d/2d/3d struct array
+							if (!ReadObject (s, tt, AddNode (field, NULL, newnode)))
 								return 0;
 						}
 				}
@@ -1383,6 +1389,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				if (!type)// handle no ATYPE
 					type = t1->TypeTag->AttrById (ANIFLIBTYPE);
 				t1->NLType = t1->TypeTag->NLType;
+				t1->FixedSize = t1->TypeTag->FixedSize;
 			}
 			for (j = 0; j < t->Tags.Count (); j++) {// TCOMPOUND fields
 				NifLib::Tag *t1 = t->Tags[j];
@@ -1461,6 +1468,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				if (!type)// handle no ATYPE
 					type = t1->TypeTag->AttrById (ANIFLIBTYPE);
 				t1->NLType = t1->TypeTag->NLType;
+				t1->FixedSize = t1->TypeTag->FixedSize;
 			}
 			// check if parent(s) are empty too
 			NifLib::Attr *tinh = t->AttrById (AINHERIT);

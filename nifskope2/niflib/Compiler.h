@@ -103,6 +103,7 @@ namespace NifLib
 		NIFuint nVersion;// state - global nif file variable(s)
 		NIFuint nUserVersion;// state - global nif file variable(s)
 		NIFuint nUserVersion2;// state - global nif file variable(s)
+		NIFint i1;// state - AARR1 size
 
 		std::map<std::string, NIFuint> strversion_cache;//HeaderString2Version
 		std::map<std::string, int> tagnames_cache[TAGS_NUML1];//Find

@@ -177,20 +177,25 @@ namespace NifSkope
 	std::string
 	NifSkopeApp::ToStrFixedSizeStruct(NifLib::Field *f)
 	{
-		// Handle fixed size complex fields - "Packed" fields of non-array
-		// type what are not "auto-expanded" by the tree view in the
-		// compiler as the other non-fixed size ones.
+		// Handle fixed size complex fields
 		NifLib::Tag *tt = f->TypeTag ();
 		std::stringstream result;
-		NIFfloat *fbuf = (NIFfloat *)&(f->Value.buf[0]);
+		char *p = (char *)&(f->Value.buf[0]);
 		for (int i = 0; i < tt->Tags.Count (); i++) {
 			NifLib::Tag *ct = tt->Tags[i];
+			int size = ct->FixedSize;
+			if (size <= 0)
+				return "[ERROR: FixedSize can not be <= 0 in Packed field]";
 			NifLib::Attr *name = ct->AttrById (ANAME);
-			if ((ct->NLType & NIFT_BT) == BtnType (BTN_FLOAT) ) {
-				result << std::string (name->Value.buf, name->Value.len) << ": ";
-				result << fbuf[i];
-			} else
-				result << std::string (name->Value.buf, name->Value.len) << ": -";
+			result << std::string (name->Value.buf, name->Value.len) << ": ";
+			NifLib::Field *air = new NifLib::Field;
+			air->BlockTag = f->BlockTag;
+			air->JField = NULL;
+			air->Tag = ct;
+			air->Value.CopyFrom (p, size);
+			result << ToStr (air, 0);
+			delete air;
+			p += size;
 			if (i < tt->Tags.Count () -1)
 				result << ", ";
 		}
@@ -204,7 +209,7 @@ namespace NifSkope
 		// WHEN: when completed and this type of comm. is chosen
 		// "QTreeView" calls "the model" and "the model" calls this quite
 		// often - when a selection is changed, when a column is resized, etc.
-		if (f->TypeId () == BTN_REF) {
+		if (f->TypeId () == BTN_REF || f->TypeId () == BTN_PTR) {
 			NIFint *buf = (NIFint *)&(f->Value.buf[0]);
 			return ToStrRef (buf[ofs]);
 		} else
@@ -226,6 +231,8 @@ namespace NifSkope
 	void
 	NifSkopeApp::ExpandToAArr1(NifLib::TreeNode<NifLib::Field *> *node, int itemsize)
 	{
+		if (itemsize <= 0)
+			return;// complex type - i.e. dynamic size items
 		NifLib::Tag *tag = node->Value->TypeTag ();
 		if (!tag)
 			return;// unknown type
@@ -247,63 +254,72 @@ namespace NifSkope
 	}
 
 	void
+	NifSkopeApp::ExpandToAArr2(NifLib::TreeNode<NifLib::Field *> *node, int itemsize)
+	{
+		if (itemsize <= 0)
+			return;// complex type - i.e. dynamic size items
+		NifLib::Field *f = node->Value;
+		if (!f->TypeTag ())
+			return;// unknown type
+		// compute size
+		char *buf = (char *)&(f->Value.buf[0]);
+		int totalcnt = f->Value.len/itemsize;
+		int h = f->Arr1;
+		int w = totalcnt / h;
+		// create
+		for (int i = 0; i < h; i++) {
+			NifLib::TreeNode<NifLib::Field *> *n1 =
+				new NifLib::OwnerTreeNode<NifLib::Field *>;
+			n1->Parent = node;
+			NifLib::Field *nf1 = new TagOwnerField ();
+			nf1->BlockTag = f->BlockTag;
+			nf1->JField = NULL;
+			// create artificial tag
+			NifLib::Tag *tag = new NifLib::Tag;
+			tag->TypeTag = f->TypeTag ();
+			tag->NLType = tag->TypeTag->NLType;
+			NifLib::Attr *aname = new NifLib::Attr (*f->Tag->AttrById (ANAME));
+			NifLib::Attr *atype = new NifLib::Attr (*f->Tag->AttrById (ATYPE));
+			NifLib::Attr *aarr1 = new NifLib::Attr (AARR1);
+			std::stringstream conv;
+			conv << w;
+			std::string asstr = conv.str ();
+			aarr1->Value.CopyFrom (asstr.c_str (), asstr.length ());
+			tag->Attr.Add (aname);
+			tag->Attr.Add (atype);
+			tag->Attr.Add (aarr1);
+			nf1->Tag = tag;
+			// copy portion
+			nf1->Value.CopyFrom (&(buf[i*w]), itemsize*w);
+			n1->Value = nf1;
+			node->Nodes.Add (n1);
+			n1->Index = node->Nodes.Count () - 1;
+		}
+	}
+
+	void
 	NifSkopeApp::ExpandNode(NifLib::TreeNode<NifLib::Field *> *node)
 	{
 		if (node->Nodes.Count () > 0)
 			return;// nothing to expand
 		NifLib::Field *f = node->Value;
 		if (f->IsArray1D () && !f->IsArrayJ () && !f->IsCharArray ()) {// AARR1
-			if (f->FixedSize () > 0)
-				ExpandToAArr1 (node, f->FixedSize ());
+			ExpandToAArr1 (node, f->FixedSize ());
 		} else
+		if (f->IsArray2D () && !f->IsArrayJ () && !f->IsCharArray ()) {// AARR2
+			ExpandToAArr2 (node, f->FixedSize ());
+ 		} else
 		if (f->IsArray2D () && f->IsArrayJ () && !f->IsCharArray ()) {// AARR2 J
-/*#define BTN_BYTE 1
-#define BTN_UINT 2
-#define BTN_USHORT 3
-#define BTN_INT 4
-#define BTN_SHORT 5*/
-			if (f->FixedSize () <= 0)
-				return;
-			char *buf = (char *)&(f->Value.buf[0]);
-			int itemsize = f->FixedSize ();
-			//int cnt = f->Value.len/f-FixedSize ();
-			if (f->JField->TypeId () == BTN_USHORT) {
-				NIFushort *lengths = (NIFushort *)&(f->JField->Value.buf[0]);
-				int cnt = f->JField->Value.len / f->JField->FixedSize ();
-				NSINFO("cnt: " << cnt)
-				int base = 0;
-				for (int i = 0; i < cnt; i++) {
-					int cnt2 = lengths[i];
-
-					NifLib::TreeNode<NifLib::Field *> *n1 =
-						new NifLib::OwnerTreeNode<NifLib::Field *>;
-					n1->Parent = node;
-					NifLib::Field *nf1 = new TagOwnerField ();
-					nf1->BlockTag = f->BlockTag;
-					nf1->JField = NULL;
-
-					nf1->Tag = new NifLib::Tag;
-					nf1->Tag->TypeTag = f->TypeTag ();
-					nf1->Tag->NLType = nf1->Tag->TypeTag->NLType;
-					NifLib::Attr *aname = new NifLib::Attr (*f->Tag->AttrById (ANAME));
-					NifLib::Attr *atype = new NifLib::Attr (*f->Tag->AttrById (ATYPE));
-					NifLib::Attr *aarr1 = new NifLib::Attr (AARR1);
-					std::stringstream conv;
-					conv << "\"" << f->JField->Name () << "\"[" << i << "]=" << cnt2;
-					std::string asstr = conv.str ();
-					aarr1->Value.CopyFrom (asstr.c_str (), asstr.length ());
-					nf1->Tag->Attr.Add (aname);
-					nf1->Tag->Attr.Add (atype);
-					nf1->Tag->Attr.Add (aarr1);
-
-					nf1->Value.CopyFrom (&(buf[base]), itemsize*cnt2);
-					n1->Value = nf1;
-					node->Nodes.Add (n1);
-					n1->Index = node->Nodes.Count () - 1;
-
-					base += (itemsize*cnt2);
-				}
-			}
+			if (f->JField->TypeId () == BTN_USHORT)
+				ExpandJ<NIFushort> (node, f->FixedSize ());
+			else if (f->JField->TypeId () == BTN_SHORT)
+				ExpandJ<NIFshort> (node, f->FixedSize ());
+			else if (f->JField->TypeId () == BTN_UINT)
+				ExpandJ<NIFuint> (node, f->FixedSize ());
+			else if (f->JField->TypeId () == BTN_INT)
+				ExpandJ<NIFint> (node, f->FixedSize ());
+			else if (f->JField->TypeId () == BTN_BYTE)
+				ExpandJ<NIFbyte> (node, f->FixedSize ());
 		}
 	}
 

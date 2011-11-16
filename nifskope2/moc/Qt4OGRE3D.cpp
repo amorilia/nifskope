@@ -108,17 +108,31 @@ rnd(int N)
 	{
 	}
 
+	inline void Wait(int seconds)
+	{
+		// TODO: not quite precise
+		QTime stopTime = QTime::currentTime ().addSecs (seconds);
+		while (QTime::currentTime () < stopTime)
+			QCoreApplication::processEvents (QEventLoop::AllEvents, 100);
+	}
+
 	Qt4OGRE3D::~Qt4OGRE3D(void)
 	{
 		ready = false;
-
-		if (mRoot)
-			delete mRoot;
-
+		if (mRoot) {
+			// If you remove "detachRenderTarget" - one "X" error.
+			// This causes a memory leak - 23 bytes, part of them are win title
+			// TODO: check that out
+			mRoot->detachRenderTarget (mWin);
+			// If you remove "destroy" - two "X" errors
+			this->destroy ();
+			mRoot->shutdown ();
+			Wait (2);// wait, because OGRE "won't", and "X" will "complain"
+      		delete mRoot;
+		}
 		// Release NS event handlers
 		if (handleNifLoaded)
 			delete handleNifLoaded;
-
 		NSINFO("~Qt4OGRE3D ()")
 	}
 
@@ -131,51 +145,79 @@ rnd(int N)
 		handleNifLoaded = new NifLoaded (this);
 		App->File.OnLoad.Subscribe (handleNifLoaded);
 
+		Ogre::String sEmpty  ("");
+		Ogre::String sLog    ("NifSkopeOgre3D.log");
+		Ogre::String sRSGL   ("RenderSystem_GL");
+		Ogre::String sRSGLn  ("OpenGL Rendering Subsystem");
+		Ogre::String sRSDX9  ("RenderSystem_Direct3D9");
+		Ogre::String sRSDX9n ("Direct3D9 Rendering Subsystem");
+		Ogre::String sScnMngr("Plugin_OctreeSceneManager");
+		Ogre::String sOptnFS ("Full Screen");
+		Ogre::String sOptnVS ("VSync");
+		Ogre::String sOptnVM ("Video Mode");
+		Ogre::String sNo     ("No");
+		Ogre::String sYes    ("Yes");
+		Ogre::String sDefVM  ("800 x 600 @ 32-bit");
+		Ogre::String sEWH    ("externalWindowHandle");
+		Ogre::String sPWH    ("parentWindowHandle");
+		Ogre::String sDP     (":");
+		Ogre::String sVsync  ("vsync");
+		Ogre::String sTrue   ("true");
+
+		// Only when "detachRenderTarget" is called for that window:
+		//  - set a name and there is a memory leak;
+		//  - set none and there is no memory leak;
+		// Wild guess: "detachRenderTarget" "forgets" to release some structure.
+		// TODO: try to find out, meanwhile stay "untitled"
+		Ogre::String sWTitle ("");
+
+		const char *sDISPLAY = "DISPLAY";
+
 		// Setup OGRE
-		mRoot = new Ogre::Root ("", "", "NifSkopeOgre3D.log");
+		mRoot = new Ogre::Root (sEmpty, sEmpty, sLog);
 #ifdef _DEBUG
-		Ogre::String ext ("_d")
+		Ogre::String ext ("_d");
 #else
 		Ogre::String ext ("");
 #endif
 #ifdef NIFSKOPE_OGRE_GL
-		mRoot->loadPlugin (Ogre::String ("RenderSystem_GL") + ext);
+		mRoot->loadPlugin (sRSGL + ext);
 #endif /* NIFSKOPE_OGRE_GL */
 #ifdef NIFSKOPE_OGRE_DX9
-		mRoot->loadPlugin (Ogre::String ("RenderSystem_Direct3D9") + ext);
+		mRoot->loadPlugin (sRSDX9 + ext);
 #endif /* NIFSKOPE_OGRE_DX9 */
-		mRoot->loadPlugin (Ogre::String ("Plugin_OctreeSceneManager") + ext);
+		mRoot->loadPlugin (sScnMngr + ext);
 		//	Select OGRE render system
 		//	TODO: choice dialog, settings load, etc.
 		Ogre::RenderSystem* rs = NULL;
 #ifdef NIFSKOPE_OGRE_GL
-		rs = mRoot->getRenderSystemByName ("OpenGL Rendering Subsystem");
-		if (!rs || rs->getName () != Ogre::String ("OpenGL Rendering Subsystem"))
+		rs = mRoot->getRenderSystemByName (sRSGLn);
+		if (!rs || rs->getName () != sRSGLn)
 			return false; // failed
 #endif /* NIFSKOPE_OGRE_GL */
 #ifdef NIFSKOPE_OGRE_DX9
-		//rs = mRoot->getRenderSystemByName("Direct3D9 Rendering Subsystem");
-		if (!rs || rs->getName () != Ogre::String ("Direct3D9 Rendering Subsystem"))
+		//rs = mRoot->getRenderSystemByName(sRSDX9n);
+		if (!rs || rs->getName () != sRSDX9n)
 			return false; // failed
 #endif /* NIFSKOPE_OGRE_DX9 */
-		rs->setConfigOption ("Full Screen", "No");
-		rs->setConfigOption ("VSync", "Yes");
-		rs->setConfigOption ("Video Mode", "800 x 600 @ 32-bit");
+		rs->setConfigOption (sOptnFS, sNo);
+		rs->setConfigOption (sOptnVS, sYes);
+		rs->setConfigOption (sOptnVM, sDefVM);
 		//	TODO: AA, AF, etc. - settings
 		mRoot->setRenderSystem (rs);
 		//	Setup Qt4 Widget and OGRE working environment*
 		Ogre::NameValuePairList misc;
 #ifdef NIFSKOPE_WIN
-		misc["externalWindowHandle"] = Ogre::StringConverter::toString ((long)winId ());
+		misc[sEWH] = Ogre::StringConverter::toString ((long)winId ());
 #else
 #ifdef NIFSKOPE_X
-		Display* dpy = XOpenDisplay (getenv ("DISPLAY"));
+		Display* dpy = XOpenDisplay (getenv (sDISPLAY));
     	int screen = DefaultScreen (dpy);
 		QWidget *q_parent = dynamic_cast<QWidget *>(parent ());
 		if (q_parent) {
-			misc["parentWindowHandle"] = 
-				Ogre::StringConverter::toString ((unsigned long)(dpy)) + ":" +
-				Ogre::StringConverter::toString ((unsigned int)(screen)) + ":" +
+			misc[sPWH] = 
+				Ogre::StringConverter::toString ((unsigned long)(dpy)) + sDP +
+				Ogre::StringConverter::toString ((unsigned int)(screen)) + sDP +
 				Ogre::StringConverter::toString ((unsigned long)q_parent->winId ());
 		} else
 			return false;
@@ -184,22 +226,22 @@ rnd(int N)
 #error No supported windowing system found
 #endif /* NIFSKOPE_X */
 #endif /* NIFSKOPE_WIN */
-		misc["vsync"] = "true";// it ignores the above when "createRenderWindow"
-		mWin = mRoot->initialise (false, "Nifskope 2");
+		misc[sVsync] = sTrue;// it ignores the above when "createRenderWindow"
+		mWin = mRoot->initialise (false, sWTitle);
 		mWin = mRoot->createRenderWindow (
-			"Nifskope 2", width (), height (), false, &misc);
+			sWTitle, width (), height (), false, &misc);
     	mWin->setActive (true);
     	mWin->resize (width (), height ());
     	mWin->setVisible (true);
 #ifdef NIFSKOPE_X
     	//	Get the ID of "OGRE" render window
     	WId window_id;
-    	mWin->getCustomAttribute ("WINDOW", &window_id);
+    	mWin->getCustomAttribute (Ogre::String("WINDOW"), &window_id);
     	//	Take over the "OGRE" created window.
     	QWidget::create (window_id); // Qt specific way*
-    	resizeEvent (NULL);
-    	setAttribute (Qt::WA_PaintOnScreen);
-    	setAttribute (Qt::WA_OpaquePaintEvent);
+		setAttribute (Qt::WA_PaintOnScreen, true);
+		setAttribute (Qt::WA_NoSystemBackground, true);
+		setAttribute (Qt::WA_NoBackground, true);
 #endif /* NIFSKOPE_X */
 		//	Setup the scene*
 		mScn = mRoot->createSceneManager ("OctreeSceneManager", "DefaultSceneManager");
@@ -216,7 +258,9 @@ rnd(int N)
 		mScn->setAmbientLight (Ogre::ColourValue (0.1, 0.1, 0.1));// slight global
 		Ogre::Light* l = mScn->createLight ("lightMain");
 		l->setPosition (100, 100, 100);
-
+		/*delete mRoot;
+		mRoot = NULL;
+		return true;*/
 		QTimer *timer = new QTimer(this);
 		timer->setSingleShot (false);
  		connect(timer, SIGNAL(timeout()), this, SLOT(Render()));

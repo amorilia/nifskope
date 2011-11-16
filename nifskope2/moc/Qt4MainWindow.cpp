@@ -575,10 +575,10 @@ namespace NifSkopeQt4
 
 	Qt4MainWindow::~Qt4MainWindow()
 	{
-		NSINFO("~Qt4MainWindow ()")
 		if (mdlBlockDetails)
 			delete mdlBlockDetails;
 		if (mdlBlockList)
 			delete mdlBlockList;
+		NSINFO("~Qt4MainWindow ()")
 	}
 }
