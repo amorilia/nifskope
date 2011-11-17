@@ -89,6 +89,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		f->Tag = field;
 		f->Tag->NLType = type;// take care for dynamic TBASIC BTN_BOOL
 		f->Arr1 = i1;
+		//f->TTag = TEMPLATE;
 		if (buf && bl > 0)
 			f->Value.CopyFrom (buf, bl);
 		flist.Add (f);
@@ -912,6 +913,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 			i2j = NULL;
 			// AARR1
 			// can be const uint, field, expression
+			bool arr1 = field->AttrById (AARR1) != NULL;
 			i1 = InitArr (field->AttrById (AARR1));// 1d size
 			if (i1 <= 0)
 				continue;// nothing to read
@@ -922,13 +924,15 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				continue;// nothing to read
 			// TODO:AARR3
 			// can be const
-			NIFint izise = i1 * i2;// fixed array size
+			NIFint isize = i1 * i2;// fixed array size
 
 			// type="TEMPLATE"
+			bool templ = false;
 			if (ftype->Value.Equals ("TEMPLATE", 8)) {
-				if (TEMPLATE)
+				if (TEMPLATE) {
 					ftype = TEMPLATE;
-				else {
+					templ = true;
+				} else {
 					ERR("R: uknown TEMPLATE")
 					return 0;
 				}
@@ -936,6 +940,8 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 
 			NifLib::Tag *tt = GetBasicType (ftype);
 			if (tt) {// its a TBASIC type
+				if (templ)
+					field = tt;
 #define READJBASIC(BT, SZ, TYPE)\
 {\
 	BT *lengths = (BT *)&(i2j->Value.buf[0]);\
@@ -995,15 +1001,15 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 					if (i2j)
 						READJBASICALL(tt->FixedSize, READJBASIC, btypeid)
 					else
-						READ(NIFbyte, tt->FixedSize * izise, Byte, tt->FixedSize * izise,
+						READ(NIFbyte, tt->FixedSize * isize, Byte, tt->FixedSize * isize,
 							btypeid)
 				} else
 				if (NIFT(btypeid, BTN_BOOL)) {
 					if (nVersion > 0x04010001)
-						READ(NIFbyte, 1*izise, Byte, izise,
+						READ(NIFbyte, 1*isize, Byte, isize,
 							((BTN_BOOL << 8) | BtnType (BTN_BYTE)))
 					else
-						READ(NIFint, 4*izise, Int, izise,
+						READ(NIFint, 4*isize, Int, isize,
 							((BTN_BOOL << 8) | BtnType (BTN_INT)))
 				} else
 				if (NIFT(btypeid, BTN_HEADERSTRING) ||
@@ -1032,6 +1038,8 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 					ERR("R: Uknown tag")
 					return 0;// can not continue - its sequential file format
 				}
+				if (templ)
+					field = tt;
 				NifLib::TreeNode<NifLib::Field *> *newnode = n;
 				if (tt->FixedSize <= 0 && !i2j)
 					newnode = AddNode (field, NULL, n);
@@ -1039,16 +1047,16 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 					if (tt->FixedSize > 0) {
 						NifLib::TreeNode<NifLib::Field *> *nn = n;
 						n = newnode;
-						READ(NIFbyte, tt->FixedSize * izise, Byte, tt->FixedSize * izise,
+						READ(NIFbyte, tt->FixedSize * isize, Byte, tt->FixedSize * isize,
 							NIFT_T)
 						n = nn;
 					} else
-						if (!field->AttrById (AARR1)) {//
+						if (!arr1) {// a struct
 							if (!ReadObject (s, tt, newnode))
 								return 0;
 						} else
-						for (int idx = 0; idx < izise; idx++) {// 1d/2d/3d struct array
-							if (!ReadObject (s, tt, AddNode (field, NULL, newnode)))
+						for (int idx = 0; idx < isize; idx++) {// 1d/2d/3d struct array
+							if (!ReadObject (s, tt, AddNode (tt, NULL, newnode)))
 								return 0;
 						}
 				}

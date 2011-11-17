@@ -45,9 +45,11 @@ namespace NifSkopeQt4
 {
 	class Qt4MainWindow: public QMainWindow
 	{
+		bool optSingleFile;
 		void createMainMenu();
 		void createDockWidgets();
 		void createToolbars();
+		void Reset();
 		QAction *aLoad;
 		QAction *aSaveAs;
 
@@ -78,18 +80,18 @@ namespace NifSkopeQt4
 		NifSkope::NifSkopeApp *App;// TODO: init by Qt4App because of NewWindow() only
 		~Qt4MainWindow();
 	protected slots:
-		void stvBLselectionChanged(
+		void handleBLselChanged(
 			const QItemSelection &selected,
 			const QItemSelection &deselected);
 
 		/*
 		*	Load a .nif file
 		*/
-		void sFileLoad();
+		void handleFileLoad();
 
-		void sSelectFont();
+		void handleSelectFont();
 
-		void sOpenURL();
+		void handleOpenURL();
 	public slots:
 		void About();
 	};

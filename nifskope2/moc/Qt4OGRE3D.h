@@ -84,7 +84,6 @@ namespace NifSkope
 		Ogre::Viewport *mVp;
 		Ogre::SceneNode *progress;
 		Ogre::Real ar, br, cr;
-		Ogre::NameValuePairList *misc;
 	};
 }
 

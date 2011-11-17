@@ -90,7 +90,7 @@ namespace NifSkopeQt4
 		mFile->addAction (aResFiles);
 		mFile->addSeparator();
 		mFile->addAction (aQuit);
-		connect(aLoad, SIGNAL(triggered()), this, SLOT(sFileLoad()));
+		connect(aLoad, SIGNAL(triggered()), this, SLOT(handleFileLoad()));
 
 		// View
 		createDockWidgets ();
@@ -143,7 +143,7 @@ namespace NifSkopeQt4
 		mBlockDetails->addAction (aRCondition);
 		mView->addSeparator ();
 		QAction *aSelectFont = new QAction (tr ("Select Font ..."), this);
-		connect(aSelectFont, SIGNAL(triggered()), this, SLOT(sSelectFont()));
+		connect(aSelectFont, SIGNAL(triggered()), this, SLOT(handleSelectFont()));
 		mView->addAction (aSelectFont);
 
 		// Render - the actions are created by createToolbars ()
@@ -261,19 +261,19 @@ namespace NifSkopeQt4
 			new QAction (tr ("NifSkope Documentation && &Tutorials"), this);
 		aHelpWebsite->setData (
 			QUrl ("http://niftools.sourceforge.net/wiki/index.php/NifSkope"));
-		connect(aHelpWebsite, SIGNAL(triggered()), this, SLOT(sOpenURL()));
+		connect(aHelpWebsite, SIGNAL(triggered()), this, SLOT(handleOpenURL()));
 		QAction *aHelpForum =
 			new QAction (tr ("NifSkope Help && Bug Report &Forum"), this);
 		aHelpForum->setData (
 			QUrl ("http://niftools.sourceforge.net/forum/viewforum.php?f=24"));
-		connect(aHelpForum, SIGNAL(triggered()), this, SLOT(sOpenURL()));
+		connect(aHelpForum, SIGNAL(triggered()), this, SLOT(handleOpenURL()));
 		QAction *aNifToolsWebsite = new QAction (tr ("NifTools &Wiki"), this);
 		aNifToolsWebsite->setData (QUrl ("http://niftools.sourceforge.net"));
-		connect(aNifToolsWebsite, SIGNAL(triggered()), this, SLOT(sOpenURL()));
+		connect(aNifToolsWebsite, SIGNAL(triggered()), this, SLOT(handleOpenURL()));
 		QAction *aNifToolsDownloads = new QAction (tr ("NifTools &Downloads"), this);
 		aNifToolsDownloads->setData (
 			QUrl ("http://sourceforge.net/project/showfiles.php?group_id=149157"));
-		connect(aNifToolsDownloads, SIGNAL(triggered()), this, SLOT(sOpenURL()));
+		connect(aNifToolsDownloads, SIGNAL(triggered()), this, SLOT(handleOpenURL()));
 		QAction *aNifSkope = new QAction (tr ("About &NifSkope"), this);
 		connect(aNifSkope, SIGNAL(triggered()), this, SLOT(About()));
 		QAction *aAboutQt = new QAction (tr ("About &Qt"), this);
@@ -443,7 +443,28 @@ namespace NifSkopeQt4
 	}
 
 	void
-	Qt4MainWindow::sFileLoad()
+	Qt4MainWindow::Reset()
+	{
+		if (mdlBlockList) {
+			QItemSelectionModel *sm = tvBlockList->selectionModel ();
+			disconnect (sm, SIGNAL(selectionChanged(
+					const QItemSelection &, const QItemSelection &)),
+				this, SLOT(handleBLselChanged(
+					const QItemSelection &, const QItemSelection &)));
+			tvBlockList->setModel (NULL);
+			delete mdlBlockList;
+			mdlBlockList = NULL;
+		}
+
+		if (mdlBlockDetails) {
+			tvBlockDetails->setModel (NULL);
+			delete mdlBlockDetails;
+			mdlBlockDetails = NULL;
+		}
+	}
+
+	void
+	Qt4MainWindow::handleFileLoad()
 	{
 		// UI part of the handler
 		QString fileName = QFileDialog::getOpenFileName (
@@ -456,28 +477,36 @@ namespace NifSkopeQt4
 		App->File.Load ();
 		// UI part of the handler
 		//  Display it in "Block List" "As Blocks"
+		// one .nif file loaded at a time
+		if (optSingleFile)
+			Reset ();
+		else {
+			QMessageBox::information (
+				this, "Info", "Multiple file load is N/A yet");
+			return;
+		}
 		mdlBlockList = new QNifBlockModel (this);
 		tvBlockList->setModel (mdlBlockList);
 		tvBlockList->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
 		tvBlockList->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
 		tvBlockList->header ()->setResizeMode (2, QHeaderView::Interactive);
 		QItemSelectionModel *sm = tvBlockList->selectionModel ();
-		connect(
-			sm,
-			SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-			this,
-			SLOT(stvBLselectionChanged(const QItemSelection &, const QItemSelection &)));
-
+		connect (sm, SIGNAL(selectionChanged(
+					const QItemSelection &, const QItemSelection &)),
+				this, SLOT(handleBLselChanged(
+					const QItemSelection &, const QItemSelection &)));
 		// Block Details
 		mdlBlockDetails = new QNifModel (this);
  		tvBlockDetails->setModel (mdlBlockDetails);
 		//tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
+		// the above aint working all the time - TODO: figure out when and why
 		tvBlockDetails->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
 		tvBlockDetails->header ()->setResizeMode (2, QHeaderView::ResizeToContents);
+		//tvBlockDetails->expandAll ();
 	}
 
 	void
-	Qt4MainWindow::stvBLselectionChanged(
+	Qt4MainWindow::handleBLselChanged(
 		const QItemSelection &selected,
 		const QItemSelection &deselected)
 	{
@@ -500,7 +529,7 @@ namespace NifSkopeQt4
 	}
 
 	void
-	Qt4MainWindow::sSelectFont()
+	Qt4MainWindow::handleSelectFont()
 	{
 		bool ok;
 		QFont fnt = QFontDialog::getFont (&ok, this->font (), this);
@@ -510,7 +539,7 @@ namespace NifSkopeQt4
 	}
 
 	void
-	Qt4MainWindow::sOpenURL()
+	Qt4MainWindow::handleOpenURL()
 	{
 		if (!sender ())
 			return;
@@ -563,7 +592,7 @@ namespace NifSkopeQt4
 
 	Qt4MainWindow::Qt4MainWindow()
 		: QMainWindow()
-		,mdlBlockList(0), mdlBlockDetails(0)
+		,optSingleFile(1), mdlBlockList(0), mdlBlockDetails(0)
 	{
 		resize (800, 600);
 		// f.InitialPosition = DesktopCenter

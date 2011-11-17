@@ -520,6 +520,7 @@ rnd(int N)
 	void
 	Qt4OGRE3D::LoadNif(IEvent *sender)
 	{
+		return;
 		// TODO: to settings
 		std::string texbase ("/mnt/workspace/rain/c/nif/test/nfiskope_bin/data/");
 		Ogre::ResourceGroupManager::getSingleton ().addResourceLocation (

@@ -71,7 +71,7 @@ namespace NifSkopeQt4
 		app.setOrganizationName (NS_ORG);
 		app.setApplicationName (NS_NAME);
 		app.setOrganizationDomain (NS_URL);
-		//LoadStyle (app); - "merge" in the current user theme, don't "enforce"
+		//LoadStyle (app); - TODO: "merge" in the current user theme, don't "enforce"
 		NifSkopeQt4::Qt4MainWindow mainWindow;
 		mainWindow.App = this;// static list of commands
 		NifSkope::Qt4OGRE3D *centralWidget = new NifSkope::Qt4OGRE3D;

@@ -80,10 +80,10 @@ namespace NifSkopeQt4
 				else
 					return QVariant (QString ("[2D ARRAY]"));
 			} else {
-				if (f->Value.len > 64)
+				/*if (f->Value.len > 64)
 					return QVariant (QString ("[LARGE STRUCTURE]"));
-				else
-					return QVariant (QString (win->App->ToStr (f).c_str ()));
+				else*/
+				return QVariant (QString (win->App->ToStr (f, 0, node).c_str ()));
 			}
 		}
 	}

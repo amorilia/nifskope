@@ -203,7 +203,8 @@ namespace NifSkope
 	}
 
 	std::string
-	NifSkopeApp::ToStr(NifLib::Field *f, int ofs)
+	NifSkopeApp::ToStr(
+		NifLib::Field *f, int ofs, NifLib::TreeNode<NifLib::Field *> *node)
 	{
 		// TODO: optimizie: to method pointers
 		// WHEN: when completed and this type of comm. is chosen
@@ -223,9 +224,16 @@ namespace NifSkope
 		} else
 		if (f->TypeId () == NIFT_T && f->FixedSize () > 0) {
 			return ToStrFixedSizeStruct (f);
-		}
-		else
+		} else {
+			// Try returning first-found "Value" field if "node" is provided.
+			// "SizedString" and the likes display.
+			if (node) {
+				NifLib::Field *tmp = ByName ("Value", node);
+				if (tmp)
+					f = tmp;
+			}
 			return f->AsString (File.NifFile);
+		}
 	}
 
 	void

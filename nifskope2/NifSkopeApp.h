@@ -48,7 +48,7 @@ namespace NifSkope
 {
 	/*
 	*	Same as Field, just owns the "Tag" field.
-	*	Used for array dimensions > 1 where an artifical tag is needed
+	*	Used for array dimensions > 1 where an artificial tag is needed
 	*	for correct "display".
 	*/
 	class TagOwnerField: public NifLib::Field
@@ -116,7 +116,10 @@ namespace NifSkope
 		/*
 		*	Returns string representation of a field
 		*/
-		std::string ToStr(NifLib::Field *f, int ofs = 0);
+		std::string ToStr(
+			NifLib::Field *f,
+			int ofs = 0,
+			NifLib::TreeNode<NifLib::Field *> *node = NULL);
 
 		/*
 		*	Converts an ARR1 non-J field into a list of fields
