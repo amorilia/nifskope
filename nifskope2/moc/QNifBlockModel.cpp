@@ -35,7 +35,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifSkopeQt4
 {
-#define TREEITEM NifLib::TreeNode<NifLib::Field *>
 	QNifBlockModel::QNifBlockModel(Qt4MainWindow *data, QObject *parent)
 		: QNifModel (data, parent)
 	{
@@ -50,7 +49,7 @@ namespace NifSkopeQt4
 	{
 		if (parent.column () > 0)
 			return 0;
-		TREEITEM *rootItem = win->App->AsTree ();
+		NifLib::Node *rootItem = win->App->AsTree ();
 		if (!parent.isValid ())
 			return rootItem->Nodes.Count ();
 		else
@@ -60,5 +59,4 @@ namespace NifSkopeQt4
 	QNifBlockModel::~QNifBlockModel()
 	{
 	}
-#undef TREEITEM
 }

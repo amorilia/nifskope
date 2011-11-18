@@ -66,31 +66,41 @@ namespace NifSkope
 	*/
 	class NifSkopeApp
 	{
-		// .nif views
-		// as a list of blocks
-		NifLib::List< NifLib::List<NifLib::Field *> *> vBlock;
-		// "args" for the walker actions
-		// all walker related fields are prefixed with "w"
+		// .nif views - tree
+		NifLib::Node nifview;
+
+		// "args" for the walker actions.
+		// All "walker"-related fields are prefixed with "w".
 		NifLib::Field *wField;
 		std::string wName;
 		void NifTreePrefixWalk(
-			NifLib::TreeNode<NifLib::Field *> *node,
-			int (NifSkopeApp::*actn) (NifLib::TreeNode<NifLib::Field *> *node));
-		int wFindFieldByName(NifLib::TreeNode<NifLib::Field *> *node);
+			NifLib::Node *node,
+			int (NifSkopeApp::*actn) (NifLib::Node *node),
+			int (NifSkopeApp::*filter)(NifLib::Node *node) = NULL);
+		int wFilterArrays(NifLib::Node *node);
+		int wFindFieldByName(NifLib::Node *node);
 	public:
 		NifSkopeApp();
 
-		/* 
-		*	Currently loaded .nif file grouped by blocks.
-		*	Returns NULL if there is no currently loaded .nif file.
+		/*
+		*	The file tree as produced by NifLib
 		*/
-		//NifLib::List< NifLib::List<NifLib::Field *> *> *AsBlocks();
-		NifLib::TreeNode<NifLib::Field *> *AsTree();
+		NifLib::Node *AsTree();
 
-		NifLib::Field *ByName(std::string name, NifLib::TreeNode<NifLib::Field *> *node);
-		NifLib::Field *ByName(std::string name, int index);
-		std::string GetRootNodeValue(int idx);
-		std::string GetRootNodeName (int idx);
+		NifLib::Node *GetFooter();
+
+		/*
+		*	The nif objects tree - a logical hierarchy defined
+		*	by the values of the nif object fields.
+		*/
+		NifLib::Node *AsNifTree();
+
+		NifLib::Field *ByName(std::string name, NifLib::Node *node = NULL);
+
+		std::string	GetNodeValue(NifLib::Node *node);
+
+		std::string GetNodeName(NifLib::Node *node);
+
 		bool ValidRootNodeIdx(int idx);
 
 		/*
@@ -116,10 +126,7 @@ namespace NifSkope
 		/*
 		*	Returns string representation of a field
 		*/
-		std::string ToStr(
-			NifLib::Field *f,
-			int ofs = 0,
-			NifLib::TreeNode<NifLib::Field *> *node = NULL);
+		std::string ToStr(NifLib::Field *f, NifLib::Node *node = NULL);
 
 		/*
 		*	Converts an ARR1 non-J field into a list of fields
@@ -131,7 +138,7 @@ namespace NifSkope
 		*	One can edit the list add/remove, or the values and
 		*	then cancel or apply the changes for example.
 		*/
-		void ExpandToAArr1(NifLib::TreeNode<NifLib::Field *> *node, int itemsize);
+		void ExpandToAArr1(NifLib::Node *node, int itemsize);
 
 		/*
 		*	Converts an ARR2 non-J field into a list of fields suitable for
@@ -140,7 +147,7 @@ namespace NifSkope
 		*	then cancel or apply the changes for example. I.e. it does
 		*	not destroy the src node data.
 		*/
-		void ExpandToAArr2(NifLib::TreeNode<NifLib::Field *> *node, int itemsize);
+		void ExpandToAArr2(NifLib::Node *node, int itemsize);
 
 		/*
 		*	Converts an ARR2 J field into a list of fields suitable for
@@ -149,8 +156,7 @@ namespace NifSkope
 		*	then cancel or apply the changes for example. I.e. it does
 		*	not destroy the src nodes data.
 		*/
-		template <typename T> void ExpandJ(
-			NifLib::TreeNode<NifLib::Field *> *node, int itemsize)
+		template <typename T> void ExpandJ(NifLib::Node *node, int itemsize)
 		{
 			if (itemsize <= 0)
 				return;
@@ -163,8 +169,7 @@ namespace NifSkope
 			int base = 0;
 			for (int i = 0; i < h; i++) {
 				int w = lengths[i];
-				NifLib::TreeNode<NifLib::Field *> *n1 =
-					new NifLib::OwnerTreeNode<NifLib::Field *>;
+				NifLib::Node *n1 = new NifLib::OwnerNode;
 				n1->Parent = node;
 				NifLib::Field *nf1 = new TagOwnerField ();
 				nf1->BlockTag = f->BlockTag;
@@ -187,7 +192,6 @@ namespace NifSkope
 				nf1->Value.CopyFrom (&(buf[base]), itemsize*w);
 				n1->Value = nf1;
 				node->Nodes.Add (n1);
-				n1->Index = node->Nodes.Count () - 1;
 				base += (itemsize*w);
 			}
 		}
@@ -197,7 +201,7 @@ namespace NifSkope
 		*	Supports fixed item size: AARR1, AARR2, AARR2 J
 		*	TODO: AARR3
 		*/
-		void ExpandNode(NifLib::TreeNode<NifLib::Field *> *node);
+		void ExpandNode(NifLib::Node *node);
 
 		// arguments
 		bool SanitizeBeforeSave;

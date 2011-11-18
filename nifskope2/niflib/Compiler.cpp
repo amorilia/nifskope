@@ -104,16 +104,13 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		return f;
 	}
 
-	NifLib::TreeNode<NifLib::Field *> *
-	Compiler::AddNode(
-			NifLib::Tag *t,
-			NifLib::Field *f,
-			NifLib::TreeNode<NifLib::Field *> *pnode)
+	NifLib::Node *
+	Compiler::AddNode(NifLib::Tag *t, NifLib::Field *f, NifLib::Node *pnode)
 	{
 		A(1)
-		NifLib::TreeNode<NifLib::Field *> *node = NULL;
+		NifLib::Node *node = NULL;
 		if (!f) {
-			node = new NifLib::OwnerTreeNode<NifLib::Field *>;
+			node = new NifLib::OwnerNode;
 			f = new NifLib::Field ();
 			f->BlockTag = blockTag;
 			f->JField = i2j;
@@ -121,11 +118,10 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 			f->Arr1 = i1;
 			f->Value.CopyFrom ("", 1);
 		} else
-			node = new NifLib::TreeNode<NifLib::Field *>;
+			node = new NifLib::Node;
 		node->Parent = pnode;
 		node->Value = f;
 		pnode->Nodes.Add (node);
-		node->Index = pnode->Nodes.Count () - 1;
 		B(1)
 		return node;
 	}
@@ -413,27 +409,27 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 							break;
 						}
 				// evaluate
-				NIFuint ritem;
+				NIFint ritem;
 				if (rt == EVAL_TYPE_VERSION) {
 					//INFO("ER: EVAL_TYPE_VERSION")
 					ritem = HeaderString2Version (rbuf, rlen);
 				} else if (rt == EVAL_TYPE_UINT) {
 					//INFO("ER: EVAL_TYPE_UINT")
-					ritem = str2<NIFuint> (std::string (rbuf, rlen));
+					ritem = str2<NIFint> (std::string (rbuf, rlen));
 				}
-				NIFuint litem;
+				NIFint litem;
 				if (lt == EVAL_TYPE_VERSION) {
 					//INFO("E: EVAL_TYPE_VERSION")
 					litem = HeaderString2Version (lbuf, llen);
 				} else if (lt == EVAL_TYPE_UINT) {
 					//INFO("E: EVAL_TYPE_UINT")
-					litem = str2<NIFuint> (std::string (lbuf, llen));
+					litem = str2<NIFint> (std::string (lbuf, llen));
 				}
 				/*if (lf) INFO("E: L: [" << "f," << lt << "]")
 				else INFO("E: L: [" << " ," << lt << "]")
 				if (rf) INFO("E: R: [" << "f," << rt << "]")
 				else INFO("E: R: [" << " ," << rt << "]")*/
-				NIFuint tmp = 0;
+				NIFint tmp = 0;
 				if (lt != EVAL_TYPE_UNKNOWN && rt != EVAL_TYPE_UNKNOWN) {
 					if (op == EVAL_OP_EQU)
 						tmp = litem == ritem;
@@ -466,21 +462,21 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 							//INFO ("lf: " << StreamBlockB (lf->Value.buf, lf->Value.len,
 							//	lf->Value.len + 1) << ", ritem: " << ritem)
 							if (op == EVAL_OP_EQU)
-								tmp = lf->AsNIFuint () == ritem;
+								tmp = lf->AsNIFint () == ritem;
 							else if (op == EVAL_OP_GTEQU)
-								tmp = lf->AsNIFuint () >= ritem;
+								tmp = lf->AsNIFint () >= ritem;
 							else if (op == EVAL_OP_GT)
-								tmp = lf->AsNIFuint () > ritem;
+								tmp = lf->AsNIFint () > ritem;
 							else if (op == EVAL_OP_LTEQU)
-								tmp = lf->AsNIFuint () <= ritem;
+								tmp = lf->AsNIFint () <= ritem;
 							else if (op == EVAL_OP_LT)
-								tmp = lf->AsNIFuint () < ritem;
+								tmp = lf->AsNIFint () < ritem;
 							else if (op == EVAL_OP_AND)
-								tmp = lf->AsNIFuint () & ritem;
+								tmp = lf->AsNIFint () & ritem;
 							else if (op == EVAL_OP_NOTEQU)
-								tmp = lf->AsNIFuint () != ritem;
+								tmp = lf->AsNIFint () != ritem;
 							else if (op == EVAL_OP_SUB)
-								tmp = lf->AsNIFuint () - ritem;
+								tmp = lf->AsNIFint () - ritem;
 							else {
 								INFO("E : EVAL_OP not supported yet: " << op)
 							}
@@ -510,8 +506,8 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				//INFO("E: field in brackets, no op: " << std::string (&buf[pos], length))
 				NifLib::Field *f = FFBackwards (&buf[pos], length);
 				if (f) {
-					//INFO("E: field found: " << f->AsNIFuint ())
-					NIFuint val = f->AsNIFuint ();
+					//INFO("E: field found: " << f->AsNIFint ())
+					NIFint val = f->AsNIFint ();
 					l2.Insert ((2 * (i + 1)), 5);
 					l2.Insert ((2 * (i + 1))+1, val);
 				}// else INFO("E: field not found")
@@ -523,7 +519,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				FFBackwards(buf, len);
 			if (v) {
 				B(2)
-				return (int)v->AsNIFuint ();
+				return v->AsNIFint ();
 			} else {
 				//INFO("E: *** can't evaluate that")
 				B(2)
@@ -808,7 +804,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 					if (v->Tag->AttrById (AARR1))
 						i2j = v;// jagged - v is an array field
 					else
-						result = v->AsNIFuint ();// can be 0
+						result = v->AsNIFint ();// can be 0
 				}
 				else// an expression
 					result = Evaluate (arr);// TODO: error handling
@@ -819,8 +815,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 	}
 
 	int
-	Compiler::ReadObject(
-		NifStream &s, NifLib::Tag *t, NifLib::TreeNode<NifLib::Field *> *n)
+	Compiler::ReadObject(NifStream &s, NifLib::Tag *t, NifLib::Node *n)
 	{
 		AC(9)
 		if (!t) {
@@ -1040,12 +1035,12 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				}
 				if (templ)
 					field = tt;
-				NifLib::TreeNode<NifLib::Field *> *newnode = n;
+				NifLib::Node *newnode = n;
 				if (tt->FixedSize <= 0 && !i2j)
 					newnode = AddNode (field, NULL, n);
 				if (!i2j) {
 					if (tt->FixedSize > 0) {
-						NifLib::TreeNode<NifLib::Field *> *nn = n;
+						NifLib::Node *nn = n;
 						n = newnode;
 						READ(NIFbyte, tt->FixedSize * isize, Byte, tt->FixedSize * isize,
 							NIFT_T)
@@ -1118,7 +1113,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		//
 		fUserVersion = FFBackwards ("User Version", 12);
 		if (fUserVersion)
-			nUserVersion = fUserVersion->AsNIFuint ();
+			nUserVersion = fUserVersion->AsNIFint ();
 		fVersion = FFBackwards ("Version", 7);
 		if (!fVersion) {
 			ERR("R: Version is missing from header")
@@ -1126,7 +1121,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		}
 		fUserVersion2 = FFBackwards ("User Version 2", 14);
 		if (fUserVersion2)
-			nUserVersion2 = fUserVersion2->AsNIFuint ();
+			nUserVersion2 = fUserVersion2->AsNIFint ();
 		INFO ("v: "
 			<< HEX(8) << nVersion << DEC << ", uv: "
 			<< nUserVersion << ", uv2: " << nUserVersion2)
@@ -1136,7 +1131,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 			ERR("R: \"Num Blocks\" lookup failed")
 			return 0;
 		}
-		int num_blocks = (int)f->AsNIFuint ();
+		int num_blocks = f->AsNIFint ();
 		INFO("Num Blocks: " << num_blocks)
 			if (nVersion < 0x030300D) {
 			INFO ("Version not supported yet: " << HEX(8) << nVersion << DEC)
@@ -1187,7 +1182,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				ERR("R: \"Num Block Types\" lookup failed")
 				return 0;
 			}
-			int num_block_types = (int)f->AsNIFuint ();
+			int num_block_types = f->AsNIFint ();
 			//INFO("Num Block Types: " << num_block_types)
 			//int btIdx = FFBackwardsIdx (ANAME, "Block Types", 11);
 			int btIdx = FFBackwardsIdx (ANAME, "Num Block Types", 15);
@@ -1560,7 +1555,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 	}
 
 	void
-	Compiler::PrintNode(NifLib::TreeNode<NifLib::Field *> *node, std::string ofs)
+	Compiler::PrintNode(NifLib::Node *node, std::string ofs)
 	{
 		static int bIdx = -1;
 		for (int i = 0; i < node->Nodes.Count (); i++) {
@@ -1617,10 +1612,9 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 			return std::string ("NULL");
 	}
 
-	NifLib::TreeNode<NifLib::Field *> *Compiler::AsTree()
+	NifLib::Node *Compiler::AsTree()
 	{
 		return &ftree;
 	}
-
 #undef STDSTR
 }

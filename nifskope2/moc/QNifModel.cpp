@@ -33,22 +33,29 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "QNifModel.h"
 #include "Qt4MainWindow.h"
 
+#include "nifskope.h"
+
 namespace NifSkopeQt4
 {
-#define TREEITEM NifLib::TreeNode<NifLib::Field *>
-	QVariant QNifModel::CId(NifLib::TreeNode<NifLib::Field *> *node)
+
+	// TODO: handle NULL
+
+	QVariant QNifModel::CId(NifLib::Node *node)
 	{
-		return QVariant (QString ("%0").arg (node->Index));
+		if (dummy->find (node) != dummy->end ())
+			return QVariant (QString ("%0").arg ((*dummy)[node]));
+		else
+			return QVariant (QString ("-1"));
 	}
 
 	QVariant
-	QNifModel::CName(NifLib::TreeNode<NifLib::Field *> *node)
+	QNifModel::CName(NifLib::Node *node)
 	{
 		return QVariant (QString (node->Value->Name ().c_str ()));
 	}
 
 	QVariant
-	QNifModel::CType(NifLib::TreeNode<NifLib::Field *> *node)
+	QNifModel::CType(NifLib::Node *node)
 	{
 		if (node->Parent == win->App->AsTree ())
 			return QVariant (QString ("NiBlock"));
@@ -57,75 +64,65 @@ namespace NifSkopeQt4
 	}
 
 	QVariant
-	QNifModel::CValue(NifLib::TreeNode<NifLib::Field *> *node)
+	QNifModel::CValue(NifLib::Node *node)
 	{
 		if (node->Parent == win->App->AsTree ())
 			return QVariant (QString (
-				win->App->GetRootNodeValue (node->Index).c_str ()));
-		else {
-			NifLib::Field *f = node->Value;
-			if (f->IsArray1D ()) {
-				if (f->IsArrayJ ())
-					return QVariant (QString ("[1D JAGGED ARRAY]"));
-				else {
-					if (f->IsCharArray ())
-						return QVariant (QString (win->App->ToStr (f).c_str ()));
-					else
-						return QVariant (QString ("[1D ARRAY]"));
-				}
-			} else
-			if (f->IsArray2D ()) {
-				if (f->IsArrayJ ())
-					return QVariant (QString ("[2D JAGGED ARRAY]"));
-				else
-					return QVariant (QString ("[2D ARRAY]"));
-			} else {
-				/*if (f->Value.len > 64)
-					return QVariant (QString ("[LARGE STRUCTURE]"));
-				else*/
-				return QVariant (QString (win->App->ToStr (f, 0, node).c_str ()));
-			}
-		}
+				win->App->GetNodeValue (node).c_str ()));
+		NifLib::Field *f = node->Value;
+		if (f->IsArray1D ()) {
+			if (f->IsArrayJ ())
+				return QVariant (QString ("[1D J arr]"));
+			if (f->IsCharArray ())
+				return QVariant (QString (win->App->ToStr (f).c_str ()));
+			return QVariant (QString ("[1D arr]"));
+		} else
+		if (f->IsArray2D ()) {
+			if (f->IsArrayJ ())
+				return QVariant (QString ("[2D J arr]"));
+			return QVariant (QString ("[2D arr]"));
+		} else
+			return QVariant (QString (win->App->ToStr (f, node).c_str ()));
 	}
 
 	QVariant
-	QNifModel::CArgument(NifLib::TreeNode<NifLib::Field *> *node)
+	QNifModel::CArgument(NifLib::Node *node)
 	{
 		return QVariant (QString (node->Value->TagAttr (AARG).c_str ()));
 	}
 
 	QVariant
-	QNifModel::CArray1(NifLib::TreeNode<NifLib::Field *> *node)
+	QNifModel::CArray1(NifLib::Node *node)
 	{
 		return QVariant (QString (node->Value->TagAttr (AARR1).c_str ()));
 	}
 
 	QVariant
-	QNifModel::CArray2(NifLib::TreeNode<NifLib::Field *> *node)
+	QNifModel::CArray2(NifLib::Node *node)
 	{
 		return QVariant (QString (node->Value->TagAttr (AARR2).c_str ()));
 	}
 
 	QVariant
-	QNifModel::CCondition(NifLib::TreeNode<NifLib::Field *> *node)
+	QNifModel::CCondition(NifLib::Node *node)
 	{
 		return QVariant (QString (node->Value->TagAttr (ACOND).c_str ()));
 	}
 
 	QVariant
-	QNifModel::CSince(NifLib::TreeNode<NifLib::Field *> *node)
+	QNifModel::CSince(NifLib::Node *node)
 	{
 		return QVariant (QString (node->Value->TagAttr (AVER1).c_str ()));
 	}
 
 	QVariant
-	QNifModel::CUntil(NifLib::TreeNode<NifLib::Field *> *node)
+	QNifModel::CUntil(NifLib::Node *node)
 	{
 		return QVariant (QString (node->Value->TagAttr (AVER2).c_str ()));
 	}
 
 	QVariant
-	QNifModel::CVersionCondition(NifLib::TreeNode<NifLib::Field *> *node)
+	QNifModel::CVersionCondition(NifLib::Node *node)
 	{
 		return QVariant (QString (node->Value->TagAttr (AVERCOND).c_str ()));
 	}
@@ -133,6 +130,7 @@ namespace NifSkopeQt4
 	QNifModel::QNifModel(Qt4MainWindow *data, QObject *parent)
 		: QAbstractItemModel (parent)
 	{
+		dummy = new std::map<NifLib::Node *,int> ();
 		// TODO: can this become "what is available" instead of
 		// "what should be available"? A.k.a. dynamic columns.
 		cols << Column ("N", &QNifModel::CId)
@@ -152,6 +150,8 @@ namespace NifSkopeQt4
 
    	QNifModel::~QNifModel()
 	{
+		dummy->clear();
+		delete dummy;
 	}
 
 	QVariant
@@ -161,7 +161,7 @@ namespace NifSkopeQt4
 			return QVariant ();
 		if (role != Qt::DisplayRole)
 			return QVariant ();
-		TREEITEM *item = static_cast<TREEITEM *>(index.internalPointer ());
+		NifLib::Node *item = static_cast<NifLib::Node *>(index.internalPointer ());
 		int ci = index.column ();
 		if (ci >= 0 && ci < cols.count ())
 			return (((QNifModel *const)this)->*cols[ci].Format) (item);
@@ -190,14 +190,19 @@ namespace NifSkopeQt4
 	{
  		if (!hasIndex (row, column, parent))
         	return QModelIndex ();
-		TREEITEM *parentItem;
+		NifLib::Node *parentItem;
 		if (!parent.isValid ())
 			parentItem = rn;
 		else
-			parentItem = static_cast<TREEITEM *>(parent.internalPointer ());
-		TREEITEM *childItem = parentItem->Nodes[row];// TODO: is this safe?
-		if (childItem)
+			parentItem = static_cast<NifLib::Node *>(parent.internalPointer ());
+		// It requests row 0 when Nodes.Count () is 0
+		if (row >= parentItem->Nodes.Count () || row < 0)
+			return QModelIndex ();
+		NifLib::Node *childItem = parentItem->Nodes[row];
+		if (childItem) {
+			(*dummy)[childItem] = row;
 			return createIndex (row, column, childItem);
+		}
 		else
 			return QModelIndex ();
 	}
@@ -207,23 +212,27 @@ namespace NifSkopeQt4
 	{
 		if (!index.isValid ())
 			return QModelIndex ();
-		TREEITEM *childItem = static_cast<TREEITEM *>(index.internalPointer ());
-		TREEITEM *parentItem = childItem->Parent;
+		NifLib::Node *childItem = static_cast<NifLib::Node *>(index.internalPointer ());
+		NifLib::Node *parentItem = childItem->Parent;
 		if (parentItem == rn)
 			return QModelIndex ();
-		return createIndex (parentItem->Index, 0, parentItem);
+
+		if (dummy->find (parentItem) != dummy->end ())
+			return createIndex ((*dummy)[parentItem], 0, parentItem);
+		else
+			return QModelIndex ();
 	}
 
 	int
 	QNifModel::rowCount(const QModelIndex &parent) const
 	{
-		TREEITEM *parentItem;
+		NifLib::Node *parentItem;
 		if (parent.column () > 0)
 			return 0;
 		if (!parent.isValid ())
 			parentItem = rn;
 		else
-			parentItem = static_cast<TREEITEM *>(parent.internalPointer ());
+			parentItem = static_cast<NifLib::Node *>(parent.internalPointer ());
 		win->App->ExpandNode (parentItem);// expand if needed
 		return parentItem->Nodes.Count ();
 	}
@@ -235,10 +244,11 @@ namespace NifSkopeQt4
 	}
 
 	void
-	QNifModel::SetRoot(NifLib::TreeNode<NifLib::Field *> *node)
+	QNifModel::SetRoot(NifLib::Node *node)
 	{
-		if (node)
+		if (node) {
 			rn = node;
+			dummy->clear();
+		}
 	}
-#undef TREEITEM
 }

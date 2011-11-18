@@ -41,12 +41,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace NifSkope
 {
 	void NifSkopeApp::NifTreePrefixWalk(
-		NifLib::TreeNode<NifLib::Field *> *node,
-		int (NifSkopeApp::*actn)(NifLib::TreeNode<NifLib::Field *> *node))
+		NifLib::Node *node,
+		int (NifSkopeApp::*actn)(NifLib::Node *node),
+		int (NifSkopeApp::*filter)(NifLib::Node *node))
 	{
 		if (!actn)
 			return;
 		if (!node)
+			return;
+		if (filter && (this->*filter) (node))
 			return;
 		for (int i = 0; i < node->Nodes.Count (); i++) {
 			if (!((this->*actn) (node->Nodes[i])))
@@ -56,7 +59,14 @@ namespace NifSkope
 	}
 
 	int
-	NifSkopeApp::wFindFieldByName(NifLib::TreeNode<NifLib::Field *> *node)
+	NifSkopeApp::wFilterArrays(NifLib::Node *node)
+	{
+		return node->Value &&
+			(node->Value->IsArray1D () || node->Value->IsArray2D ());
+	}
+
+	int
+	NifSkopeApp::wFindFieldByName(NifLib::Node *node)
 	{
 		if (node->Value->Name () == wName) {
 			wField = node->Value;
@@ -66,56 +76,99 @@ namespace NifSkope
 			return 1;// continue searching
 	}
 
-	/*NifLib::List< NifLib::List<NifLib::Field *> *> *
-	NifSkopeApp::AsBlocks()
-	{
-		NSINFO("Requested Block View")
-		NSINFO(" Block View: contains " << vBlock.Count () << " blocks")
-		return &vBlock;
-	}*/
-
 	NifSkopeApp::NifSkopeApp()
 	{
 	}
 
-	NifLib::TreeNode<NifLib::Field *> *
+	NifLib::Node *
 	NifSkopeApp::AsTree()
 	{
-		//NSINFO("Requested Tree View")
-		//if (!File.Loaded ())
-		//	NSINFO(" no file loaded")
 		return File.NifFile->AsTree ();
 	}
 
+	NifLib::Node *
+	NifSkopeApp::GetFooter()
+	{
+		NifLib::Node *root = AsTree ();
+		int idx = root->Nodes.Count () - 1;
+		if (idx >= 0)
+			return root->Nodes[idx];
+		return NULL;
+	}
+
+	NifLib::Node *
+	NifSkopeApp::AsNifTree()
+	{
+		if (nifview.Nodes.Count () > 0)
+			return &nifview;
+#define ASSERT(A) if (!(A))	{NSERR("Assertion failed: "#A) return NULL;}
+#define DI(F1,F2,V) NSINFO(F1->Name () << "." << F2->Name () << ": " << V)
+		NifLib::Node *root = AsTree ();
+		// Header is always [0].
+		// "Footer" has "root"s. TODO: What has no "Footer"? So far all
+		// versions supported by NifLib do.
+		//  - if no(Footer) use first after "Header".
+		NifLib::Node *footer = GetFooter ();
+		if (!footer) {
+			if (root->Nodes.Count () > 1)
+				nifview.Add (root->Nodes[1]->Value);// use first after "Header"
+		} else {
+			NSINFO(footer->Value->Name ())
+			NifLib::Field *fNum_Roots = ByName ("Num Roots", footer);
+			ASSERT(fNum_Roots != NULL)
+			NifLib::Field *fRoots = ByName ("Roots", footer);
+			ASSERT(fRoots != NULL)
+			// Sanity check
+			ASSERT(fRoots->FixedSize () > 0)
+			NIFint vNum_Roots = fNum_Roots->AsNIFint ();
+			NIFint size = fRoots->FixedSize ();
+			ASSERT((size * vNum_Roots) == fRoots->Value.len)
+			if (size > 4) {
+				DI(footer->Value, fRoots, "Unsupported size: " << size)
+				return NULL;
+			}
+			// Get roots
+			NIFbyte *buf = (NIFbyte *)&(fRoots->Value.buf[0]);
+			NIFbyte *buf2 = (NIFbyte *)&(fRoots->Value.buf[fRoots->Value.len]);
+			DI(footer->Value, fNum_Roots, vNum_Roots)
+			NIFint idx;
+			for (; buf != buf2; buf += size) {
+				idx = 0;
+				memcpy (&idx, buf, size);// TODO: Endianness
+				idx++;
+				DI(footer->Value, fRoots, idx)
+				ASSERT(idx > 0 && idx < root->Nodes.Count () - 1)
+				nifview.Add (root->Nodes[idx]->Value);
+			}
+		}
+#undef DI
+#undef ASSERT
+		return &nifview;
+	}
+
 	NifLib::Field *
-	NifSkopeApp::ByName(std::string name, NifLib::TreeNode<NifLib::Field *> *node = NULL)
+	NifSkopeApp::ByName(std::string name, NifLib::Node *node)
 	{
 		wField = NULL;
 		wName = name;
 		try {
 			if (!node) {
-				NifLib::TreeNode<NifLib::Field *> *nif = AsTree ();
-				NifTreePrefixWalk (nif, &NifSkopeApp::wFindFieldByName);
+				NifLib::Node *nif = AsTree ();
+				NifTreePrefixWalk (nif, &NifSkopeApp::wFindFieldByName,
+					&NifSkopeApp::wFilterArrays);
 			} else
-				NifTreePrefixWalk (node, &NifSkopeApp::wFindFieldByName);
+				NifTreePrefixWalk (node, &NifSkopeApp::wFindFieldByName,
+					&NifSkopeApp::wFilterArrays);
 		} catch (int) {
 		}
 		return wField;
 	}
 
-	NifLib::Field *
-	NifSkopeApp::ByName(std::string name, int idx)
-	{
-		NifLib::TreeNode<NifLib::Field *> *nif = AsTree ();
-		if (!ValidRootNodeIdx (idx))
-			return NULL;
-		return ByName (name, nif->Nodes[idx]);
-	}
-
 	std::string
-	NifSkopeApp::GetRootNodeValue(int idx)
+	NifSkopeApp::GetNodeValue(NifLib::Node *node)
 	{
-		NifLib::Field *f = ByName ("Value", idx);
+		// TODO: what if its not named "Value"?
+		NifLib::Field *f = ByName ("Value", node);
 		if (f)
 			return f->AsString (File.NifFile);
 		else
@@ -123,18 +176,18 @@ namespace NifSkope
 	}
 
 	std::string
-	NifSkopeApp::GetRootNodeName(int idx)
+	NifSkopeApp::GetNodeName(NifLib::Node *node)
 	{
-		NifLib::TreeNode<NifLib::Field *> *nif = AsTree ();
-		if (!ValidRootNodeIdx (idx))
-			return std::string ("[ERR: index out of range]");
-		return nif->Nodes[idx]->Value->Name ();
+		if (node->Value)
+			return node->Value->Name ();
+		else
+			return "";
 	}
 
 	bool
 	NifSkopeApp::ValidRootNodeIdx(int idx)
 	{
-		NifLib::TreeNode<NifLib::Field *> *nif = AsTree ();
+		NifLib::Node *nif = AsTree ();
 		return (idx >= 0) && (idx < nif->Nodes.Count ());
 	}
 
@@ -143,11 +196,13 @@ namespace NifSkope
 	{
 		std::stringstream s;
 		if (!ValidRootNodeIdx (ref))
-			s << "None";
+			s << "None";// TODO: to options: text if no "ref" or "ptr"
 		else {
-			std::string value = GetRootNodeValue (ref + 1);
+			NifLib::Node *nif = AsTree ();
+			NifLib::Node *rn = nif->Nodes[ref + 1];
+			std::string value = GetNodeValue (rn);
 			if (value == "") // if empty - use node name
-				s << ref << " [" << GetRootNodeName (ref + 1) << "]";
+				s << ref << " [" << GetNodeName (rn) << "]";
 			else // otherwise - use node value
 				s << ref << " (" << value << ")";
 		}
@@ -160,8 +215,11 @@ namespace NifSkope
 		std::stringstream s;
 		if (!ValidRootNodeIdx (bti))
 			s << "[ERR: invalid BTN_BLOCKTYPEINDEX]";
-		else
-			s << GetRootNodeName (bti + 1) << " [" << bti << "]";
+		else {
+			NifLib::Node *nif = AsTree ();
+			NifLib::Node *rn = nif->Nodes[bti + 1];
+			s << GetNodeName (rn) << " [" << bti << "]";
+		}
 		return s.str ();
 	}
 
@@ -169,9 +227,9 @@ namespace NifSkope
 	NifSkopeApp::ToStrBool(NIFbyte value)
 	{
 		if (value)
-			return std::string ("true");
+			return std::string ("true");// TODO: to options: bool display
 		else
-			return std::string ("false");
+			return std::string ("false");// TODO: to options: bool display
 	}
 
 	std::string
@@ -193,7 +251,7 @@ namespace NifSkope
 			air->JField = NULL;
 			air->Tag = ct;
 			air->Value.CopyFrom (p, size);
-			result << ToStr (air, 0);
+			result << ToStr (air);
 			delete air;
 			p += size;
 			if (i < tt->Tags.Count () -1)
@@ -203,41 +261,33 @@ namespace NifSkope
 	}
 
 	std::string
-	NifSkopeApp::ToStr(
-		NifLib::Field *f, int ofs, NifLib::TreeNode<NifLib::Field *> *node)
+	NifSkopeApp::ToStr(NifLib::Field *f, NifLib::Node *node)
 	{
 		// TODO: optimizie: to method pointers
 		// WHEN: when completed and this type of comm. is chosen
 		// "QTreeView" calls "the model" and "the model" calls this quite
 		// often - when a selection is changed, when a column is resized, etc.
-		if (f->TypeId () == BTN_REF || f->TypeId () == BTN_PTR) {
-			NIFint *buf = (NIFint *)&(f->Value.buf[0]);
-			return ToStrRef (buf[ofs]);
-		} else
-		if (f->TypeId () == BTN_BLOCKTYPEINDEX) {
-			NIFushort *buf = (NIFushort *)&(f->Value.buf[0]);
-			return ToStrBlockTypeIndex (buf[ofs]);
-		} else
-		if (f->TypeId () == BTN_BOOL) {
-			NIFbyte *buf = (NIFbyte *)&(f->Value.buf[0]);
-			return ToStrBool (buf[f->FixedSize ()*ofs]);
-		} else
-		if (f->TypeId () == NIFT_T && f->FixedSize () > 0) {
+		if (f->TypeId () == BTN_REF || f->TypeId () == BTN_PTR)
+			return ToStrRef (f->AsNIFint ());
+		else if (f->TypeId () == BTN_BLOCKTYPEINDEX)
+			return ToStrBlockTypeIndex (f->AsNIFushort ());
+		else if (f->TypeId () == BTN_BOOL)
+			return ToStrBool (f->AsNIFbyte ());
+		else if (f->TypeId () == NIFT_T && f->FixedSize () > 0)
 			return ToStrFixedSizeStruct (f);
-		} else {
-			// Try returning first-found "Value" field if "node" is provided.
-			// "SizedString" and the likes display.
-			if (node) {
-				NifLib::Field *tmp = ByName ("Value", node);
-				if (tmp)
-					f = tmp;
-			}
-			return f->AsString (File.NifFile);
+		// Try returning first-found "Value" field if "node" is provided.
+		// "SizedString" and the likes display.
+		if (node) {
+			// TODO: what if its not named "Value"?
+			NifLib::Field *tmp = ByName ("Value", node);
+			if (tmp)
+				f = tmp;
 		}
+		return f->AsString (File.NifFile);
 	}
 
 	void
-	NifSkopeApp::ExpandToAArr1(NifLib::TreeNode<NifLib::Field *> *node, int itemsize)
+	NifSkopeApp::ExpandToAArr1(NifLib::Node *node, int itemsize)
 	{
 		if (itemsize <= 0)
 			return;// complex type - i.e. dynamic size items
@@ -247,8 +297,7 @@ namespace NifSkope
 		char *buf = (char *)&(node->Value->Value.buf[0]);
 		int cnt = node->Value->Value.len/itemsize;
 		for (int i = 0; i < cnt; i++) {
-			NifLib::TreeNode<NifLib::Field *> *n =
-				new NifLib::OwnerTreeNode<NifLib::Field *>;
+			NifLib::Node *n = new NifLib::OwnerNode;
 			n->Parent = node;
 			NifLib::Field *f = new NifLib::Field ();
 			f->BlockTag = node->Value->BlockTag;
@@ -257,12 +306,11 @@ namespace NifSkope
 			f->Value.CopyFrom ((const char *)&buf[itemsize*i], itemsize);// copy 1
 			n->Value = f;
 			node->Nodes.Add (n);
-			n->Index = node->Nodes.Count () - 1;
 		}
 	}
 
 	void
-	NifSkopeApp::ExpandToAArr2(NifLib::TreeNode<NifLib::Field *> *node, int itemsize)
+	NifSkopeApp::ExpandToAArr2(NifLib::Node *node, int itemsize)
 	{
 		if (itemsize <= 0)
 			return;// complex type - i.e. dynamic size items
@@ -276,8 +324,7 @@ namespace NifSkope
 		int w = totalcnt / h;
 		// create
 		for (int i = 0; i < h; i++) {
-			NifLib::TreeNode<NifLib::Field *> *n1 =
-				new NifLib::OwnerTreeNode<NifLib::Field *>;
+			NifLib::Node *n1 = new NifLib::OwnerNode;
 			n1->Parent = node;
 			NifLib::Field *nf1 = new TagOwnerField ();
 			nf1->BlockTag = f->BlockTag;
@@ -301,16 +348,17 @@ namespace NifSkope
 			nf1->Value.CopyFrom (&(buf[i*w]), itemsize*w);
 			n1->Value = nf1;
 			node->Nodes.Add (n1);
-			n1->Index = node->Nodes.Count () - 1;
 		}
 	}
 
 	void
-	NifSkopeApp::ExpandNode(NifLib::TreeNode<NifLib::Field *> *node)
+	NifSkopeApp::ExpandNode(NifLib::Node *node)
 	{
 		if (node->Nodes.Count () > 0)
 			return;// nothing to expand
 		NifLib::Field *f = node->Value;
+		if (!f)
+			return;// nothing to expand
 		if (f->IsArray1D () && !f->IsArrayJ () && !f->IsCharArray ()) {// AARR1
 			ExpandToAArr1 (node, f->FixedSize ());
 		} else

@@ -91,7 +91,7 @@ namespace NifLib
 		*
 		*/
 		NifLib::List<NifLib::Field *> flist;
-		NifLib::TreeNode<NifLib::Field *> ftree;
+		NifLib::Node ftree;
 
 		NifLib::Tag *blockTag;// state - current .nif block Tag
 		NifLib::Field *i2j;// state - jagged array Field
@@ -126,15 +126,14 @@ namespace NifLib
 		/*
 		*	Add a field to the list view
 		*/
-		NifLib::Field *AddField(NifLib::Tag *field, char *buf, int bl, int type);
+		NifLib::Field *AddField(
+			NifLib::Tag *field, char *buf, int bl, int type);
 
 		/*
 		*	Add a field to the tree view
 		*/
-		NifLib::TreeNode<NifLib::Field *> *AddNode(
-			NifLib::Tag *t,
-			NifLib::Field *f,
-			NifLib::TreeNode<NifLib::Field *> *pnode);
+		NifLib::Node *AddNode(
+			NifLib::Tag *t, NifLib::Field *f, NifLib::Node *pnode);
 
 		/*
 		*	Starts from current count-1 and scans untill the first field.
@@ -257,8 +256,7 @@ namespace NifLib
 		/*
 		*	Read one object from the .nif
 		*/
-		int ReadObject(NifStream &s, NifLib::Tag *t,
-			NifLib::TreeNode<NifLib::Field *> *n);
+		int ReadObject(NifStream &s, NifLib::Tag *t, NifLib::Node *n);
 
 		/*
 		*	Reads a single block from a .nif file.
@@ -333,7 +331,7 @@ namespace NifLib
 		/*
 		*	debug: print the fields - "ftree" "walker"
 		*/
-		void PrintNode(NifLib::TreeNode<NifLib::Field *> *node, std::string ofs);
+		void PrintNode(NifLib::Node *node, std::string ofs);
 
 		/*
 		*	Returns tag ANAME attribute as a string
@@ -353,7 +351,17 @@ namespace NifLib
 		*	The list is useful for fast tools - scanners, checkers, optimizers,
 		*	etc.
 		*/
-		NifLib::TreeNode<NifLib::Field *> *AsTree();
+		NifLib::Node *AsTree();
+
+		/*
+		*	Returns true if machine endianness differs the .nif file one
+		*/
+		inline int
+		MixedEndianness ()
+		{
+			// TODO: implement me
+			return 0;
+		}
 
 		~Compiler();
 	};

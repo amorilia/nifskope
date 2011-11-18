@@ -69,9 +69,43 @@ namespace NifLib
 		int NLType();
 
 		/*
-		*	Safe cast to NIFuint at offset 0. Used by "Compiler::Evaluate ()".
+		*	Safe cast to NIFint at offset 0
 		*/
-		NIFuint AsNIFuint();
+		NIFint AsNIFint();
+
+		/*
+		*	Safe cast to NIFushort at offset 0
+		*/
+		NIFushort AsNIFushort();
+
+		/*
+		*	Safe cast to NIFbyte at offset 0
+		*/
+		NIFbyte AsNIFbyte();
+
+
+		/*template <typename T> T AsInt(int idx)
+		{
+			// TODO: optimize, endianess
+			if (Value.len <= 0)
+				throw "Field::AsInt: can't convert";
+			int qsize = sizeof(T);
+			int ofs = idx * qsize;
+			if (ofs + 1 > Value.len)
+				throw "Field::AsInt: index out of ranage";
+			int available = Value.len - ofs;
+			if (available < qsize)
+				qsize = available;
+			if (qsize == 1)
+				return (T)Value.buf[idx];
+			else {
+				if (MACHINE_ENDIANESS == FILE_ENDIANESS)
+					memcpy (&T, Value.buf[ofs], qsize);
+				else {
+					// use union, etc. d[i] = s[qsize-i]
+				}
+			}
+		}*/
 
 		/*
 		*	Returns a string representation of the field.

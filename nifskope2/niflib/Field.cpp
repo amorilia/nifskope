@@ -106,18 +106,38 @@ namespace NifLib
 		return Tag->NLType;
 	}
 
-	NIFuint
-	Field::AsNIFuint()
+	NIFint
+	Field::AsNIFint()
 	{
 		// TODO: optimize
+		// TODO: Endianness - MACHINE vs. FILE
 		if (Value.len <= 0)
-			throw "Field::AsNIFuint: can't convert";
+			throw "Field::AsNIFint: can't convert";
 		if (Value.len == 1)
 			return *(NIFbyte *)(&Value.buf[0]);
 		else if (Value.len == 2 || Value.len == 3)
-			return *(NIFushort *)(&Value.buf[0]);
+			return *(NIFshort *)(&Value.buf[0]);
 		else
-			return *(NIFuint *)(&Value.buf[0]);
+			return *(NIFint *)(&Value.buf[0]);
+	}
+
+	NIFushort
+	Field::AsNIFushort()
+	{
+		if (Value.len <= 0)
+			throw "Field::AsNIFushort: can't convert";
+		if (Value.len == 1)
+			return *(NIFbyte *)(&Value.buf[0]);
+		else
+			return *(NIFushort *)(&Value.buf[0]);
+	}
+
+	NIFbyte
+	Field::AsNIFbyte()
+	{
+		if (Value.len <= 0)
+			throw "Field::AsNIFbyte: can't convert";
+		return *(NIFbyte *)(&Value.buf[0]);
 	}
 
 	std::string

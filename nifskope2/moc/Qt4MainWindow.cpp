@@ -497,6 +497,7 @@ namespace NifSkopeQt4
 					const QItemSelection &, const QItemSelection &)));
 		// Block Details
 		mdlBlockDetails = new QNifModel (this);
+		mdlBlockDetails->SetRoot (App->AsNifTree ());//TODO: remove later
  		tvBlockDetails->setModel (mdlBlockDetails);
 		//tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
 		// the above aint working all the time - TODO: figure out when and why
@@ -514,8 +515,7 @@ namespace NifSkopeQt4
 			void *p = selected.indexes ().value (0).internalPointer ();
 			if (!p)
 				return;
-			NifLib::TreeNode<NifLib::Field *> *n =
-				static_cast<NifLib::TreeNode<NifLib::Field *> *>(p);
+			NifLib::Node *n = static_cast<NifLib::Node *>(p);
 			if (!n)
 				return;
 			else {

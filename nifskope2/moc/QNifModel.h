@@ -44,42 +44,48 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Field.h"
 #include "TreeNode.h"
 
+#include <map>
+
 namespace NifSkopeQt4
 {
 	class Qt4MainWindow;
 
 	class QNifModel: public QAbstractItemModel
 	{
+		/*
+		*	Dynamic "Index" "property" for "NifLib::Node"
+		*/
+		std::map<NifLib::Node *, int> *dummy;
 	protected:
 		struct Column {
 			Column(
 				QVariant hn,
-				QVariant (QNifModel::*fmt)(NifLib::TreeNode<NifLib::Field *> *))
+				QVariant (QNifModel::*fmt)(NifLib::Node *))
 			{
 				HeaderName = hn;
 				Format = fmt;
 			}
 			QVariant HeaderName;
-			QVariant (QNifModel::*Format)(NifLib::TreeNode<NifLib::Field *> *);
+			QVariant (QNifModel::*Format)(NifLib::Node *);
 		};
 		Qt4MainWindow *win;
 		QList<Column> cols;
-		NifLib::TreeNode<NifLib::Field *> *rn;
+		NifLib::Node *rn;
 
 		/*
 		*	Each function returns data for the column its named after
 		*/
-		QVariant CId(NifLib::TreeNode<NifLib::Field *> *node);
-		QVariant CName(NifLib::TreeNode<NifLib::Field *> *node);
-		QVariant CType(NifLib::TreeNode<NifLib::Field *> *node);
-		QVariant CValue(NifLib::TreeNode<NifLib::Field *> *node);
-		QVariant CArgument(NifLib::TreeNode<NifLib::Field *> *node);
-		QVariant CArray1(NifLib::TreeNode<NifLib::Field *> *node);
-		QVariant CArray2(NifLib::TreeNode<NifLib::Field *> *node);
-		QVariant CCondition(NifLib::TreeNode<NifLib::Field *> *node);
-		QVariant CSince(NifLib::TreeNode<NifLib::Field *> *node);
-		QVariant CUntil(NifLib::TreeNode<NifLib::Field *> *node);
-		QVariant CVersionCondition(NifLib::TreeNode<NifLib::Field *> *node);
+		QVariant CId(NifLib::Node *node);
+		QVariant CName(NifLib::Node *node);
+		QVariant CType(NifLib::Node *node);
+		QVariant CValue(NifLib::Node *node);
+		QVariant CArgument(NifLib::Node *node);
+		QVariant CArray1(NifLib::Node *node);
+		QVariant CArray2(NifLib::Node *node);
+		QVariant CCondition(NifLib::Node *node);
+		QVariant CSince(NifLib::Node *node);
+		QVariant CUntil(NifLib::Node *node);
+		QVariant CVersionCondition(NifLib::Node *node);
 
 	public:
 		QNifModel(Qt4MainWindow *data, QObject *parent = 0);
@@ -109,7 +115,7 @@ namespace NifSkopeQt4
 		/*
 		*	Set root node. TODO: doesn't work as "change root node"
 		*/
-		void SetRoot(NifLib::TreeNode<NifLib::Field *> *node);
+		void SetRoot(NifLib::Node *node);
 
 		~QNifModel();
 	};

@@ -49,7 +49,15 @@ namespace NifLib
 		TreeNode<T> *Parent;
 		NifLib::List< TreeNode<T> *> Nodes;
 		T Value;
-		int Index;
+
+		TreeNode<T> *Add(T value = NULL)
+		{
+			TreeNode<T> *newnode = new TreeNode<T>;
+			Nodes.Add (newnode);
+			newnode->Parent = this;
+			newnode->Value = value;
+			return newnode;
+		}
 		
 		void Clear()
 		{
@@ -78,6 +86,10 @@ namespace NifLib
 			this->Clear ();
 		}
 	};
+
+	class Field;
+	typedef NifLib::TreeNode<NifLib::Field *> Node;
+	typedef NifLib::OwnerTreeNode<NifLib::Field *> OwnerNode;
 }
 
 #endif /*__TREENODE_H__*/
