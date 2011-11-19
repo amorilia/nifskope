@@ -41,6 +41,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Qt
 #include <QtGui>
 
+#include "nifskope.h"
+
 namespace NifSkopeQt4
 {
 	enum BlockListMode {
@@ -49,7 +51,8 @@ namespace NifSkopeQt4
 	};
 
 	// default "config"
-	class CFG
+	// TODO: class per file
+	class Cfg
 	{
 	public:
 		class BlockListCfg
@@ -66,22 +69,57 @@ namespace NifSkopeQt4
 
 	class Qt4MainWindow: public QMainWindow
 	{
-		CFG cfg;
+		Cfg cfg;
 		bool optSingleFile;
+
 		void createMainMenu();
 		void createDockWidgets();
 		void createToolbars();
 		void ResetBlockList();
 		void Reset();
 		void ChangeBlockListMode(BlockListMode to);
+		void handleOpenURL();
 
 		QTimer *onIdle;
 
-		QAction *aLoad;
+		// MM:File
+		QAction *aOpen;
 		QAction *aSaveAs;
+		QAction *aImport3ds;
+		QAction *aImportobj;
+		QAction *aExportobj;
+		QAction *aAutoSanitize;
+		QAction *aNewWindow;
+		QAction *aReloadXML;
+		QAction *aReloadXMLNif;
+		QAction *aXMLChecker;
+		QAction *aResFiles;
+		QAction *aQuit;
 
-		QAction *aHierarchy;
-		QAction *aList;
+		// MM:View->Block List
+		QAction *aBLToTree;
+		QAction *aBLToList;
+		// MM:View->Block Details
+		QAction *aBDHideVMRows;
+		QAction *aBDRTVUpdate;
+		// MM:View
+		QAction *aSelectFont;
+
+		// MM:Render
+		QAction *aSaveUserView;
+		QAction *aDrawAxes;
+		QAction *aDrawNodes;
+		QAction *aDrawHavok;
+		QAction *aDrawConstraints;
+		QAction *aDrawFurn;
+		QAction *aDrawHidden;
+		QAction *aDrawStats;
+		QAction *aSettings;
+
+		// Toolbar Animation
+		QAction *aAnimPlay;
+		QAction *aAnimLoop;
+		QAction *aAnimSwitch;
 
 		QTreeView *tvBlockList;
 		QAbstractItemModel *mdlBlockList;
@@ -97,6 +135,7 @@ namespace NifSkopeQt4
 		QDockWidget *dockInsp;
 		QDockWidget *dockRefr;
 
+		// Toolbar View, MM:View
 		QAction *aViewTop;
 		QAction *aViewFront;
 		QAction *aViewSide;
@@ -104,6 +143,15 @@ namespace NifSkopeQt4
 		QAction *aViewWalk;
 		QAction *aViewFlip;
 		QAction *aViewPerspective;
+
+		// MM:Help
+		QAction *aHelpWebsite;
+		QAction *aHelpForum;
+		QAction *aNifToolsWebsite;
+		QAction *aNifToolsDownloads;
+		QAction *aAboutNifSkope;
+		QAction *aAboutQt;
+
 	Q_OBJECT
 	public:
 		Qt4MainWindow();
@@ -115,16 +163,29 @@ namespace NifSkopeQt4
 			const QItemSelection &deselected);
 
 		/*
+		*	Action handlers - they're named after their corresponding action:
+		*	Action: aOpen
+		*	Handler: handleOpen
+		*/
+
+		/*
 		*	Load a .nif file
 		*/
-		void handleFileLoad();
+		void handleOpen();
+
+		void handleQuit();
 
 		void handleSelectFont();
 
-		void handleOpenURL();
-
 		void handleBLToTree();
 		void handleBLToList();
+
+		void handleHelpWebsite();
+		void handleHelpForum();
+		void handleNifToolsWebsite();
+		void handleNifToolsDownloads();
+		void handleAboutNifSkope();//About()
+		void handleAboutQt(); //aboutQt()
 	public slots:
 		void About();
 	};

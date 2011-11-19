@@ -45,6 +45,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NS_URL "niftools.sourceforge.net"
 #define NS_VERSION NS_NAME" "NS_VER
 
+#define SITE "http://niftools.sourceforge.net/wiki/index.php/NifSkope"
+#define FORUM "http://niftools.sourceforge.net/forum/viewforum.php?f=24"
+#define WIKI "http://niftools.sourceforge.net"
+#define DOWNLOADS "http://sourceforge.net/project/showfiles.php?group_id=149157"
+
 #include <map>
 #include <string>
 #include <iostream>

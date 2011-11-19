@@ -237,7 +237,7 @@ namespace NifSkope
 		virtual void NewWindow();// creates new mainwindow
 
 		/*
-		*	"contract" - gives access to file IO of the application.
+		*	"contract" - gives access to the file IO of the application.
 		*/
 		NifSkope::FileIO File;
 
