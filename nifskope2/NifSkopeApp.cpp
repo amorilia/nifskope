@@ -83,7 +83,14 @@ namespace NifSkope
 	NifLib::Node *
 	NifSkopeApp::AsTree()
 	{
-		return File.NifFile->AsTree ();
+		if (File.NifFile) {
+			NifLib::Node *tmp = File.NifFile->AsTree ();
+			if (!tmp)
+				return &nonif;
+			return tmp;
+		}
+		else
+			return &nonif;
 	}
 
 	NifLib::Node *
@@ -96,11 +103,39 @@ namespace NifSkope
 		return NULL;
 	}
 
+	void
+	NifSkopeApp::NifTreeNodeGen(NifLib::Node *src, NifLib::Node *dst)
+	{
+		NifLib::Node *root = AsTree ();
+		for (int i = 0; i < src->Nodes.Count (); i++) {
+			NifTreeNodeGen (src->Nodes[i], dst);
+			NifLib::Field *f = src->Nodes[i]->Value;
+			if (f->TypeId () != BTN_REF && f->TypeId () != BTN_PTR)
+				continue;
+			NIFbyte *buf = (NIFbyte *)&(f->Value.buf[0]);
+			NIFbyte *buf2 = (NIFbyte *)&(f->Value.buf[f->Value.len]);
+			NIFint size = f->FixedSize ();
+			NIFint idx;
+			for (; buf != buf2; buf += size) {
+				idx = 0;
+				memcpy (&idx, buf, size);// TODO: Endianness
+				idx++;
+				if (idx < 1 || idx >= root->Nodes.Count () - 1)
+					continue;
+				NifLib::Node *nn = dst->Add (root->Nodes[idx]->Value);
+				nvmap[nn] = root->Nodes[idx];
+				if (f->TypeId () == BTN_REF)
+					NifTreeNodeGen (root->Nodes[idx], nn);
+			}
+		}
+	}
+
 	NifLib::Node *
 	NifSkopeApp::AsNifTree()
 	{
 		if (nifview.Nodes.Count () > 0)
 			return &nifview;
+		nvmap.clear ();
 #define ASSERT(A) if (!(A))	{NSERR("Assertion failed: "#A) return NULL;}
 #define DI(F1,F2,V) NSINFO(F1->Name () << "." << F2->Name () << ": " << V)
 		NifLib::Node *root = AsTree ();
@@ -110,8 +145,12 @@ namespace NifSkope
 		//  - if no(Footer) use first after "Header".
 		NifLib::Node *footer = GetFooter ();
 		if (!footer) {
-			if (root->Nodes.Count () > 1)
-				nifview.Add (root->Nodes[1]->Value);// use first after "Header"
+			if (root->Nodes.Count () > 1) {
+				// use first after "Header"
+				NifLib::Node *nn = nifview.Add (root->Nodes[1]->Value);
+				NifTreeNodeGen (root->Nodes[1], nn);
+				nvmap[nn] = root->Nodes[1];
+			}
 		} else {
 			NSINFO(footer->Value->Name ())
 			NifLib::Field *fNum_Roots = ByName ("Num Roots", footer);
@@ -138,7 +177,9 @@ namespace NifSkope
 				idx++;
 				DI(footer->Value, fRoots, idx)
 				ASSERT(idx > 0 && idx < root->Nodes.Count () - 1)
-				nifview.Add (root->Nodes[idx]->Value);
+				NifLib::Node *nn = nifview.Add (root->Nodes[idx]->Value);
+				NifTreeNodeGen (root->Nodes[idx], nn);
+				nvmap[nn] = root->Nodes[idx];
 			}
 		}
 #undef DI
@@ -173,6 +214,15 @@ namespace NifSkope
 			return f->AsString (File.NifFile);
 		else
 			return std::string ("");
+	}
+
+	NifLib::Node *
+	NifSkopeApp::GetTreeNode(NifLib::Node *nifnode)
+	{
+		if (nvmap.find (nifnode) != nvmap.end ())
+			return nvmap[nifnode];
+		else
+			return nifnode;
 	}
 
 	std::string
@@ -278,6 +328,7 @@ namespace NifSkope
 		// Try returning first-found "Value" field if "node" is provided.
 		// "SizedString" and the likes display.
 		if (node) {
+			node = GetTreeNode (node);
 			// TODO: what if its not named "Value"?
 			NifLib::Field *tmp = ByName ("Value", node);
 			if (tmp)
@@ -397,6 +448,8 @@ namespace NifSkope
 
 	NifSkopeApp::~NifSkopeApp()
 	{
+		nifview.Clear ();
+		nvmap.clear ();
 		NSINFO("~NifSkopeApp()")
 	}
 }

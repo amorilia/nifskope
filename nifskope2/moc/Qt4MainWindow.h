@@ -43,15 +43,45 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace NifSkopeQt4
 {
+	enum BlockListMode {
+		BLM_TREE,
+		BLM_LIST
+	};
+
+	// default "config"
+	class CFG
+	{
+	public:
+		class BlockListCfg
+		{
+		public:
+			BlockListCfg()
+			{
+				Mode = BLM_TREE;
+			}
+			BlockListMode Mode;
+		};
+		BlockListCfg BlockList;
+	};
+
 	class Qt4MainWindow: public QMainWindow
 	{
+		CFG cfg;
 		bool optSingleFile;
 		void createMainMenu();
 		void createDockWidgets();
 		void createToolbars();
+		void ResetBlockList();
 		void Reset();
+		void ChangeBlockListMode(BlockListMode to);
+
+		QTimer *onIdle;
+
 		QAction *aLoad;
 		QAction *aSaveAs;
+
+		QAction *aHierarchy;
+		QAction *aList;
 
 		QTreeView *tvBlockList;
 		QAbstractItemModel *mdlBlockList;
@@ -92,6 +122,9 @@ namespace NifSkopeQt4
 		void handleSelectFont();
 
 		void handleOpenURL();
+
+		void handleBLToTree();
+		void handleBLToList();
 	public slots:
 		void About();
 	};

@@ -42,18 +42,22 @@ namespace NifSkopeQt4
 		cols << Column ("N", &QNifBlockModel::CId)
 		<< Column ("Name", &QNifBlockModel::CName)
 		<< Column ("Value", &QNifBlockModel::CValue);
+		Tree = false;
 	}
 
 	int
 	QNifBlockModel::rowCount(const QModelIndex &parent) const
 	{
-		if (parent.column () > 0)
+		if (!rn)
 			return 0;
-		NifLib::Node *rootItem = win->App->AsTree ();
-		if (!parent.isValid ())
-			return rootItem->Nodes.Count ();
+		if (!Tree && parent.column () > 0)
+			return 0;
 		else
-			return 0;
+			return QNifModel::rowCount (parent);
+		/*if (!parent.isValid ())
+			return rn->Nodes.Count ();
+		else
+			return 0;*/
 	}
 
 	QNifBlockModel::~QNifBlockModel()

@@ -67,7 +67,10 @@ namespace NifSkope
 	class NifSkopeApp
 	{
 		// .nif views - tree
+		NifLib::Node nonif;// empty node to avoid NULL and a lot of "if"
 		NifLib::Node nifview;
+		// maps the nifview nodes to the real ones
+		std::map<NifLib::Node *, NifLib::Node *> nvmap;
 
 		// "args" for the walker actions.
 		// All "walker"-related fields are prefixed with "w".
@@ -79,54 +82,6 @@ namespace NifSkope
 			int (NifSkopeApp::*filter)(NifLib::Node *node) = NULL);
 		int wFilterArrays(NifLib::Node *node);
 		int wFindFieldByName(NifLib::Node *node);
-	public:
-		NifSkopeApp();
-
-		/*
-		*	The file tree as produced by NifLib
-		*/
-		NifLib::Node *AsTree();
-
-		NifLib::Node *GetFooter();
-
-		/*
-		*	The nif objects tree - a logical hierarchy defined
-		*	by the values of the nif object fields.
-		*/
-		NifLib::Node *AsNifTree();
-
-		NifLib::Field *ByName(std::string name, NifLib::Node *node = NULL);
-
-		std::string	GetNodeValue(NifLib::Node *node);
-
-		std::string GetNodeName(NifLib::Node *node);
-
-		bool ValidRootNodeIdx(int idx);
-
-		/*
-		*	Defines how the BTN_REF "looks" like
-		*/
-		std::string ToStrRef(NIFint ref);
-
-		/*
-		*	Defines how the BTN_BLOCKTYPEINDEX "looks" like
-		*/
-		std::string ToStrBlockTypeIndex(NIFushort bti);
-
-		/*
-		*	Defines how the BTN_BOOL "looks" like
-		*/
-		std::string ToStrBool(NIFbyte value);
-
-		/*
-		*	Defines how the packed structures "look" like
-		*/
-		std::string ToStrFixedSizeStruct(NifLib::Field *f);
-
-		/*
-		*	Returns string representation of a field
-		*/
-		std::string ToStr(NifLib::Field *f, NifLib::Node *node = NULL);
 
 		/*
 		*	Converts an ARR1 non-J field into a list of fields
@@ -196,7 +151,79 @@ namespace NifSkope
 			}
 		}
 
+		NifLib::Node *GetFooter();
+
 		/*
+		*	Expands one node of the logical tree.
+		*	"Ref" are "root", "Ptr" are leafs.
+		*/
+		void NifTreeNodeGen(NifLib::Node *src, NifLib::Node *dst);
+
+		NifLib::Field *ByName(std::string name, NifLib::Node *node = NULL);
+
+		std::string GetNodeName(NifLib::Node *node);
+
+		bool ValidRootNodeIdx(int idx);
+	public:
+		NifSkopeApp();
+
+		/*
+		*	Model provded by NifLib
+		*	The file tree as produced by NifLib
+		*/
+		NifLib::Node *AsTree();
+
+		/*
+		*	Model
+		*	The nif objects tree - a logical hierarchy defined
+		*	by the values of the nif object fields.
+		*/
+		NifLib::Node *AsNifTree();
+
+		/*
+		*	Model
+		*	Get strign representation of a node
+		*/
+		std::string	GetNodeValue(NifLib::Node *node);
+
+		/*
+		*	Model
+		*	Get compiler tree node by a logical nifnode
+		*/
+		NifLib::Node *GetTreeNode(NifLib::Node *nifnode);
+
+		/*
+		*	Model
+		*	Defines how the BTN_REF "looks" like
+		*/
+		std::string ToStrRef(NIFint ref);
+
+		/*
+		*	Model
+		*	Defines how the BTN_BLOCKTYPEINDEX "looks" like
+		*/
+		std::string ToStrBlockTypeIndex(NIFushort bti);
+
+		/*
+		*	Model
+		*	Defines how the BTN_BOOL "looks" like
+		*/
+		std::string ToStrBool(NIFbyte value);
+
+		/*
+		*	Model
+		*	Defines how the packed structures "look" like
+		*/
+		std::string ToStrFixedSizeStruct(NifLib::Field *f);
+
+		/*
+		*	Model
+		*	Returns string representation of a field
+		*/
+		std::string ToStr(NifLib::Field *f, NifLib::Node *node = NULL);
+
+		/*
+		*	Model
 		*	Expand on demand. Expands a node into sub-fields.
 		*	Supports fixed item size: AARR1, AARR2, AARR2 J
 		*	TODO: AARR3

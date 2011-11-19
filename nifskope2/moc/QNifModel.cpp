@@ -33,13 +33,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "QNifModel.h"
 #include "Qt4MainWindow.h"
 
-#include "nifskope.h"
-
 namespace NifSkopeQt4
 {
-
-	// TODO: handle NULL
-
 	QVariant QNifModel::CId(NifLib::Node *node)
 	{
 		if (dummy->find (node) != dummy->end ())
@@ -188,6 +183,8 @@ namespace NifSkopeQt4
 	QModelIndex
 	QNifModel::index(int row, int column, const QModelIndex &parent) const
 	{
+		if (!rn)
+			return QModelIndex ();
  		if (!hasIndex (row, column, parent))
         	return QModelIndex ();
 		NifLib::Node *parentItem;
@@ -216,7 +213,6 @@ namespace NifSkopeQt4
 		NifLib::Node *parentItem = childItem->Parent;
 		if (parentItem == rn)
 			return QModelIndex ();
-
 		if (dummy->find (parentItem) != dummy->end ())
 			return createIndex ((*dummy)[parentItem], 0, parentItem);
 		else
@@ -226,6 +222,8 @@ namespace NifSkopeQt4
 	int
 	QNifModel::rowCount(const QModelIndex &parent) const
 	{
+		if (!rn)
+			return 0;
 		NifLib::Node *parentItem;
 		if (parent.column () > 0)
 			return 0;

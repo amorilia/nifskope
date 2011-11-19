@@ -44,6 +44,8 @@ namespace NifSkopeQt4
 
 		int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
+		bool Tree;
+
 		~QNifBlockModel();
 	};
 }

@@ -49,6 +49,7 @@ namespace NifSkopeQt4
 		// TODO: QML
 		aLoad = new QAction (tr ("&Load..."), this);
 		aSaveAs = new QAction (tr ("&Save As..."), this);
+		aSaveAs->setEnabled (false);
 		QMenu *mImport = new QMenu (tr ("Import"), this);
 		QAction *aImport3ds = new QAction (tr ("Import.3DS..."), this);
 		QAction *aImportobj = new QAction (tr ("Import.OBJ..."), this);
@@ -110,25 +111,22 @@ namespace NifSkopeQt4
 				mToolbars->addAction (tb->toggleViewAction ());
 		}
 		mView->addSeparator ();
+		// View -> Block List
 		QMenu *mBlockList = mView->addMenu (tr ("Block List"));
 		mBlockList->setTitle (tr ("Block List"));
 		QActionGroup *gListMode = new QActionGroup (this);
-		QAction *aHierarchy = new QAction (tr ("Show Blocks in Tree"), this);
+		aHierarchy = new QAction (tr ("Tree"), this);
+		connect(aHierarchy, SIGNAL(triggered()), this, SLOT(handleBLToTree()));
 		aHierarchy->setCheckable (true);
-		aHierarchy->setEnabled (false);//TODO: implement me
-		QAction *aList = new QAction (tr ("Show Blocks in List"), this);
+		aList = new QAction (tr ("List"), this);
+		connect(aList, SIGNAL(triggered()), this, SLOT(handleBLToList()));
 		aList->setCheckable (true);
-		aList->setEnabled (false);//TODO: implement me
-		QAction *aBlockView = new QAction (tr ("Block View"), this);
-		aBlockView->setCheckable (true);
 		gListMode->addAction (aList);
 		gListMode->addAction (aHierarchy);
-		gListMode->addAction (aBlockView);
 		gListMode->setExclusive (true);
 		mBlockList->addAction (aHierarchy);
 		mBlockList->addAction (aList);
-		mBlockList->addAction (aBlockView);
-		aBlockView->setChecked (true);
+		// View -> Block Details
 		QMenu *mBlockDetails = mView->addMenu (tr ("Block Details"));
 		mBlockDetails->setTitle (tr ("Block Details"));
 		QAction *aCondition = new QAction (tr ("Hide Version Mismatched Rows"), this);
@@ -339,6 +337,15 @@ namespace NifSkopeQt4
 		addDockWidget (Qt::RightDockWidgetArea, dockTVKFM);
 		addDockWidget (Qt::RightDockWidgetArea, dockInsp, Qt::Vertical);
 		addDockWidget (Qt::BottomDockWidgetArea, dockRefr);
+
+		// setup treeviews
+		tvBlockList->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
+		tvBlockList->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
+		tvBlockList->header ()->setResizeMode (2, QHeaderView::Interactive);
+		//tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
+		// the above aint working all the time - TODO: figure out when and why
+		tvBlockDetails->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
+		tvBlockDetails->header ()->setResizeMode (2, QHeaderView::ResizeToContents);
 	}
 
 	void
@@ -443,24 +450,53 @@ namespace NifSkopeQt4
 	}
 
 	void
-	Qt4MainWindow::Reset()
+	Qt4MainWindow::ResetBlockList()
 	{
 		if (mdlBlockList) {
 			QItemSelectionModel *sm = tvBlockList->selectionModel ();
 			disconnect (sm, SIGNAL(selectionChanged(
-					const QItemSelection &, const QItemSelection &)),
+				const QItemSelection &, const QItemSelection &)),
 				this, SLOT(handleBLselChanged(
-					const QItemSelection &, const QItemSelection &)));
+				const QItemSelection &, const QItemSelection &)));
 			tvBlockList->setModel (NULL);
 			delete mdlBlockList;
 			mdlBlockList = NULL;
 		}
+	}
+
+	void
+	Qt4MainWindow::Reset()
+	{
+		ResetBlockList ();
 
 		if (mdlBlockDetails) {
 			tvBlockDetails->setModel (NULL);
 			delete mdlBlockDetails;
 			mdlBlockDetails = NULL;
 		}
+	}
+
+	void
+	Qt4MainWindow::ChangeBlockListMode(BlockListMode to)
+	{
+		ResetBlockList ();
+		if (to == BLM_LIST) {
+			mdlBlockList = new QNifBlockModel (this);
+			tvBlockList->setModel (mdlBlockList);
+		} else
+		if (to == BLM_TREE) {
+			QNifBlockModel *tmp = new QNifBlockModel (this);
+			tmp->SetRoot (App->AsNifTree ());
+			tmp->Tree = true;
+			mdlBlockList = tmp;
+			tvBlockList->setModel (mdlBlockList);
+		}
+		QItemSelectionModel *sm = tvBlockList->selectionModel ();
+		connect (sm, SIGNAL(selectionChanged(
+			const QItemSelection &, const QItemSelection &)),
+			this, SLOT(handleBLselChanged(
+			const QItemSelection &, const QItemSelection &)));
+		cfg.BlockList.Mode = to;
 	}
 
 	void
@@ -485,25 +521,11 @@ namespace NifSkopeQt4
 				this, "Info", "Multiple file load is N/A yet");
 			return;
 		}
-		mdlBlockList = new QNifBlockModel (this);
-		tvBlockList->setModel (mdlBlockList);
-		tvBlockList->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
-		tvBlockList->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
-		tvBlockList->header ()->setResizeMode (2, QHeaderView::Interactive);
-		QItemSelectionModel *sm = tvBlockList->selectionModel ();
-		connect (sm, SIGNAL(selectionChanged(
-					const QItemSelection &, const QItemSelection &)),
-				this, SLOT(handleBLselChanged(
-					const QItemSelection &, const QItemSelection &)));
+		// Block List
+		ChangeBlockListMode (cfg.BlockList.Mode);
 		// Block Details
 		mdlBlockDetails = new QNifModel (this);
-		mdlBlockDetails->SetRoot (App->AsNifTree ());//TODO: remove later
  		tvBlockDetails->setModel (mdlBlockDetails);
-		//tvBlockDetails->header ()->setResizeMode (0, QHeaderView::ResizeToContents);
-		// the above aint working all the time - TODO: figure out when and why
-		tvBlockDetails->header ()->setResizeMode (1, QHeaderView::ResizeToContents);
-		tvBlockDetails->header ()->setResizeMode (2, QHeaderView::ResizeToContents);
-		//tvBlockDetails->expandAll ();
 	}
 
 	void
@@ -516,6 +538,7 @@ namespace NifSkopeQt4
 			if (!p)
 				return;
 			NifLib::Node *n = static_cast<NifLib::Node *>(p);
+			n = App->GetTreeNode (n);// get real node
 			if (!n)
 				return;
 			else {
@@ -550,6 +573,18 @@ namespace NifSkopeQt4
 		if (!URL.isValid ())
 			return;
 		QDesktopServices::openUrl (URL);
+	}
+
+	void
+	Qt4MainWindow::handleBLToTree()
+	{
+		ChangeBlockListMode (BLM_TREE);
+	}
+
+	void
+	Qt4MainWindow::handleBLToList()
+	{
+		ChangeBlockListMode (BLM_LIST);
 	}
 
 	void
@@ -600,6 +635,9 @@ namespace NifSkopeQt4
 			QApplication::desktop ()->screen ()->rect ().center () -
 			this->rect ().center ());
 		createMainMenu ();
+		// load defaults
+		aHierarchy->setChecked (cfg.BlockList.Mode == BLM_LIST);
+		aHierarchy->setChecked (cfg.BlockList.Mode == BLM_TREE);
 	}
 
 	Qt4MainWindow::~Qt4MainWindow()
