@@ -1234,8 +1234,6 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 			return 0;
 		}
 		INFO("FP :" << HEX(8) << POS << DEC)
-#undef DEC
-#undef HEX
 		//for (int i = 0; i < MLEN; i++)
 		//	INFO("c: " << M[i].c << ", s: " << M[i].s / 1000 << " ms "
 		//		<< M[i].n << " ()")
@@ -1558,6 +1556,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 	Compiler::PrintNode(NifLib::Node *node, std::string ofs)
 	{
 		static int bIdx = -1;
+		static int fofs = 0;
 		for (int i = 0; i < node->Nodes.Count (); i++) {
 			NifLib::Field *f = node->Nodes[i]->Value;
 			std::stringstream ha;
@@ -1565,12 +1564,15 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 				ha << node->Value->Name ();
 			if (node->Parent == NULL)
 				bIdx = i - 1;
-			INFO(ofs << "f (" << NIFT2Str (f->NLType ()) << ") #" << bIdx
+			INFO(HEX(8) << fofs << DEC
+			<< ofs << " (" << NIFT2Str (f->NLType ()) << ") #" << bIdx
 			<< " (" << f->BlockName () << ")" << ": \""
 			<< " {" << ha.str () << "} "
 			<< f->OwnerName () << "."
 			<< f->Name () << "\": "
 			<< f->Value.len << " \"" << f->AsString (this) << "\"")
+			if (!(f->TypeId () == NIFT_T && f->Value.len <= 1))
+				fofs += f->Value.len;
 			if (node->Nodes[i]->Nodes.Count () > 0)
 				PrintNode (node->Nodes[i], ofs + " ");
 		}
@@ -1579,7 +1581,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 	void
 	Compiler::DbgPrintFields()
 	{
-		std::string ofs = "";;
+		std::string ofs = "";
 		//PrintNode (ftree.Nodes[0], ofs);
 		PrintNode (&ftree, ofs);
 		return;
@@ -1616,5 +1618,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 	{
 		return &ftree;
 	}
+#undef DEC
+#undef HEX
 #undef STDSTR
 }

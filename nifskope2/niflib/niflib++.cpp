@@ -102,12 +102,13 @@ main(int argc, char **argv)
 	INFO("XML loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 
 	//p.SaveFile ("nif3.xml");
-	int r = 0;
+	/*int r = 0;
 	p.Build ();
 	gettimeofday (&tstart, NULL);
 	//r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
+	const char *f = "../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif";
 	try {
-		r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
+		r = p.ReadNif (f);
 	} catch (...) {
 		ERR("ReadNif: An exception was thrown")
 	}
@@ -116,17 +117,17 @@ main(int argc, char **argv)
 		INFO("nif loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 		p.WriteNif ("aaa.nif");
 		if (!md5filesareequal (
-			"../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif",
+			f,
 			"aaa.nif")) {
 			INFO ("differ")
 		}
-		p.DbgPrintFields ();
+		//p.DbgPrintFields ();
 	} else {
 		INFO("ReadNif failed")
 		p.DbgPrintFields ();
-	}
+	}*/
 
-	/*const char *pfix = "/mnt/archive/rain/temp/nif/";
+	const char *pfix = "/mnt/archive/rain/temp/nif/";
 	std::string line;
 	std::ifstream myf("flist_nif2.txt");
 	int cnt = 0;
@@ -145,17 +146,17 @@ main(int argc, char **argv)
 				}
 				if (i != l)
 					continue;
-				if (l > 3 && !NifLib::Parser::StartsWith ("tes5", 4, buf, 4))
-					continue;
+				//if (l > 3 && !NifLib::Parser::StartsWith ("fo3", 3, buf, 3))
+				//	continue;
 				std::stringstream fname;
 				fname << std::string (pfix) << line;
 				std::string fname2 = fname.str ();
 				cnt++;
 				INFO(cnt << ":\"" << fname2 << "\"");
 				if (!p.ReadNif (fname2.c_str ())) {
-					p.DbgPrintFields ();
+					//p.DbgPrintFields ();
 					INFO ("files done: " << cnt)
-					//break;
+					break;	
 				} else {// it was read, write it and md5sum compare it to the original
 					p.WriteNif ("aaa.nif");
 					if (!md5filesareequal (fname2.c_str () , "aaa.nif")) {
@@ -166,7 +167,7 @@ main(int argc, char **argv)
 				}
 			}
 		}
-	}*/
+	}
 
 	return EXIT_SUCCESS;
 }

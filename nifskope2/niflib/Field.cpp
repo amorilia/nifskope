@@ -109,16 +109,13 @@ namespace NifLib
 	NIFint
 	Field::AsNIFint()
 	{
-		// TODO: optimize
-		// TODO: Endianness - MACHINE vs. FILE
 		if (Value.len <= 0)
 			throw "Field::AsNIFint: can't convert";
-		if (Value.len == 1)
-			return *(NIFbyte *)(&Value.buf[0]);
-		else if (Value.len == 2 || Value.len == 3)
-			return *(NIFshort *)(&Value.buf[0]);
-		else
-			return *(NIFint *)(&Value.buf[0]);
+		NIFint result = 0;
+		// TODO: Endianness - MACHINE vs. FILE
+		//       The following is ok when (MACHINE == FILE) only
+		memcpy (&result, &(Value.buf[0]), (Value.len > 4 ? 4 : Value.len));
+		return result;
 	}
 
 	NIFushort
