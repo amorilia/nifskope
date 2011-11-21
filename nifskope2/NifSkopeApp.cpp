@@ -72,8 +72,16 @@ namespace NifSkope
 			wField = node->Value;
 			throw 1;// stop the recursion
 		}
-		else
-			return 1;// continue searching
+		return 1;// continue searching
+	}
+
+	int NifSkopeApp::wFindNodeByName(NifLib::Node *node)
+	{
+		if (node->Value->Name () == wName) {
+			wNode = node;
+			throw 1;// stop the recursion
+		}
+		return 1;// continue searching
 	}
 
 	NifSkopeApp::NifSkopeApp()
@@ -203,6 +211,24 @@ namespace NifSkope
 		} catch (int) {
 		}
 		return wField;
+	}
+
+	NifLib::Node *
+	NifSkopeApp::NodeByName(std::string name, NifLib::Node *node)
+	{
+		wNode = NULL;
+		wName = name;
+		try {
+			if (!node) {
+				NifLib::Node *nif = AsTree ();
+				NifTreePrefixWalk (nif, &NifSkopeApp::wFindNodeByName,
+					&NifSkopeApp::wFilterArrays);
+			} else
+				NifTreePrefixWalk (node, &NifSkopeApp::wFindNodeByName,
+					&NifSkopeApp::wFilterArrays);
+		} catch (int) {
+		}
+		return wNode;
 	}
 
 	std::string

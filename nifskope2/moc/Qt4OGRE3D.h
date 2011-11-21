@@ -72,6 +72,13 @@ namespace NifSkope
 		Qt4OGRE3D(void);
 		~Qt4OGRE3D(void);
 		bool go();
+
+		void LoadNiAVObject(Ogre::SceneNode *snode, NifLib::Node *node);
+		void LoadMesh(Ogre::SceneNode *snode,
+			std::string matname, std::string tex_path,
+			NIFfloat *v, int vc, NIFfloat *n, NIFfloat *uv,
+			NIFushort *s, int sl, NIFushort *si);
+		void LoadNiTriStrips(Ogre::SceneNode *snode, NifLib::Node *node);
 		// handlers
 		void LoadNif(IEvent *sender);
  	public slots:

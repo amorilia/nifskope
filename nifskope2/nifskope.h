@@ -66,4 +66,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	std::cout << "Error: " << MSG << std::endl;\
 }
 
+#define NSWRN(MSG)\
+{\
+	std::cout << "Warning: " << MSG << std::endl;\
+}
+
 #endif /*__NIFSKOPE_H__*/

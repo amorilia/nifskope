@@ -62,6 +62,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <OgreResourceGroupManager.h>
 #include <OgreMath.h>
 #include <OgreCommon.h>
+#include <OgreMeshManager.h>
+#include <OgreSubMesh.h>
 
 #include <sys/time.h>
 
@@ -513,6 +515,299 @@ rnd(int N)
 		mRoot->renderOneFrame ();
 	}
 
+#define INFO3(P,A,B,C)\
+	NSINFO(P << "("#A":" << A << ", "#B":" << B << ", "#C":" << C << ")")
+#define CHECKTHAT(COND,FACTN)\
+	if (!(COND)) {\
+		NSWRN ("LoadNiAVObject: failed: \"" << #COND << "\"")\
+		FACTN;\
+	}
+	void
+	Qt4OGRE3D::LoadNiAVObject(Ogre::SceneNode *snode, NifLib::Node *node)
+	{
+		//  NiAVObject.Translation": 12 "[Vector3]"
+		//  NiAVObject.Rotation": 36 "[Matrix33]"
+		//  NiAVObject.Scale": 4 "1"
+		for (int i = 0; i < node->Nodes.Count (); i++) {
+			NifLib::Node *n = node->Nodes[i];
+			CHECKTHAT(n, continue)
+			NifLib::Field *f = n->Value;
+			CHECKTHAT(f, continue)
+			std::string fn = f->Name ();
+			if (fn == "Translation") {//TODO: HC dep. to "nif.xml"
+				NSINFO("    " << fn << ": " << App->ToStr (f))
+				CHECKTHAT(f->Value.len == 12, continue)
+				NIFfloat *buf = (NIFfloat *)&(f->Value.buf[0]);
+				Ogre::Real x = (Ogre::Real)buf[0];
+				Ogre::Real y = (Ogre::Real)buf[1];
+				Ogre::Real z = (Ogre::Real)buf[2];
+				INFO3("     OGRE:", x, y, z)
+				snode->translate (x, y, z, Ogre::Node::TS_PARENT);// default
+			}
+			else if (fn == "Rotation") {//TODO: HC dep. to "nif.xml"
+				NSINFO("    " << fn << ": " << App->ToStr (f))
+				CHECKTHAT(f->Value.len == 36, continue)
+				NIFfloat *buf = (NIFfloat *)&(f->Value.buf[0]);
+				// YX
+				//[0] m11: 1, [3] m12: 0, [6] m13: 0,
+				//[1] m21: 0, [4] m22: 1, [7] m23: 0,
+				//[2] m31: 0, [5] m32: 0, [8] m33: 1
+				INFO3("     OGRE:", buf[0], buf[3], buf[6])
+				INFO3("     OGRE:", buf[1], buf[4], buf[7])
+				INFO3("     OGRE:", buf[2], buf[5], buf[8])
+				// XY - OGRE
+				Ogre::Matrix3 m(
+					(Ogre::Real)buf[0], (Ogre::Real)buf[3], (Ogre::Real)buf[6],
+					(Ogre::Real)buf[1], (Ogre::Real)buf[4], (Ogre::Real)buf[7],
+					(Ogre::Real)buf[2], (Ogre::Real)buf[5], (Ogre::Real)buf[8]);
+				Ogre::Quaternion q(m);
+				snode->rotate (q, Ogre::Node::TS_LOCAL);// default
+			}
+			else if (fn == "Scale") {//TODO: HC dep. to "nif.xml"
+				NSINFO("    " << fn << ": unform: " << App->ToStr (f))
+				CHECKTHAT(f->Value.len == 4, continue)
+				NIFfloat *buf = (NIFfloat *)&(f->Value.buf[0]);
+				Ogre::Real scale = (Ogre::Real)buf[0];
+				NSINFO("     OGRE: scale: " << scale)
+				snode->scale (scale, scale, scale);
+			}
+		}
+	}
+
+	void
+	Qt4OGRE3D::LoadMesh(Ogre::SceneNode *snode,
+		std::string matname, std::string tex_path,
+		NIFfloat *v, int vc, NIFfloat *n, NIFfloat *uv,
+		NIFushort *s, int sl, NIFushort *si)
+	{
+		// "create" the material
+#define MM Ogre::MaterialManager::getSingleton ()
+#define MMDEFRESGRP Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME
+		if (!MM.resourceExists (matname)) {
+			Ogre::MaterialPtr mat =	MM.create (
+				matname, MMDEFRESGRP);
+			if (tex_path != "")
+				//Ogre::TextureUnitState* tuisTexture =
+				mat->getTechnique (0)->getPass (
+					0)->createTextureUnitState (tex_path);
+		}
+#undef MM
+
+// TODO: check for presence
+#define HBM Ogre::HardwareBufferManager::getSingleton()
+		static int block = -1;
+		std::stringstream objn;
+		objn << "Mesh " << block++;
+		std::stringstream obj2n;
+		obj2n << "Mesh Entity " << block - 1;
+		// http://www.ogre3d.org/docs/manual/manual_toc.html#SEC_Contents
+		// http://www.ogre3d.org/tikiwiki/ManualSphereMeshes&structure=Cookbook
+		std::string pMeshName = objn.str ();
+		std::string pEntityName = obj2n.str ();
+		NSINFO("     OGRE: creating mesh: " << pMeshName)
+		NSINFO("     OGRE: creating mesh, entity: " << pEntityName)
+		NSINFO("     OGRE: creating mesh, using mat: \"" << matname << "\"")
+		Ogre::Real r = 142;
+		Ogre::MeshPtr pMesh = Ogre::MeshManager::getSingleton ().createManual (
+			pMeshName, MMDEFRESGRP);
+		// create the vertex buffer
+		// TODO: who releases that "new"
+		pMesh->sharedVertexData = new Ogre::VertexData ();
+		Ogre::VertexData* vertexData = pMesh->sharedVertexData;
+ 		// define the vertex format
+		Ogre::VertexDeclaration* vertexDecl = vertexData->vertexDeclaration;
+		size_t currOffset = 0;
+		// v
+		vertexDecl->addElement (0, currOffset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
+		currOffset += Ogre::VertexElement::getTypeSize (Ogre::VET_FLOAT3);
+		// n
+		vertexDecl->addElement (0, currOffset, Ogre::VET_FLOAT3, Ogre::VES_NORMAL);
+		currOffset += Ogre::VertexElement::getTypeSize (Ogre::VET_FLOAT3);
+		// uv
+		vertexDecl->addElement (
+			0, currOffset, Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES, 0);
+		currOffset += Ogre::VertexElement::getTypeSize (Ogre::VET_FLOAT2);
+		NSINFO("     OGRE: vertex buffer vertex count: " << vc)
+		vertexData->vertexCount = vc;
+		Ogre::HardwareVertexBufferSharedPtr vBuf = HBM.createVertexBuffer (
+			vertexDecl->getVertexSize(0),
+			vertexData->vertexCount,
+			Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, false );
+		Ogre::VertexBufferBinding* binding = vertexData->vertexBufferBinding;
+		binding->setBinding (0, vBuf);
+		float* pVertex =
+			static_cast<float*>(vBuf->lock (Ogre::HardwareBuffer::HBL_DISCARD));
+		for (int i = 0; i < vc; i++) {
+			NIFfloat *vertex = &v[3*i];
+			NIFfloat *normal = &n[3*i];
+			NIFfloat *tcoord = &uv[2*i];
+			*pVertex++ = vertex[0];
+			*pVertex++ = vertex[1];
+			*pVertex++ = vertex[2];
+			*pVertex++ = normal[0];
+			*pVertex++ = normal[1];
+			*pVertex++ = normal[2];
+			*pVertex++ = tcoord[0];
+			*pVertex++ = tcoord[1];
+		}
+		vBuf->unlock ();
+		// create index buffers
+		NSINFO("     OGRE: index buffer count: " << sl)
+		int base = 0;
+		for (int m = 0; m < sl; m++) {// sub-mesh
+			Ogre::SubMesh *pMeshVertex = pMesh->createSubMesh ();
+			pMeshVertex->useSharedVertices = true;
+			pMeshVertex->operationType = Ogre::RenderOperation::OT_TRIANGLE_STRIP;
+			pMeshVertex->indexData->indexCount = s[m];
+			pMeshVertex->indexData->indexBuffer = HBM.createIndexBuffer (
+				Ogre::HardwareIndexBuffer::IT_16BIT,
+				pMeshVertex->indexData->indexCount,
+				Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
+			Ogre::HardwareIndexBufferSharedPtr iBuf =
+				pMeshVertex->indexData->indexBuffer;
+			unsigned short* pIndices = static_cast<unsigned short*>(iBuf->lock (
+				Ogre::HardwareBuffer::HBL_DISCARD));
+			for (int vidx = base; vidx < base + s[m]; vidx++) {
+				*pIndices++ = si[vidx];
+			}
+			iBuf->unlock ();
+			base += s[m];
+		}
+		// "the original code was missing this line:"
+		// TODO: without it there is nothing rendered - figure out why
+		pMesh->_setBounds (Ogre::AxisAlignedBox (
+			Ogre::Vector3 (-r, -r, -r), Ogre::Vector3 (r, r, r)), false);
+		pMesh->_setBoundingSphereRadius (r);
+		// "this line makes clear the mesh is loaded (avoids memory leaks)"
+		pMesh->load ();
+		// init scene node
+		Ogre::Entity* meshEntity = mScn->createEntity (pEntityName, pMeshName);
+		meshEntity->setMaterialName (matname);
+		snode->attachObject (meshEntity);
+#undef HBM
+#undef MMDEFRESGRP
+		// TODO: elseif no HardwareBuffer {
+		/*int base = 0;
+		static int block = -1;
+		std::stringstream objn;
+		objn << "Mesh " << block++;
+		std::string mname = objn.str ();
+		NSINFO("     OGRE: creating mesh: " << mname)
+		//mySceneNode->setScale (0.5, 0.5, 0.5);
+		Ogre::ManualObject* sm = mScn->createManualObject (mname);
+		NSINFO("     OGRE: creating mesh, using mat: \"" << matname << "\"")
+		for (int m = 0; m < sl; m++) {// sub-mesh
+			sm->begin (matname,	Ogre::RenderOperation::OT_TRIANGLE_STRIP);
+			for (int vidx = base; vidx < base + s[m]; vidx++) {// faces
+				int idx = si[vidx];
+				NIFfloat *vertex = &v[3*idx];
+				NIFfloat *normal = &n[3*idx];
+				NIFfloat *tcoord = &uv[2*idx];
+				sm->position (vertex[0], vertex[1], vertex[2]);
+				sm->normal (normal[0], normal[1], normal[2]);
+				sm->textureCoord (tcoord[0], tcoord[1]);
+				//sm->index (vidx - base);
+			}
+			sm->end ();
+			base += s[m];
+		}
+		snode->attachObject (sm);*/
+	}
+
+	void
+	Qt4OGRE3D::LoadNiTriStrips(Ogre::SceneNode *snode, NifLib::Node *node)
+	{
+		// snode is logical node
+		//  NiBinaryExtraData
+		//  NiTexturingProperty
+		//	 NiSourceTexture.FileName
+		//  NiMaterialProperty
+		//  NiTriStripsData - geometry data
+		std::string matname = "BaseWhite";
+		std::string tex_path = "";
+		for (int i = 0; i < node->Nodes.Count (); i++) {
+			NifLib::Node *n = node->Nodes[i];
+			CHECKTHAT(n, continue)
+			NifLib::Field *f = n->Value;
+			CHECKTHAT(f, continue)
+			std::string fn = f->Name ();
+			// find texture
+			NifLib::Node *tex = NULL;
+			if (fn == "NiTexturingProperty")//TODO: HC dep. to "nif.xml"
+				tex = App->NodeByName ("NiSourceTexture", n);//TODO: HC dep. to "nif.xml"
+			if (tex) {
+				NifLib::Node *tn = App->GetTreeNode (tex);// compiler node
+				CHECKTHAT(tn, continue)
+				for (int j = 0; j < tn->Nodes.Count (); j++) {
+					NifLib::Node *tnn = tn->Nodes[j];
+					CHECKTHAT(tnn, continue)
+					NifLib::Field *tnf = tnn->Value;
+					CHECKTHAT(tnf, continue)
+					std::string tnfn = tnf->Name ();
+					if (tnfn == "Use External") {
+						NSINFO("    " << tnfn << ": " << App->ToStr (tnf))
+						if (tnf->AsNIFbyte () == 0) {
+							NSWRN("Not supported yet")
+							break;// no external texture, so stop searching
+						}
+					} else
+					if (tnfn == "File Name") {
+						tex_path = App->GetNodeValue (tnn);
+						// adjust path separator
+						int pathlen = tex_path. length ();
+						CHECKTHAT(pathlen > 0, continue)
+						char *path = new char[pathlen];
+						CHECKTHAT(path, continue)
+						memcpy (path, tex_path.c_str (), pathlen);
+						for (int i = 0; i < pathlen; i++)
+							if (path[i] == '\\')
+								path[i] = '/';
+						tex_path = std::string (path, pathlen);
+						delete [] path;
+						NSINFO("    " << tnfn << ": " << tex_path)
+						matname = tex_path;
+						NSINFO("     OGRE: material name: " << matname)
+					}
+				}
+			} else // if (tex)
+			// geometry
+			if (fn == "NiTriStripsData") {//TODO: HC dep. to "nif.xml"
+				NifLib::Node *gn = App->GetTreeNode (n);// compiler node
+				CHECKTHAT(gn, continue)
+				int sl = 0;// strip lengths
+				int vc = 0;// vertex count
+				NIFfloat *v = NULL, *n = NULL, *uv = NULL;
+				NIFushort *s = NULL;
+				NIFushort *si = NULL;
+				//TODO: HC dep. to "nif.xml"
+				NifLib::Field *_v = App->ByName ("Vertices", gn);//"Num Vertices"
+				CHECKTHAT(_v, continue)
+				NifLib::Field *_n = App->ByName ("Normals", gn);//"Num Vertices"
+				CHECKTHAT(_n, continue)
+				// can be more than 1, upto 63 - TODO: no idea why or what for
+				NifLib::Field *_uv = App->ByName ("UV Sets", gn);//"Num Vertices"
+				CHECKTHAT(_uv, continue)
+				NifLib::Field *_s = App->ByName ("Strip Lengths", gn);
+				CHECKTHAT(_s, continue)
+				NifLib::Field *_si = App->ByName ("Points", gn);
+				CHECKTHAT(_si, continue)
+				v = (NIFfloat *)&(_v->Value.buf[0]);
+				vc = _v->Value.len / (3 * 4);//TODO: HC dep. to "nif.xml"
+				n = (NIFfloat *)&(_n->Value.buf[0]);
+				uv = (NIFfloat *)&(_uv->Value.buf[0]);
+				s = (NIFushort *)&(_s->Value.buf[0]);
+				sl = _s->Value.len / 2;//TODO: HC dep. to "nif.xml"
+				si = (NIFushort *)&(_si->Value.buf[0]);
+				// delegate to OGRE  TODO: simplify
+				LoadMesh (snode, matname, tex_path, v, vc, n, uv, s, sl, si);
+				matname = "BaseWhite";
+				tex_path = "";
+			}// if (fn == "NiTriStripsData")
+		}
+	}
+#undef INFO3
+#undef CHECKTHAT
+
 	/*
 	*	NifSkope::FileIO event handler. Occurs after the parser
 	*	has loaded a file.
@@ -520,146 +815,52 @@ rnd(int N)
 	void
 	Qt4OGRE3D::LoadNif(IEvent *sender)
 	{
-		return;
+		// TODO: reset ()
 		// TODO: to settings
 		std::string texbase ("/mnt/workspace/rain/c/nif/test/nfiskope_bin/data/");
 		Ogre::ResourceGroupManager::getSingleton ().addResourceLocation (
 			texbase, "FileSystem");
 
-		NifLib::Compiler *nif = App->File.NifFile;
-		std::string tex;
-		std::string matname;
-		int block = -1;
-		for (int i = 0; i < nif->FCount (); i++) {
-			NifLib::Field *f = (*nif)[i];
-			if (i > 0 && f->BlockTag != ((*nif)[i-1])->BlockTag)
-				block++;
-			//NiTriStripsData
-			NifLib::Tag *ft = f->BlockTag;
-			if (!ft)
-				continue;// field has no block type - its ok
-			NifLib::Attr *tname = ft->AttrById (ANAME);
-			if (!tname)
-				continue;// a tag has no "name" - error
-			int pblock = block;
-			if (tname->Value.Equals ("NiSourceTexture", 15)) {
-				ft = f->Tag;
-				tname = ft->AttrById (ANAME);
-				if (tname->Value.Equals ("Value", 5)) {
-					NSINFO("found NiSourceTexture.Value at #" << block)
-					//NSINFO(std::string (f->Value.buf, f->Value.len))
+		NifLib::Node *root = App->AsNifTree ();// logical tree
+		for (int i = 0; i < root->Nodes.Count (); i++) {
+			NifLib::Node *r = root->Nodes[i];// logical node
+			Ogre::SceneNode *rscn = NULL;
+			if (r->Value->Name () == "NiNode") {//TODO: HC dep. to "nif.xml"
+				NifLib::Node *rc = App->GetTreeNode (r);// compiler node
+				// form scene node name
+				std::stringstream tmp;
+				tmp << App->GetNodeValue (rc) << " (NiNode #" << i << ")";
+				std::string rname = tmp.str ();
+				NSINFO("NiNode #" << i << ": " << rname)
+				// create the scene node
+				rscn = mScn->getRootSceneNode ()->createChildSceneNode (rname);
+				NifLib::Node *av = App->NodeByName ("NiAVObject", rc);//TODO: HC dep. to "nif.xml"
+				if (av) {
+					NSINFO("NiNode #" << i << ": applying transform")
+					LoadNiAVObject (rscn, av);
+				}
+			}
+			// TODO: should this be recursive ?
+			for (int j = 0; j < r->Nodes.Count (); j++) {// logical tree
+				NifLib::Node *g = r->Nodes[j];// logical node
+				if (rscn && g->Value->Name () == "NiTriStrips") {//TODO: HC dep. to "nif.xml"
+					NifLib::Node *gc = App->GetTreeNode (g);// compiler node
+					// form scene node name
 					std::stringstream tmp;
-					tmp << std::string (f->Value.buf, f->Value.len);
-					tex = tmp.str ();
-					int pathlen = tex. length ();
-					char *path = new char[pathlen];
-					memcpy (path, tex.c_str (), pathlen);
-					for (int i = 0; i < pathlen; i++)
-						if (path[i] == '\\')
-							path[i] = '/';
-					tex = std::string (path, pathlen);
-					delete [] path;
-					NSINFO(tex)
-					//std::stringstream matname;
-					std::stringstream matnamestream;
-					matnamestream << "Tex " << block;
-					matname = matnamestream.str ();
-					NSINFO("mat set to: \"" << matname << "\"")
-					Ogre::MaterialPtr mat =
-						Ogre::MaterialManager::getSingleton ().create(matname,
-						Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-					//Ogre::TextureUnitState* tuisTexture =
-						mat->getTechnique (0)->getPass (0)->createTextureUnitState (
-						tex);
+					tmp << App->GetNodeValue (gc) << " (NiTriStrips #" << j << ")";
+					std::string rname = tmp.str ();
+					NSINFO("  NiTriStrips #" << j << ": " << rname)
+					// create the scene node
+					Ogre::SceneNode *gscn =
+						rscn->createChildSceneNode (rname);
+					NifLib::Node *av = App->NodeByName ("NiAVObject", gc);//TODO: HC dep. to "nif.xml"
+					if (av) {
+						NSINFO("  NiTriStrips #" << j << ": applying transform")
+						LoadNiAVObject (gscn, av);
+					}
+					LoadNiTriStrips (gscn, g);
 				}
 			}
-			else if (tname->Value.Equals ("NiTriStripsData", 15)) {
-				//int vnum = 0;
-				int sl = 0;
-				NIFfloat *v = NULL, *n = NULL, *uv = NULL;
-				NIFushort *s = NULL;
-				NIFushort *si = NULL;
-			while (pblock == block && ++i < nif->FCount ()) {
-				//NSINFO ("found NiTriStripsData at #" << block)
-				ft = f->Tag;
-				tname = ft->AttrById (ANAME);
-				// need to find a few things:
-				// +NiGeometryData
-				//  "Vertices" type="Vector3" arr1="Num Vertices" cond="Has Vertices"
-				//  "Normals" type="Vector3" arr1="Num Vertices" cond="Has Normals"
-				//  "UV Sets" type="TexCoord" arr1="Num UV Sets & 63" arr2="Num Vertices"
-				// +NiTriStripsData
-				//  "Num Strips" 155
-				//  "Strip Lengths" type="ushort" arr1="Num Strips"
-				//  "Points" type="ushort" arr1="Num Strips" arr2="Strip Lengths"
-				if (tname->Value.Equals ("Vertices", 8)) {
-					NSINFO ("found NiTriStripsData.Vertices at #" << block)
-					//vnum = f->Value.len / 4;
-					v = (NIFfloat *)&f->Value.buf[0];
-				}
-				else if (tname->Value.Equals ("Normals", 7)) {
-					NSINFO ("found NiTriStripsData.Normals at #" << block)
-					n = (NIFfloat *)&f->Value.buf[0];
-				}
-				else if (tname->Value.Equals ("UV Sets", 7)) {
-					NSINFO ("found NiTriStripsData.UV Sets at #" << block)
-					uv = (NIFfloat *)&f->Value.buf[0];
-				}
-				//if (tname->Value.Equals ("Num Strips", 10))
-				//	NSINFO ("found NiTriStripsData.Num Strips at #" << block)
-				else if (tname->Value.Equals ("Strip Lengths", 13)) {
-					NSINFO ("found NiTriStripsData.Strip Lengths at #" << block)
-					sl = f->Value.len / 2;
-					s = (NIFushort *)&f->Value.buf[0];
-				}
-				else if (tname->Value.Equals ("Points", 6)) {
-					NSINFO ("found NiTriStripsData.Points at #" << block)
-					si = (NIFushort *)&f->Value.buf[0];
-					int base = 0;
-					std::stringstream objn;
-					objn << "Mesh " << block;
-					std::stringstream nn;
-					nn << "Node " << block;
-					Ogre::SceneNode *mySceneNode =
-						mScn->getRootSceneNode ()->createChildSceneNode (nn.str ());
-					mySceneNode->setScale (0.5, 0.5, 0.5);
-					Ogre::ManualObject* sm = mScn->createManualObject (objn.str ());
-					NSINFO("Using mat: \"" << matname << "\"")
-					for (int m = 0; m < sl; m++) {
-						// submesh
-						/*ManualObject* sm = mScn->createManualObject ("manual");
-						sm->begin ("BaseWhiteNoLighting",
-							RenderOperation::OT_TRIANGLE_STRIP);*/
-						//INFO ("m[" << m << "]=" << s[m])
-						sm->begin (matname,// "BaseWhite",
-							Ogre::RenderOperation::OT_TRIANGLE_STRIP);
-						for (int vidx = base; vidx < base + s[m]; vidx++) {
-							// faces
-							int idx = si[vidx];
-							NIFfloat *vertex = &v[3*idx];
-							NIFfloat *normal = &n[3*idx];
-							NIFfloat *tcoord = &uv[2*idx];
-							/*INFO("#" << vidx - base << "(("
-							<< vertex[0] << ", " << vertex[1] << ", " << vertex[2]
-							<< ") ("
-							<< normal[0] << ", " << normal[1] << ", " << normal[2]
-							<< ") ("
-							<< tcoord[0] << ", " << tcoord[1] << "))")*/
-							sm->position (vertex[0], vertex[1], vertex[2]);
-							sm->normal (normal[0], normal[1], normal[2]);
-							sm->textureCoord (tcoord[0], tcoord[1]);
-							//sm->index (vidx - base);
-						}
-						sm->end ();
-						base += s[m];
-					}//
-					mySceneNode->attachObject (sm);
-				}
-				f = (*nif)[i];
-				if (i > 0 && f->BlockTag != ((*nif)[i-1])->BlockTag)
-					block++;
-			}
-			}// if "NiTriStripsData"
-		}// for each field
+		}
 	}
 }

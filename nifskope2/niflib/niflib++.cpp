@@ -102,11 +102,11 @@ main(int argc, char **argv)
 	INFO("XML loaded & parsed in " << time_interval (&tstart, &tstop) / (1000) << " ms")
 
 	//p.SaveFile ("nif3.xml");
-	/*int r = 0;
+	int r = 0;
 	p.Build ();
 	gettimeofday (&tstart, NULL);
 	//r = p.ReadNif ("../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif");
-	const char *f = "../../../nfiskope_bin/data/meshes/clothes/DLD89/ShaiyaDress.nif";
+	const char *f = "../../../nfiskope_bin/data/meshes/0Foutfit/SexyLingerie/LingerieSet1Trans.nif";
 	try {
 		r = p.ReadNif (f);
 	} catch (...) {
@@ -121,13 +121,13 @@ main(int argc, char **argv)
 			"aaa.nif")) {
 			INFO ("differ")
 		}
-		//p.DbgPrintFields ();
+		p.DbgPrintFields ();
 	} else {
 		INFO("ReadNif failed")
 		p.DbgPrintFields ();
-	}*/
+	}
 
-	const char *pfix = "/mnt/archive/rain/temp/nif/";
+	/*const char *pfix = "/mnt/archive/rain/temp/nif/";
 	std::string line;
 	std::ifstream myf("flist_nif2.txt");
 	int cnt = 0;
@@ -167,7 +167,7 @@ main(int argc, char **argv)
 				}
 			}
 		}
-	}
+	}*/
 
 	return EXIT_SUCCESS;
 }

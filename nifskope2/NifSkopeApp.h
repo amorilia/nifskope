@@ -75,6 +75,7 @@ namespace NifSkope
 		// "args" for the walker actions.
 		// All "walker"-related fields are prefixed with "w".
 		NifLib::Field *wField;
+		NifLib::Node *wNode;
 		std::string wName;
 		void NifTreePrefixWalk(
 			NifLib::Node *node,
@@ -82,6 +83,7 @@ namespace NifSkope
 			int (NifSkopeApp::*filter)(NifLib::Node *node) = NULL);
 		int wFilterArrays(NifLib::Node *node);
 		int wFindFieldByName(NifLib::Node *node);
+		int wFindNodeByName(NifLib::Node *node);
 
 		/*
 		*	Converts an ARR1 non-J field into a list of fields
@@ -159,8 +161,6 @@ namespace NifSkope
 		*/
 		void NifTreeNodeGen(NifLib::Node *src, NifLib::Node *dst);
 
-		NifLib::Field *ByName(std::string name, NifLib::Node *node = NULL);
-
 		std::string GetNodeName(NifLib::Node *node);
 
 		bool ValidRootNodeIdx(int idx);
@@ -229,6 +229,10 @@ namespace NifSkope
 		*	TODO: AARR3
 		*/
 		void ExpandNode(NifLib::Node *node);
+
+		NifLib::Field *ByName(std::string name, NifLib::Node *node = NULL);
+
+		NifLib::Node *NodeByName(std::string name, NifLib::Node *node = NULL);
 
 		// arguments
 		bool SanitizeBeforeSave;
