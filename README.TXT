@@ -35,3 +35,9 @@ Compiling NifSkope from source
 	export LD_LIBRARY_PATH=$OGRE_ROOT"/lib/OGRE"
 	./nifskope
 	hit "Load" and choose a file
+
+Credits
+-------
+
+"Trackball" implementation thanks to:
+http://www.visgraf.impa.br/Projects/3dp/doc/html2/trackball_8cpp-source.html

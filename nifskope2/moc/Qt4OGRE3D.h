@@ -59,6 +59,11 @@ namespace NifSkope
 	private:
 		int ready;
 		QPoint lastPos;
+
+		void Trackball(float q[4], float p1x, float p1y, float p2x, float p2y);
+		void tbAxisToQuat(float a[3], float phi, float q[4]);
+		float tbProjectToSphere(float r, float x, float y);
+
 	protected:
 		// Qt delegates
 		void mousePressEvent(QMouseEvent *event);
