@@ -234,6 +234,7 @@ namespace NifSkope
 	std::string
 	NifSkopeApp::GetNodeValue(NifLib::Node *node)
 	{
+		node = GetTreeNode (node);
 		// TODO: what if its not named "Value"?
 		NifLib::Field *f = ByName ("Value", node);
 		if (f)
@@ -359,6 +360,8 @@ namespace NifSkope
 			NifLib::Field *tmp = ByName ("Value", node);
 			if (tmp)
 				f = tmp;
+			else if (node->Nodes.Count () > 0)
+				return "";// set "" for root dynamic complex nodes
 		}
 		return f->AsString (File.NifFile);
 	}

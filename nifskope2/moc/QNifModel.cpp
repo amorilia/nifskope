@@ -52,7 +52,7 @@ namespace NifSkopeQt4
 	QVariant
 	QNifModel::CType(NifLib::Node *node)
 	{
-		if (node->Parent == win->App->AsTree ())
+		if (win->App->GetTreeNode (node->Parent) == win->App->AsTree ())
 			return QVariant (QString ("NiBlock"));
 		else
 			return QVariant (QString (node->Value->TagType ().c_str ()));
@@ -61,7 +61,7 @@ namespace NifSkopeQt4
 	QVariant
 	QNifModel::CValue(NifLib::Node *node)
 	{
-		if (node->Parent == win->App->AsTree ())
+		if (win->App->GetTreeNode (node->Parent) == win->App->AsTree ())
 			return QVariant (QString (
 				win->App->GetNodeValue (node).c_str ()));
 		NifLib::Field *f = node->Value;

@@ -519,7 +519,7 @@ rnd(int N)
 	NSINFO(P << "("#A":" << A << ", "#B":" << B << ", "#C":" << C << ")")
 #define CHECKTHAT(COND,FACTN)\
 	if (!(COND)) {\
-		NSWRN ("LoadNiAVObject: failed: \"" << #COND << "\"")\
+		NSWRN ("LoadNif: failed: \"" << #COND << "\"")\
 		FACTN;\
 	}
 	void

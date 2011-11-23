@@ -54,10 +54,6 @@ namespace NifSkopeQt4
 			return 0;
 		else
 			return QNifModel::rowCount (parent);
-		/*if (!parent.isValid ())
-			return rn->Nodes.Count ();
-		else
-			return 0;*/
 	}
 
 	QNifBlockModel::~QNifBlockModel()
