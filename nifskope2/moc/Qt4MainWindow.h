@@ -65,6 +65,17 @@ namespace NifSkopeQt4
 			BlockListMode Mode;
 		};
 		BlockListCfg BlockList;
+
+		class BlockDetailsCfg
+		{
+		public:
+			BlockDetailsCfg()
+			{
+				MergeNiObjects = true;// TODO: implement me
+			}
+			bool MergeNiObjects;// display descendants as a list instead of tree
+		};
+		BlockDetailsCfg BlockDetails;
 	};
 
 	class Qt4MainWindow: public QMainWindow

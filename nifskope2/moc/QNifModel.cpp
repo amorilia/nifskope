@@ -37,6 +37,7 @@ namespace NifSkopeQt4
 {
 	QVariant QNifModel::CId(NifLib::Node *node)
 	{
+		// TODO: delegate to NifSkopeApp
 		if (dummy->find (node) != dummy->end ())
 			return QVariant (QString ("%0").arg ((*dummy)[node]));
 		else
@@ -46,12 +47,14 @@ namespace NifSkopeQt4
 	QVariant
 	QNifModel::CName(NifLib::Node *node)
 	{
+		// TODO: delegate to NifSkopeApp
 		return QVariant (QString (node->Value->Name ().c_str ()));
 	}
 
 	QVariant
 	QNifModel::CType(NifLib::Node *node)
 	{
+		// TODO: delegate to NifSkopeApp
 		if (win->App->GetTreeNode (node->Parent) == win->App->AsTree ())
 			return QVariant (QString ("NiBlock"));
 		else
@@ -61,6 +64,7 @@ namespace NifSkopeQt4
 	QVariant
 	QNifModel::CValue(NifLib::Node *node)
 	{
+		// TODO: delegate to NifSkopeApp
 		if (win->App->GetTreeNode (node->Parent) == win->App->AsTree ())
 			return QVariant (QString (
 				win->App->GetNodeValue (node).c_str ()));
@@ -83,42 +87,49 @@ namespace NifSkopeQt4
 	QVariant
 	QNifModel::CArgument(NifLib::Node *node)
 	{
+		// TODO: delegate to NifSkopeApp
 		return QVariant (QString (node->Value->TagAttr (AARG).c_str ()));
 	}
 
 	QVariant
 	QNifModel::CArray1(NifLib::Node *node)
 	{
+		// TODO: delegate to NifSkopeApp
 		return QVariant (QString (node->Value->TagAttr (AARR1).c_str ()));
 	}
 
 	QVariant
 	QNifModel::CArray2(NifLib::Node *node)
 	{
+		// TODO: delegate to NifSkopeApp
 		return QVariant (QString (node->Value->TagAttr (AARR2).c_str ()));
 	}
 
 	QVariant
 	QNifModel::CCondition(NifLib::Node *node)
 	{
+		// TODO: delegate to NifSkopeApp
 		return QVariant (QString (node->Value->TagAttr (ACOND).c_str ()));
 	}
 
 	QVariant
 	QNifModel::CSince(NifLib::Node *node)
 	{
+		// TODO: delegate to NifSkopeApp
 		return QVariant (QString (node->Value->TagAttr (AVER1).c_str ()));
 	}
 
 	QVariant
 	QNifModel::CUntil(NifLib::Node *node)
 	{
+		// TODO: delegate to NifSkopeApp
 		return QVariant (QString (node->Value->TagAttr (AVER2).c_str ()));
 	}
 
 	QVariant
 	QNifModel::CVersionCondition(NifLib::Node *node)
 	{
+		// TODO: delegate to NifSkopeApp
 		return QVariant (QString (node->Value->TagAttr (AVERCOND).c_str ()));
 	}
 
@@ -231,7 +242,8 @@ namespace NifSkopeQt4
 			parentItem = rn;
 		else
 			parentItem = static_cast<NifLib::Node *>(parent.internalPointer ());
-		win->App->ExpandNode (parentItem);// expand if needed
+		// expand if needed, handles array exp. on demand.
+		win->App->ExpandNode (parentItem);
 		return parentItem->Nodes.Count ();
 	}
 
