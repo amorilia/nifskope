@@ -95,6 +95,8 @@ md5filesareequal(const char *fname1, const char *fname2)
 int
 main(int argc, char **argv)
 {
+	// TODO: nifVerify:
+	//	- check index arrays for invalid indexes
 	struct timeval tstart, tstop;
 	gettimeofday (&tstart, NULL);
 	NifLib::Compiler p("nif.xml");
@@ -146,8 +148,8 @@ main(int argc, char **argv)
 				}
 				if (i != l)
 					continue;
-				if (l > 3 && !NifLib::Parser::StartsWith ("tes5", 4, buf, 4))
-					continue;
+				//if (l > 3 && !NifLib::Parser::StartsWith ("tes5", 4, buf, 4))
+				//	continue;
 				std::stringstream fname;
 				fname << std::string (pfix) << line;
 				std::string fname2 = fname.str ();
