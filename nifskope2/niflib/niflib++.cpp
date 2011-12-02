@@ -127,7 +127,8 @@ main(int argc, char **argv)
 	} else {
 		INFO("ReadNif failed")
 		p.DbgPrintFields ();
-	}*/
+	}
+	return 0;*/
 
 	const char *pfix = "/mnt/archive/rain/temp/nif/";
 	std::string line;
@@ -148,7 +149,7 @@ main(int argc, char **argv)
 				}
 				if (i != l)
 					continue;
-				//if (l > 3 && !NifLib::Parser::StartsWith ("tes5", 4, buf, 4))
+				//if (l > 3 && !NifLib::Parser::StartsWith ("loki", 4, buf, 4))
 				//	continue;
 				std::stringstream fname;
 				fname << std::string (pfix) << line;

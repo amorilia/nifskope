@@ -876,6 +876,7 @@
     </compound>
 
     <compound name="ExportInfo" ver1="10.0.1.2">
+    	Information about how the file was exported
         <add name="Unknown" type="uint" ver2="10.0.1.2" default="3">Probably the number of strings that follow.</add>
         <add name="Creator" type="ShortString">Could be the name of the creator of the NIF file?</add>
         <add name="Export Info 1" type="ShortString">Unknown. Can be something like &#039;TriStrip Process Script&#039;.</add>
@@ -1079,17 +1080,29 @@
 		<add name="Unknown 00 00 3" type="ushort" ver1="10.2.0.0" ver2="10.2.0.0" vercond="User Version == 1"></add>
 		<add name="Unknown 00 00 4" type="ushort" ver1="10.2.0.0" ver2="10.2.0.0" vercond="User Version == 1"></add>
 		<add name="Unknown Arr 1" type="SkinPartitionUnknownItem1" arr1="Num Vertices 2" ver1="10.2.0.0" ver2="10.2.0.0" vercond="User Version == 1"></add>
-    </compound>
-	
+	</compound>
+
 	<!-- related to the file posted in tracker item #3117836:
-			 http://sourceforge.net/tracker/?func=detail&aid=3117836&group_id=149157&atid=776343 -->
+		 http://sourceforge.net/tracker/?func=detail&aid=3117836&group_id=149157&atid=776343 -->
 	<compound name="SkinPartitionUnknownItem1">
 		<add name="Unknown Flags" type="uint"></add>
 		<add name="f1" type="float"></add>
 		<add name="f2" type="float"></add>
 		<add name="f3" type="float"></add>
 		<add name="f4" type="float"></add>
-		<add name="f5" type="float"></add>		
+		<add name="f5" type="float"></add>
+	</compound>
+
+	<compound name="QTransform">
+		<add name="Translation" type="Vector3">Translation.</add>
+		<add name="Rotation" type="Quaternion">Rotation.</add>
+		<add name="Scale" type="float">Scale.</add>
+	</compound>
+	
+	<compound name="MTransform">
+		<add name="Translation" type="Vector3">Translation.</add>
+		<add name="Rotation" type="Matrix33">Rotation.</add>
+		<add name="Scale" type="float">Scale.</add>
 	</compound>
 
     <compound name="BoundingBox">
@@ -1179,41 +1192,43 @@
         <add name="Unknown Float 4" type="float" default="1.0">Unknown</add>
         <add name="Unknown Float 5" type="float" default="2.0">Unknown</add>
         <add name="Unknown Float 6" type="float" default="1.0">Unknown</add>
-        <add name="Unknown Byte 1" type="byte" default="0">Unknown</add>
+        <add name="Unknown Byte 1"  type="byte"  default="0">Unknown</add>
     </compound>
 
     <compound name="RagdollDescriptor">
         This constraint defines a cone in which an object can rotate. The shape of the cone can be controlled in two (orthogonal) directions.
         <!-- Oblivion -->
-        <add name="Pivot A" type="Vector4" ver2="20.0.0.5">Point around which the object will rotate.</add>
-        <add name="Plane A" type="Vector4" ver2="20.0.0.5">Defines the orthogonal directions in which the shape can be controlled (namely in this direction, and in the direction orthogonal on this one and Twist A).</add>
+        <add name="Pivot A" type="Vector4" ver2="20.0.0.5">The point where the constraint is attached to its parent rigidbody.</add>
+        <add name="Plane A" type="Vector4" ver2="20.0.0.5">Defines the orthogonal plane in which the body can move, the orthogonal directions in which the shape can be controlled (the direction orthogonal on this one and Twist A).</add>
         <add name="Twist A" type="Vector4" ver2="20.0.0.5">Central directed axis of the cone in which the object can rotate. Orthogonal on Plane A.</add>
-        <add name="Pivot B" type="Vector4" ver2="20.0.0.5">Pivot A in second entity coordinate system.</add>
-        <add name="Plane B" type="Vector4" ver2="20.0.0.5">Plane A in second entity coordinate system.</add>
-        <add name="Twist B" type="Vector4" ver2="20.0.0.5">Twist A in second entity coordinate system.</add>
+        <add name="Pivot B" type="Vector4" ver2="20.0.0.5">The point where the constraint is attached to the other rigidbody.</add>
+        <add name="Plane B" type="Vector4" ver2="20.0.0.5">Defines the orthogonal plane in which the shape can be controlled (the direction orthogonal on this one and Twist B).</add>
+        <add name="Twist B" type="Vector4" ver2="20.0.0.5">Central directed axis of the cone in which the object can rotate. Orthogonal on Plane B.</add>
 
         <!-- Fallout 3 -->
         <add name="Twist A" type="Vector4" ver1="20.2.0.7">Central directed axis of the cone in which the object can rotate. Orthogonal on Plane A.</add>
-        <add name="Plane A" type="Vector4" ver1="20.2.0.7">Defines the orthogonal directions in which the shape can be controlled (namely in this direction, and in the direction orthogonal on this one and Twist A).</add>
+        <add name="Plane A" type="Vector4" ver1="20.2.0.7">Defines the orthogonal plane in which the body can move, the orthogonal directions in which the shape can be controlled (the direction orthogonal on this one and Twist A).</add>
         <add name="Motor A" type="Vector4" ver1="20.2.0.7">Defines the orthogonal directions in which the shape can be controlled (namely in this direction, and in the direction orthogonal on this one and Twist A).</add>
-        <add name="Pivot A" type="Vector4" ver1="20.2.0.7">Defines the orthogonal directions in which the shape can be controlled (namely in this direction, and in the direction orthogonal on this one and Twist A).</add>
-        <add name="Twist B" type="Vector4" ver1="20.2.0.7">Central directed axis of the cone in which the object can rotate. Orthogonal on Plane A.</add>
-        <add name="Plane B" type="Vector4" ver1="20.2.0.7">Defines the orthogonal directions in which the shape can be controlled (namely in this direction, and in the direction orthogonal on this one and Twist A).</add>
+        <add name="Pivot A" type="Vector4" ver1="20.2.0.7">Point around which the object will rotate. Defines the orthogonal directions in which the shape can be controlled (namely in this direction, and in the direction orthogonal on this one and Twist A).</add>
+        <add name="Twist B" type="Vector4" ver1="20.2.0.7">Central directed axis of the cone in which the object can rotate. Orthogonal on Plane B.</add>
+        <add name="Plane B" type="Vector4" ver1="20.2.0.7">Defines the orthogonal plane in which the body can move, the orthogonal directions in which the shape can be controlled (the direction orthogonal on this one and Twist A).</add>
         <add name="Motor B" type="Vector4" ver1="20.2.0.7">Defines the orthogonal directions in which the shape can be controlled (namely in this direction, and in the direction orthogonal on this one and Twist A).</add>
         <add name="Pivot B" type="Vector4" ver1="20.2.0.7">Defines the orthogonal directions in which the shape can be controlled (namely in this direction, and in the direction orthogonal on this one and Twist A).</add>
 
-        <add name="Cone Max Angle" type="float">Maximum angle the object can rotate around the vector orthogonal on Plane A and Twist A relative to the Twist A vector. Note that Cone Min Angle is not stored, but is simply minus this angle.</add>
+        <add name="Cone Max Angle" 	type="float">Maximum angle the object can rotate around the vector orthogonal on Plane A and Twist A relative to the Twist A vector. Note that Cone Min Angle is not stored, but is simply minus this angle.</add>
         <add name="Plane Min Angle" type="float">Minimum angle the object can rotate around Plane A, relative to Twist A.</add>
         <add name="Plane Max Angle" type="float">Maximum angle the object can rotate around Plane A, relative to Twist A.</add>
         <add name="Twist Min Angle" type="float">Minimum angle the object can rotate around Twist A, relative to Plane A.</add>
         <add name="Twist Max Angle" type="float">Maximum angle the object can rotate around Twist A, relative to Plane A.</add>
-        <add name="Max Friction" type="float">Maximum friction, typically 0 or 10. In Fallout 3, typically 100.</add>
+        <add name="Max Friction" 	type="float">Maximum friction, typically 0 or 10. In Fallout 3, typically 100.</add>
 
         <add name="Enable Motor" type="bool" ver1="20.2.0.7">Unknown</add>
         <add name="Motor" type="MotorDescriptor" cond="Enable Motor" ver1="20.2.0.7" />
     </compound>
 
     <compound name="LimitedHingeDescriptor">
+    	This constraint allows rotation about a specified axis, limited by specified boundaries.
+    
         <!-- Oblivion -->
         <add name="Pivot A" type="Vector4" ver2="20.0.0.5">Pivot point around which the object will rotate.</add>
         <add name="Axle A" type="Vector4" ver2="20.0.0.5">Axis of rotation.</add>
@@ -1242,6 +1257,8 @@
     </compound>
 
     <compound name="HingeDescriptor">
+    	This constraint allows rotation about a specified axis. 
+    	
         <!-- Oblivion -->
         <add name="Pivot A" type="Vector4" ver2="20.0.0.5">Pivot point around which the object will rotate.</add>
         <add name="Perp2 Axle In A1" type="Vector4" ver2="20.0.0.5">Vector in the rotation plane which defines the zero angle.</add>
@@ -1666,9 +1683,9 @@
         <add name="Unknown Int 1" type="uint">Unknown</add>
         <add name="Unknown Int 2" type="uint">Unknown</add>
         <add name="Num Links" type="uint">Number of links in the chain</add>
-        <add name="Links" type="Ptr" arr1="Num Links" cond="Num Links >= 1">Unknown</add>
+        <add name="Links" type="Ptr" template="NiObject" arr1="Num Links" cond="Num Links >= 1">Unknown</add>
         <add name="Num Links 2" type="uint">Number of links in the chain</add>
-        <add name="Links 2" type="Ptr" arr1="Num Links 2" cond="Num Links 2 >= 1">Unknown</add>
+        <add name="Links 2" type="Ptr" template="NiObject" arr1="Num Links 2" cond="Num Links 2 >= 1">Unknown</add>
         <add name="Unknown Int 3" type="uint">Unknown</add>
     </niobject>
 
@@ -1757,7 +1774,7 @@
         <add name="Scale" type="float">The scaling factor to quantize the MOPP: the quantization factor is equal to 256*256 divided by this number. In Oblivion files, scale is taken equal to 256*256*254 / (size + 0.2) where size is the largest dimension of the bounding box of the packed shape.</add>
         <add name="Old MOPP Data" ver2="10.0.1.0" type="byte" nifskopetype="blob" arr1="MOPP Data Size - 1">The tree of bounding volume data (old style, contains more than just the mopp script).</add>
         <add name="MOPP Data" ver1="10.0.1.2" type="byte" nifskopetype="blob" arr1="MOPP Data Size">The tree of bounding volume data.</add>
-		<add name="Unknown Byte 1" type="byte" ver1="20.2.0.7" vercond="(User Version >= 12)">Unknown</add>
+		<add name="Unknown Byte 1" type="byte" ver1="20.2.0.7" vercond="User Version >= 12">Unknown</add>
     </niobject>
 
 
@@ -2249,7 +2266,8 @@
 		<add name="Unknown Byte" type="byte" default="255" userver="1" vercond="(Version == 10.2.0.0) || ((Version != 20.0.0.5) &amp;&amp; (User Version 2 == 1))">Cyanide extension (only in version 10.2.0.0?).</add>
         <add name="Unknown Integer 2" type="int" ver1="10.4.0.1" ver2="10.4.0.1">Unknown.</add>
         <add name="Dirty Flag" type="bool" ver1="20.2.0.7">Dirty Flag?</add>
-		<add name="Properties" type="Ref" arr1="2" ver1="20.2.0.7" userver="12"> Property Links 1 and 2</add>
+        <add name="Properties" type="Ref" template="NiProperty" arr1="2" ver1="20.2.0.7" userver="12">Two property links.</add>
+		<!-- TODO: please add owner="Bethesda" or usedby="Bethesda" or category="Bethesda" or group="Bethesda", if you insist to describe which field to which company "belongs" -->
     </niobject>
 
     <niobject name="NiTriBasedGeom" abstract="1" inherit="NiGeometry">
@@ -2266,9 +2284,9 @@
         <add name="Vertices" type="Vector3" arr1="Num Vertices" cond="Has Vertices">The mesh vertices.</add>
         <add name="Num UV Sets" type="ushort" vercond="((Version >= 10.0.1.0) &amp;&amp; (!((Version >= 20.2.0.7) &amp;&amp; (User Version >= 11))))">Methods for saving binormals and tangents saved in upper byte.  Texture flags in lower byte.</add>
         <add name="Num UV Sets" type="ushort" vercond="((Version >= 20.2.0.7) &amp;&amp; (User Version >= 11))">Bethesda's version of this field for nif versions 20.2.0.7 and up. Only a single bit denotes whether uv's are present. For example, see meshes/architecture/megaton/megatonrampturn45sml.nif in Fallout 3.</add>
-		<add name="Unknown Int" type="uint" ver1="20.2.0.7" vercond="(User Version == 12)"> Unknown,Skyrim.</add>	
+        <add name="Unknown Int 2" type="uint" ver1="20.2.0.7" userver="12">Unknown, seen in Skyrim.</add>	
         <add name="Has Normals" type="bool">Do we have lighting normals? These are essential for proper lighting: if not present, the model will only be influenced by ambient light.</add>
-		<add name="Normals" type="Vector3" arr1="Num Vertices" cond="Has Normals">The lighting normals.</add>
+        <add name="Normals" type="Vector3" arr1="Num Vertices" cond="Has Normals">The lighting normals.</add>
         <add name="Tangents" type="Vector3" arr1="Num Vertices" cond="(Has Normals) &amp;&amp; ((Num UV Sets &amp; 61440) || (Num UV Sets &amp; 61440))" ver1="10.1.0.0">Unknown. Binormal &amp; tangents?</add>
         <add name="Binormals" type="Vector3" arr1="Num Vertices" cond="(Has Normals) &amp;&amp; ((Num UV Sets &amp; 61440) || (Num UV Sets &amp; 61440))" ver1="10.1.0.0">Unknown. Binormal &amp; tangents? has_normals must be set as well for this field to be present.</add>
         <add name="Center" type="Vector3">Center of the bounding box (smallest box that contains all vertices) of the mesh.</add>
@@ -2420,8 +2438,8 @@
         </add>
         <add name="UV Sets" type="TexCoord" arr1="Num UV Sets &amp; 63" arr2="Num Vertices" vercond="!((Version >= 20.2.0.7) &amp;&amp; (User Version >= 11))">The UV texture coordinates. They follow the OpenGL standard: some programs may require you to flip the second coordinate.</add>
         <!--<add name="UV Sets" type="TexCoord" arr1="Num UV Sets &amp; 1" arr2="Num Vertices">The UV texture coordinates. They follow the OpenGL standard: some programs may require you to flip the second coordinate.</add>-->
-        <add name="Consistency Flags" type="ConsistencyType" ver1="10.0.1.0" default="CT_MUTABLE" vercond="(User Version &lt;= 11)">Consistency Flags</add>
-        <add name="Additional Data" type="Ref" template="NiAdditionalGeometryData" ver1="20.0.0.4" vercond="(User Version &lt;= 11)">Unknown.</add>
+        <add name="Consistency Flags" type="ConsistencyType" ver1="10.0.1.0" default="CT_MUTABLE" vercond="User Version &lt;= 11">Consistency Flags</add>
+        <add name="Additional Data" type="Ref" template="NiAdditionalGeometryData" ver1="20.0.0.4" vercond="User Version &lt;= 11">Unknown.</add>
         <add name="Num Particles" type="ushort" ver2="4.0.0.2">The maximum number of particles (matches the number of vertices).</add>
         <add name="Particle Radius" type="float" ver2="10.0.1.0">The particles&#039; size.</add>
         <add name="Has Radii" type="bool" ver1="10.1.0.0">Is the particle size array present?</add>
@@ -2432,7 +2450,7 @@
         <add name="Has Rotations" type="bool" ver1="10.0.1.0">Is the particle rotation array present?</add>
         <add name="Rotations" type="Quaternion" arr1="Num Vertices" cond="Has Rotations" ver1="10.0.1.0" vercond="!((Version >= 20.2.0.7) &amp;&amp; (User Version >= 11))">The individual particle rotations.</add>
         <add name="Unknown Byte 1" type="byte" vercond="((Version >= 20.2.0.7) &amp;&amp; (User Version >= 12))">Unknown, probably a boolean.</add>
-        <add name="Unknown Link" type="Ref" vercond="((Version >= 20.2.0.7) &amp;&amp; (User Version >= 12))">Unknown</add>
+        <add name="Unknown Link" type="Ref" template="NiObject" vercond="((Version >= 20.2.0.7) &amp;&amp; (User Version >= 12))">Unknown</add>
         <add name="Has Rotation Angles" type="bool" ver1="20.0.0.4">Are the angles of rotation present?</add>
         <add name="Rotation Angles" type="float" arr1="Num Vertices" cond="Has Rotation Angles" vercond="!((Version >= 20.2.0.7) &amp;&amp; (User Version >= 11))">Angles of rotation</add>
         <add name="Has Rotation Axes" type="bool" ver1="20.0.0.4">Are axes of rotation present?</add>
@@ -2671,8 +2689,8 @@
         <add name="Manager" type="Ptr" template="NiControllerManager" ver1="10.1.0.106">Refers to NiControllerManager which references this object, if any.</add>
         <add name="Target Name" type="string" ver1="10.1.0.106">Name of target node Controller acts on.</add>
         <add name="String Palette" type="Ref" template="NiStringPalette" ver1="10.2.0.0" ver2="20.0.0.5">Refers to NiStringPalette.</add>
-        <add name="Unknown Short 1" type="short" ver1="20.2.0.7" vercond="(User Version >= 11) &amp;&amp; (User Version 2 >= 24)">Unknown</add>
-        <add name="Unknown Short 2" type="short" ver1="20.2.0.7" vercond="(User Version >= 11) &amp;&amp; (User Version 2 >= 24) &amp;&amp; (User Version 2 &lt;= 28)">Unknown</add>
+        <add name="Anim Notes" type="Ref" template="BSAnimNotes" ver1="20.2.0.7" vercond="(User Version >= 11) &amp;&amp; (User Version 2 >= 24) &amp;&amp; (User Version 2 &lt;= 28)">Unknown</add>
+        <add name="Unknown Short 1" type="short" ver1="20.2.0.7" vercond="(User Version >= 11) &amp;&amp; (User Version 2 > 28)">Unknown</add>
         <add name="Unknown Int 3" type="uint" ver1="20.3.0.9" default="64">Unknown, found in some Lazeska and Krazy Rain .KFs (seems to be 64 when present).</add>
     </niobject>
 
@@ -4218,16 +4236,16 @@
 		<add name="Unknown Flag" type="uint" ver1="20.2.0.7" vercond="User Version == 12">Unknown</add>
 		<add name="Name" type="string">Object Name</add>
 		<add name="Extra Data" type="Ref" template="NiExtraData" ver1="3.0" ver2="4.2.2.0" >Extra data object index. (The first in a chain)</add>
-        <add name="Num Extra Data List" type="uint" ver1="10.0.1.0">The number of Extra Data objects referenced through the list.</add>
-        <add name="Extra Data List" type="Ref" template="NiExtraData" arr1="Num Extra Data List" ver1="10.0.1.0">List of extra data indices.</add>
-        <add name="Controller" type="Ref" template="NiTimeController" ver1="3.0">Controller object index. (The first in a chain)</add>
-        <add name="Flags" type="Flags" default="1" >Unknown</add>
+		<add name="Num Extra Data List" type="uint" ver1="10.0.1.0">The number of Extra Data objects referenced through the list.</add>
+		<add name="Extra Data List" type="Ref" template="NiExtraData" arr1="Num Extra Data List" ver1="10.0.1.0">List of extra data indices.</add>
+		<add name="Controller" type="Ref" template="NiTimeController" ver1="3.0">Controller object index. (The first in a chain)</add>
+		<add name="Flags" type="Flags" default="1" >Unknown</add>
 		<add name="Shader Type" type="BSShaderType" default="SHADER_DEFAULT">Unknown (Set to 0x21 for NoLighting, 0x11 for Water)</add>
         <add name="Shader Flags" type="BSShaderFlags" default="0x82000000">Shader Property Flags</add>
         <add name="Unknown Short 1" type="ushort" vercond="User Version == 12">Unknown</add>
         <add name="Unknown Int 2" type="int" default="1">Unknown</add>
         <add name="Envmap Scale" type="float" default="1.0">Unknown</add>
-	    </niobject>
+    </niobject>
 
     <niobject name="BSShaderLightingProperty" abstract="1" inherit="BSShaderProperty">
         Bethesda-specific property.
@@ -4264,29 +4282,29 @@
         <add name="Source Texture"  type="SizedString">points to an external texture.</add>
 
         <add name="Unknown Int 2" type="uint"> </add>
-        <add name="Unknown Floats 1" type="Matrix33">Not correct or finished, but it fits for now.</add>
+        <add name="Unknown Matrix 1" type="Matrix33">Not correct or finished, but it fits for now.</add>
         <add name="Unknown Float" type="float"> </add>
-        <add name="Source Texture"  type="SizedString">points to an external texture.</add>
+        <add name="Gradient Texture"  type="SizedString">points to an external texture.</add>
 		
 		
     </niobject>
 
 	<!-- Skyrim specific Node -->
 	<niobject name="BSEffectShaderPropertyFloatController" abstract="0" inherit="NiFloatInterpController">
-		<add name="Target?" type="uint">NifSkope throws infinite loop if type=Ref.</add>
+		<add name="Unknown Int 2" type="uint">Unknown. Does not appear to be a link.</add>
 	</niobject>
 	
 	<!-- Skyrim specific Node -->
 	<niobject name="BSLightingShaderPropertyFloatController" abstract="0" inherit="NiFloatInterpController">
-		<add name="Target(?)" type="uint">Unknown</add>
+		<add name="Unknown Int 2" type="uint">Unknown</add>
 	</niobject>
 	
 	<niobject name="BSLightingShaderPropertyColorController" abstract="0" inherit="NiFloatInterpController">
-		<add name="Target(?)" type="uint">Unknown</add>
+		<add name="Unknown Int 2" type="uint">Unknown</add>
 	</niobject>
 	
 	<niobject name="BSProceduralLightningController" abstract="0" inherit="NiFloatInterpController">
-		<add name="Target(?)" type="uint">Unknown</add>
+		<add name="Unknown Int 2" type="uint">Unknown</add>
         <add name="Target(?)1" type="uint">Unknown</add>
         <add name="Target(?)2" type="uint">Unknown</add>
         <add name="Target(?)3" type="uint">Unknown</add>
@@ -4365,15 +4383,15 @@
     <!-- Skyrim specific property -->
     <niobject name="BSLightingShaderProperty"  abstract="0" inherit="BSShaderPPLightingProperty">
         Bethesda-specific node.
-		<add name="Unknown Int 1" type="uint" vercond="(User Version == 12)">Unknown.</add>
-		<add name="Unknown Floats" type="float" arr1="9" vercond="(User Version == 12)">Skyrim, MaterialProperty might be merged in some form here.</add>
-		<add name="Unknown Float Set(?)" type="float" cond="Unknown Flag == 1" vercond="User Version >= 12">Unknown</add>
-		<add name="Unknown Float Set(?)" type="Vector3" cond="Unknown Flag == 5" vercond="User Version >= 12">Unknown</add>
-		<add name="Unknown Float Set(?)" type="float" arr1="7" cond="Unknown Flag == 16" vercond="User Version >= 12">Unknown</add>
-		<add name="Unknown Float Set(?)" type="Vector3" cond="(Unknown Flag == 6)" vercond="User Version >= 12">Unknown</add>
-		<add name="Unknown Float Set(?)" type="float"  arr1="5" cond="Unknown Flag == 11" vercond="User Version >= 12">Unknown</add>
-        <add name="Unknown Float Set(?)" type="Vector4" cond="(Unknown Flag == 14)" vercond="User Version >= 12">Unknown</add>
-		<add name="Unknown Float Set(?)" type="float" arr1="2" cond="(Unknown Flag == 7)" vercond="User Version >= 12">Unknown</add>
+		<add name="Unknown Int 1" type="uint" vercond="(User Version == 12)" default="3">Unknown.</add>
+		<add name="Unknown Floats" type="float" arr1="9" vercond="(User Version == 12)" default="1.0,0.0,226.0,0.8353,0.8824,0.8902,2.72,5.4,2.8">Skyrim, MaterialProperty might be merged in some form here.</add>
+		<add name="Unknown Float Set 1" type="float" cond="Unknown Flag == 1" vercond="User Version >= 12">Unknown</add>
+		<add name="Unknown Vector3 Set 1" type="Vector3" cond="Unknown Flag == 5" vercond="User Version >= 12">Unknown</add>
+		<add name="Unknown Float Set 2" type="float" arr1="7" cond="Unknown Flag == 16" vercond="User Version >= 12">Unknown</add>
+		<add name="Unknown Vector3 Set 2" type="Vector3" cond="(Unknown Flag == 6)" vercond="User Version >= 12">Unknown</add>
+		<add name="Unknown Float Set 3" type="float"  arr1="5" cond="Unknown Flag == 11" vercond="User Version >= 12">Unknown</add>
+        <add name="Unknown Vector4 Set 3" type="Vector4" cond="(Unknown Flag == 14)" vercond="User Version >= 12">Unknown</add>
+		<add name="Unknown Float Set 4" type="float" arr1="2" cond="(Unknown Flag == 7)" vercond="User Version >= 12">Unknown</add>
     </niobject>
 
     <niobject name="BSDismemberSkinInstance" abstract="0" inherit="NiSkinInstance">
@@ -4502,29 +4520,25 @@
         <add name="Unknown Float 1" type="float">Unknown Flag</add>
     </niobject>
 
-    <compound name="BSTreadTransfSubInfo">
+    <compound name="BSTreadTransformData">
         Bethesda-specific node.
-        <add name="Unknown Int 1" type="int">Unknown</add>
-        <add name="Unknown Int 2" type="int">Unknown</add>
-        <add name="Unknown Int 3" type="int">Unknown</add>
-        <add name="Unknown Int 4" type="int">Unknown</add>
-        <add name="Unknown Int 5" type="int">Unknown</add>
-        <add name="Unknown Int 6" type="int">Unknown</add>
-        <add name="Unknown Int 7" type="int">Unknown</add>
-        <add name="Unknown Int 8" type="int">Unknown</add>
+        <add name="Translation" type="Vector3">Translation.</add>
+        <add name="Rotation" type="Quaternion">Rotation.</add>
+        <add name="Scale" type="float">Scale (usually float_min).</add>
     </compound>
 
-    <compound name="BSTreadTransfInfo">
+    <compound name="BSTreadTransform">
         Bethesda-specific node.
-        <add name="Unknown Float 1" type="float">Unknown Flag</add>
-        <add name="Data" type="BSTreadTransfSubInfo" arr1="2">Data</add>
+        <add name="Name" type="string">Name of affected node?</add>
+        <add name="Transform 1" type="BSTreadTransformData">Transform data.</add>
+        <add name="Transform 2" type="BSTreadTransformData">Transform data.</add>
     </compound>
 
     <niobject name="BSTreadTransfInterpolator" abstract="0" inherit="NiInterpolator">
         Bethesda-specific node.
-        <add name="Num Transfers" type="int">Unknown</add>
-        <add name="Tread Transfer Info" type="BSTreadTransfInfo" arr1="Num Transfers">Unknown</add>
-        <add name="Unknown Int 1" type="int">Unknown</add>
+        <add name="Num Tread Transforms" type="int">Unknown.</add>
+        <add name="Tread Transforms" type="BSTreadTransform" arr1="Num Tread Transforms">Unknown.</add>
+        <add name="Data" type="Ref" template="NiFloatData">Unknown float data.</add>
     </niobject>
 
     <niobject name="BSAnimNotes" abstract="0" inherit="NiObject">
@@ -5454,13 +5468,13 @@
 
     <!-- Skyrim specific havok block -->
     <niobject name="bhkCompressedMeshShape" inherit="bhkShape">
-    Unknown
-        <add name="Root" type="Ptr">Points to root node?</add>
+        Compressed collision mesh.
+        <add name="Target" type="Ptr" template="NiAVObject">Points to root node?</add>
         <add name="Material" type="HavokMaterial">The shape&#039;s material.</add>
         <add name="Unknown Float 1" type="float">Unknown.</add>
         <add name="Unknown 8 Bytes" type="byte" arr1="8">Unknown.</add>
 		<add name="Unknown Floats" type="float" arr1="8">Unknown</add>
-		<add name="Data" type="Ptr">Data Link</add>
+		<add name="Data" type="Ref" template="bhkCompressedMeshShapeData">The collision mesh data.</add>
     </niobject>
 
 	
@@ -5541,9 +5555,9 @@
 	<!-- Skyrim specific blocks -->
 	<niobject name="BSInvMarker" abstract="0" inherit="NiExtraData">
     Unkown
-		<add name="Unknown" type="uint"> </add>
-		<add name="Unknown" type="uint"> </add>
-		<add name="Unknown" type="ushort"> </add>
+		<add name="Unknown 1" type="uint"> </add>
+		<add name="Unknown 2" type="uint"> </add>
+		<add name="Unknown 3" type="ushort"> </add>
 	</niobject>
 
 	<niobject name="BSBoneLODExtraData" inherit="NiExtraData">
@@ -5560,8 +5574,8 @@
 	</niobject>
 	
 	<niobject name="BSBehaviorGraphExtraData" inherit="NiExtraData">
-    Unkown
-		<add name="Unknown Int 1" type="uint">Unknown, possibly a link</add>
+            Unknown. Links to a hkx file.
+		<add name="Behaviour Graph File" type="string">Name of the hkx file.</add>
 		<add name="Unknown Byte 1" type="byte">Unknown</add>
 	</niobject>
 
