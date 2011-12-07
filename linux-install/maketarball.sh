@@ -11,7 +11,7 @@
 
 # and the rpm will reside in ~/rpmbuild/RPMS
 
-VERSION=1.1.0
+VERSION=2.0.0
 
 FILES="NifSkope.pro \
     TODO.TXT \
@@ -30,6 +30,9 @@ FILES="NifSkope.pro \
     kfmmodel.h \
     nifmodel.h \
     glview.h \
+	3dview.h \
+	3dview_OGRE.h \
+    hacking.h \
     message.h \
     nifproxy.h \
     nifskope.h \
@@ -51,6 +54,8 @@ FILES="NifSkope.pro \
     nifmodel.cpp \
     nifxml.cpp \
     glview.cpp \
+	3dview.cpp \
+	3dview_OGRE.cpp \
     message.cpp \
     nifdelegate.cpp \
     nifproxy.cpp \
@@ -140,8 +145,9 @@ cd ../..
 cp --parents $FILES linux-install/nifskope-$VERSION
 cd linux-install
 
-# copy desktop file
+# copy desktop and shell file
 cp nifskope.desktop nifskope-$VERSION
+cp nifskope.sh nifskope-$VERSION
 
 # create tarball
 tar cfvj ~/rpmbuild/SOURCES/nifskope-$VERSION.tar.bz2 nifskope-$VERSION
