@@ -65,12 +65,24 @@ Property * Property::create( Scene * scene, const NifModel * nif, const QModelIn
 		property = new VertexColorProperty( scene, index );
 	else if ( nif->isNiBlock( index, "NiStencilProperty" ) )
 		property = new StencilProperty( scene, index );
+	else if ( nif->isNiBlock( index, "BSLightingShaderProperty" ) )
+		property = new BSShaderLightingProperty( scene, index );
 	else if ( nif->isNiBlock( index, "BSShaderLightingProperty" ) )
+		property = new BSShaderLightingProperty( scene, index );
+	else if ( nif->isNiBlock( index, "BSEffectShaderProperty" ) )
 		property = new BSShaderLightingProperty( scene, index );
 	else if ( nif->isNiBlock( index, "BSShaderNoLightingProperty" ) )
 		property = new BSShaderLightingProperty( scene, index );
 	else if ( nif->isNiBlock( index, "BSShaderPPLightingProperty" ) )
 		property = new BSShaderLightingProperty( scene, index );
+	else if (index.isValid())
+	{
+		NifItem * item = static_cast<NifItem *>( index.internalPointer() );
+		if (item)
+			qWarning() << "Unknown property: " << item->name();
+		else
+			qWarning() << "Unknown property: I can't determine its name";
+	}
 	
 	if ( property )
 		property->update( nif, index );
@@ -1036,6 +1048,9 @@ void BSShaderLightingProperty::update( const NifModel * nif, const QModelIndex &
 	if ( iBlock.isValid() && iBlock == property )
 	{
 		iTextureSet = nif->getBlock( nif->getLink( iBlock, "Texture Set" ), "BSShaderTextureSet" );
+		// handle niobject name="BSEffectShaderProperty...
+		if (!iTextureSet.isValid())
+			iSourceTexture = iBlock;
 	}
 }
 
@@ -1093,6 +1108,13 @@ QString BSShaderLightingProperty::fileName( int id ) const
 		QModelIndex iTextures = nif->getIndex( iTextureSet, "Textures" );
 		if (id >= 0 && id < nTextures)
 			return nif->get<QString>( iTextures.child( id, 0 ) );
+	}
+	else
+	{
+		// handle niobject name="BSEffectShaderProperty...
+		nif = qobject_cast<const NifModel *>( iSourceTexture.model() );
+		if (nif && iSourceTexture.isValid())
+			return nif->get<QString>(iSourceTexture, "Source Texture");
 	}
 	return QString();
 }

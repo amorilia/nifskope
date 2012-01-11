@@ -40,6 +40,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QValidator>
 #include <QDebug>
 
+#include "../options.h"
+
 CheckBoxList::CheckBoxList( QWidget *widget )
 	: QComboBox( widget )
 {

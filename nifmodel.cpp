@@ -1019,6 +1019,10 @@ QVariant NifModel::data( const QModelIndex & idx, int role ) const
 
 	int column = index.column();
 
+	bool ndr = role == NifSkopeDisplayRole;
+	if (role == NifSkopeDisplayRole)
+		role = Qt::DisplayRole;
+
 	if ( column == ValueCol && item->parent() == root && item->type() == "NiBlock" )
 	{
 		QModelIndex buddy;
@@ -1026,6 +1030,8 @@ QVariant NifModel::data( const QModelIndex & idx, int role ) const
 			buddy = getIndex( index, "File Name" );
 		else if ( item->name() == "NiStringExtraData" )
 			buddy = getIndex( index, "String Data" );
+		//else if ( item->name() == "NiTransformInterpolator" && role == Qt::DisplayRole)
+		//	return QString(tr("TODO: find out who is referring me"));
 		else
 			buddy = getIndex( index, "Name" );
 		if ( buddy.isValid() )
@@ -1057,7 +1063,6 @@ QVariant NifModel::data( const QModelIndex & idx, int role ) const
 		}
 	}
 
-
 	switch ( role )
 	{
 		case Qt::DisplayRole:
@@ -1066,7 +1071,12 @@ QVariant NifModel::data( const QModelIndex & idx, int role ) const
 			{
 				case NameCol:
 				{
-					return item->name();
+					if (ndr)
+						return item->name();
+					QString a = "";
+					if ( itemType( index ) == "NiBlock" )
+						a = QString::number( getBlockNumber( index ) ) + " ";
+					return a + item->name();
 				}	break;
 				case TypeCol:
 				{
@@ -1183,8 +1193,10 @@ QVariant NifModel::data( const QModelIndex & idx, int role ) const
 			switch ( column )
 			{
 				case NameCol:
-					if ( itemType( index ) == "NiBlock" )
-						return QString::number( getBlockNumber( index ) );
+ 					// (QColor, QIcon or QPixmap) as stated in the docs
+					/*if ( itemType( index ) == "NiBlock" )
+						return QString::number( getBlockNumber( index ) );*/
+					return QVariant();
 				default:
 					return QVariant();
 			}
@@ -1317,6 +1329,16 @@ QVariant NifModel::data( const QModelIndex & idx, int role ) const
 		}	return QVariant();
 		case Qt::BackgroundColorRole:
 		{
+			// "notify" about an invalid index in "Triangles"
+			// TODO: checkbox, "show invalid only"
+			if ( column == ValueCol && item->value().type() == NifValue::tTriangle ) {
+				NifItem *nv = getItemX( item, "Num Vertices" );
+				quint32 nvc = nv->value().toCount();
+				Triangle t = item->value().get<Triangle>();
+				if (t[0] >= nvc || t[1] >= nvc || t[2] >= nvc)
+					return QColor::fromRgb(240, 210, 210);
+			}
+
 			if ( column == ValueCol && item->value().isColor() )
 			{
 				return item->value().toColor();
