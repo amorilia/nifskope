@@ -1,5 +1,18 @@
 This document is a work in progress.
 
+1 undo
+2 interactive regrouping of the tree-views
+3 scripting for tools (the now called "spells")
+4 column filtering - regex.
+5 column sorting
+6 multiple view ports
+7 multiple .nif files
+8 batch processing
+9 visual "nif.xml" editor
+10 visual animation editor
+* libNifSkope2 - .nif, .kf, .xml editor
+* libNifLib2 - dynamic runtime parser generator
+
 1.Abbreviations used in this document:
 	NL - NifLib
 	NS - NifSkope
