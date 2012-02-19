@@ -263,7 +263,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		A(2)
 		int len = cond->Value.len;
 		std::stringstream buf1;
-		
+		//INFO(std::string (cond->Value.buf, cond->Value.len))
 		// pass1
 		// - "&amp; to &", "&lt; to <", "&gt; to >"
 		int i;//, j = 0;
@@ -295,7 +295,7 @@ struct T { struct timeval ta, tb; int c; long s; const char *n; } M[MLEN] =
 		std::string buf1s = buf1.str ();
 		len = buf1s.length ();
 		const char *buf = buf1s.c_str ();
-
+		//INFO(std::string (buf, len))
 		// pass2
 		// "(User Version == 10) || (User Version == 11)"
 		// - variable names contain spaces
