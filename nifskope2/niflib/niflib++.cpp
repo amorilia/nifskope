@@ -149,7 +149,7 @@ main(int argc, char **argv)
 				}
 				if (i != l)
 					continue;
-				//if (l > 3 && !NifLib::Parser::StartsWith ("fonv", 4, buf, 4))
+				//if (l > 3 && !NifLib::Parser::StartsWith ("tes5", 4, buf, 4))
 				//	continue;
 				std::stringstream fname;
 				fname << std::string (pfix) << line;
