@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "refrbrowser.h"
 
 #include <QApplication>
@@ -106,7 +108,7 @@ void ReferenceBrowser::browse( const QModelIndex & index )
     }
 
     QString blockType = nif->getBlockType( index );
-    if( blockType == "NiBlock" ) {
+    if( blockType == B_NIBLOCK ) {
         blockType = nif->getBlockName( index );
     }
 

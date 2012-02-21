@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 
 #include <QBuffer>
@@ -82,17 +84,17 @@ public:
 				QModelIndex iBlock = nif->getBlock( b );
 				if ( nif->isNiBlock( iBlock, "NiMaterialProperty" ) )
 				{
-					if ( nif->get<QString>( iBlock, "Name" ).contains( "Material" ) )
-						nif->set<QString>( iBlock, "Name", "Material" );
-					else if ( nif->get<QString>( iBlock, "Name" ).contains( "Default" ) )
-						nif->set<QString>( iBlock, "Name", "Default" );
+					if ( nif->get<QString>( iBlock, TA_NAME ).contains( "Material" ) )
+						nif->set<QString>( iBlock, TA_NAME, "Material" );
+					else if ( nif->get<QString>( iBlock, TA_NAME ).contains( "Default" ) )
+						nif->set<QString>( iBlock, TA_NAME, "Default" );
 				}
 				if ( nif->inherits( iBlock, "BSShaderProperty" ) || nif->isNiBlock( iBlock, "BSShaderTextureSet") )
 				{
 					// these need to be unique
 					continue;
 				}
-				if ( nif->inherits( iBlock, "NiProperty" ) || nif->inherits( iBlock, "NiSourceTexture" ) )
+				if ( nif->inherits( iBlock, "NiProperty" ) || nif->inherits( iBlock, T_NISOURCETEXTURE ) )
 				{
 					QBuffer data;
 					data.open( QBuffer::WriteOnly );
@@ -175,10 +177,10 @@ public:
 						{
 							foreach ( qint32 sl, nif->getChildLinks( nif->getBlockNumber( iProp ) ) )
 							{
-								QModelIndex iSrc = nif->getBlock( sl, "NiSourceTexture" );
+								QModelIndex iSrc = nif->getBlock( sl, T_NISOURCETEXTURE );
 								if ( iSrc.isValid() && ! map.contains( sl ) )
 								{
-									QModelIndex iSrc2 = nif->insertNiBlock( "NiSourceTexture", nif->getBlockCount() + 1 );
+									QModelIndex iSrc2 = nif->insertNiBlock( T_NISOURCETEXTURE, nif->getBlockCount() + 1 );
 									QBuffer buffer;
 									buffer.open( QBuffer::WriteOnly );
 									nif->save( buffer, iSrc );
@@ -390,9 +392,9 @@ public:
 				continue;
 			if ( nif->isNiBlock( iBlock, "NiTriStripsData" ) )
 				continue;
-			if ( nif->isNiBlock( iBlock, "NiBinaryExtraData" ) && nif->get<QString>( iBlock, "Name" ) == "Tangent space (binormal & tangent vectors)" )
+			if ( nif->isNiBlock( iBlock, "NiBinaryExtraData" ) && nif->get<QString>( iBlock, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
 				continue;
-			qWarning() << "Attached " << nif->itemName( iBlock ) << " prevents " << nif->get<QString>( iTriA, "Name" ) << " and " << nif->get<QString>( iTriB, "Name" ) << " from matching.";
+			qWarning() << "Attached " << nif->itemName( iBlock ) << " prevents " << nif->get<QString>( iTriA, TA_NAME ) << " and " << nif->get<QString>( iTriB, TA_NAME ) << " from matching.";
 			return false;
 		}
 		
@@ -405,9 +407,9 @@ public:
 				continue;
 			if ( nif->isNiBlock( iBlock, "NiTriStripsData" ) )
 				continue;
-			if ( nif->isNiBlock( iBlock, "NiBinaryExtraData" ) && nif->get<QString>( iBlock, "Name" ) == "Tangent space (binormal & tangent vectors)" )
+			if ( nif->isNiBlock( iBlock, "NiBinaryExtraData" ) && nif->get<QString>( iBlock, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
 				continue;
-			qWarning() << "Attached " << nif->itemName( iBlock ) << " prevents " << nif->get<QString>( iTriA, "Name" ) << " and " << nif->get<QString>( iTriB, "Name" ) << " from matching.";
+			qWarning() << "Attached " << nif->itemName( iBlock ) << " prevents " << nif->get<QString>( iTriA, TA_NAME ) << " and " << nif->get<QString>( iTriB, TA_NAME ) << " from matching.";
 			return false;
 		}
 		
@@ -445,9 +447,9 @@ public:
 		QModelIndex iDataA = nif->getBlock( nif->getLink( iTriA, "Data" ), "NiTriBasedGeomData" );
 		QModelIndex iDataB = nif->getBlock( nif->getLink( iTriB, "Data" ), "NiTriBasedGeomData" );
 		
-		int numA = nif->get<int>( iDataA, "Num Vertices" );
-		int numB = nif->get<int>( iDataB, "Num Vertices" );
-		nif->set<int>( iDataA, "Num Vertices", numA + numB );
+		int numA = nif->get<int>( iDataA, TA_NUMVERTICES );
+		int numB = nif->get<int>( iDataB, TA_NUMVERTICES );
+		nif->set<int>( iDataA, TA_NUMVERTICES, numA + numB );
 		
 		nif->updateArray( iDataA, "Vertices" );
 		nif->setArray<Vector3>( iDataA, "Vertices", nif->getArray<Vector3>( iDataA, "Vertices" ).mid( 0, numA ) + nif->getArray<Vector3>( iDataB, "Vertices" ) );

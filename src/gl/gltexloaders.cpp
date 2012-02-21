@@ -1000,7 +1000,7 @@ bool texLoad( const QModelIndex & iData, QString & texformat, GLuint & width, GL
 
 		quint32 mask[4] = { 0x00000000, 0x00000000, 0x00000000, 0x00000000 };
 		
-		if ( nif->getVersionNumber() < 0x14000004 ) {
+		if ( nif->getVersionNumber() < NF_V20000004 ) {
 			mask[0] = nif->get<uint>(iData, "Red Mask");
 			mask[1] = nif->get<uint>(iData, "Green Mask");
 			mask[2] = nif->get<uint>(iData, "Blue Mask");
@@ -1055,12 +1055,12 @@ bool texLoad( const QModelIndex & iData, QString & texformat, GLuint & width, GL
 			{
 				texformat += " (PAL8)";
 				// Read the NiPalette entries; change this if we change NiPalette in nif.xml
-				QModelIndex iPalette = nif->getBlock( nif->getLink( iData, "Palette" ) );
+				QModelIndex iPalette = nif->getBlock( nif->getLink( iData, TA_PALETTE ) );
 				if (iPalette.isValid()) {
 					QVector<quint32> map;
 					uint nmap = nif->get<uint>(iPalette, "Num Entries");
 					map.resize(nmap);
-					QModelIndex iPaletteArray = nif->getIndex( iPalette, "Palette" );
+					QModelIndex iPaletteArray = nif->getIndex( iPalette, TA_PALETTE );
 					if ( nmap > 0 && iPaletteArray.isValid() ) {
 						for (uint i=0; i<nmap; ++i) {
 							QModelIndex iRGBElem = iPaletteArray.child(i,0);
@@ -1342,7 +1342,7 @@ bool texSaveDDS( const QModelIndex & index, const QString & filepath, GLuint & w
 	// masks
 	quint32 mask[4] = { 0x000000ff, 0x0000ff00, 0x00ff0000, 0x00000000 };
 
-	if ( nif->getVersionNumber() < 0x14000004 ) {
+	if ( nif->getVersionNumber() < NF_V20000004 ) {
 		mask[0] = nif->get<quint32>( index, "Red Mask" );
 		mask[1] = nif->get<quint32>( index, "Green Mask" );
 		mask[2] = nif->get<quint32>( index, "Blue Mask" );
@@ -1443,7 +1443,7 @@ bool texSaveTGA( const QModelIndex & index, const QString & filepath, GLuint & w
 	
 	//quint32 mask[4] = { 0x00000000, 0x00000000, 0x00000000, 0x00000000 };
 	/*
-	if ( nif->getVersionNumber() < 0x14000004 ) {
+	if ( nif->getVersionNumber() < NF_V20000004 ) {
 		mask[0] = nif->get<uint>(index, "Blue Mask");
 		mask[1] = nif->get<uint>(index, "Green Mask");
 		mask[2] = nif->get<uint>(index, "Red Mask");
@@ -1542,7 +1542,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 		
 		nif->set<int>( iData, "Pixel Format", pix.get<int>( iPixData, "Pixel Format" ) );
 		
-		if ( nif->checkVersion( 0, 0x0A020000 ) && pix.checkVersion( 0, 0x0A020000 ) )
+		if ( nif->checkVersion( 0, NF_V10020000 ) && pix.checkVersion( 0, NF_V10020000 ) )
 		{
 			// copy masks
 			nif->set<quint32>( iData, "Red Mask", pix.get<quint32>( iPixData, "Red Mask" ) );
@@ -1571,12 +1571,12 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 				nif->set<quint8>( unknownDest.child( i, 0 ), pix.get<quint8>( unknownSrc.child( i, 0 ) ));
 			}
 
-			if ( nif->checkVersion( 0x0A010000, 0x0A020000 ) && pix.checkVersion( 0x0A010000, 0x0A020000 ) )
+			if ( nif->checkVersion( NF_V10010000, NF_V10020000 ) && pix.checkVersion( NF_V10010000, NF_V10020000 ) )
 			{
 				nif->set<quint32>( iData, "Unknown Int", pix.get<quint32>( iPixData, "Unknown Int" ) );
 			}
 		}
-		else if ( nif->checkVersion( 0x14000004, 0 ) && pix.checkVersion( 0x14000004, 0 ) )
+		else if ( nif->checkVersion( NF_V20000004, 0 ) && pix.checkVersion( NF_V20000004, 0 ) )
 		{
 			nif->set<quint8>( iData, "Bits Per Pixel", pix.get<quint8>( iPixData, "Bits Per Pixel" ) );
 			nif->set<int>( iData, "Unknown Int 2", pix.get<int>( iPixData, "Unknown Int 2" ) );
@@ -1621,7 +1621,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 		// ignore palette for now; what uses these? theoretically they don't exist past 4.2.2.0
 
 /*
-        <add name="Palette" type="Ref" template="NiPalette">Link to NiPalette, for 8-bit textures.</add>
+        <add name=TA_PALETTE type="Ref" template="NiPalette">Link to NiPalette, for 8-bit textures.</add>
     </niobject>
 */
 		
@@ -1676,7 +1676,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 		// set texture as RGBA
 		nif->set<quint32>( iData, "Pixel Format", 1 );
 		nif->set<quint32>( iData, "Bits Per Pixel", 32 );
-		if( nif->checkVersion( 0, 0x0A020000 ) )
+		if( nif->checkVersion( 0, NF_V10020000 ) )
 		{
 			// set masks
 			nif->set<quint32>( iData, "Red Mask", RGBA_INV_MASK[0] );
@@ -1690,7 +1690,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 				nif->set<quint8>( unknownEightBytes.child( i, 0 ), unk8bytes32[i] );
 			}
 		}
-		else if( nif->checkVersion( 0x14000004, 0 ) )
+		else if( nif->checkVersion( NF_V20000004, 0 ) )
 		{
 			// set stuff
 			nif->set<qint32>( iData, "Unknown Int 2", -1 ); // probably a link to something
@@ -1819,7 +1819,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 #endif
 
 		// Note that these might not match what's expected; hopefully the loader function is smart
-		if( nif->checkVersion( 0, 0x0A020000 ) )
+		if( nif->checkVersion( 0, NF_V10020000 ) )
 		{
 			nif->set<uint>( iData, "Bits Per Pixel", ddsHeader.ddsPixelFormat.dwBPP );
 			nif->set<uint>( iData, "Red Mask", ddsHeader.ddsPixelFormat.dwRMask );
@@ -1840,7 +1840,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 				}
 			}
 		}
-		else if( nif->checkVersion( 0x14000004, 0 ) )
+		else if( nif->checkVersion( NF_V20000004, 0 ) )
 		{
 			// set stuff
 			nif->set<qint32>( iData, "Unknown Int 2", -1 ); // probably a link to something

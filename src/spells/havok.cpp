@@ -166,7 +166,7 @@ public:
 		QModelIndex iCVS = nif->insertNiBlock( "bhkConvexVerticesShape" );
 		
 		/* set CVS verts */
-		nif->set<uint>( iCVS, "Num Vertices", convex_verts.count() );
+		nif->set<uint>( iCVS, TA_NUMVERTICES, convex_verts.count() );
 		nif->updateArray( iCVS, "Vertices" );
 		nif->setArray<Vector4>( iCVS, "Vertices", convex_verts );
 		
@@ -467,7 +467,7 @@ public:
 		QModelIndex iSubShapes = nif->getIndex( iPackedShape, "Sub Shapes" );
 		nif->updateArray( iSubShapes );
 		nif->set<int>( iSubShapes.child( 0, 0 ), "Layer", 1 );
-		nif->set<int>( iSubShapes.child( 0, 0 ), "Num Vertices", vertices.count() );
+		nif->set<int>( iSubShapes.child( 0, 0 ), TA_NUMVERTICES, vertices.count() );
 		nif->set<int>( iSubShapes.child( 0, 0 ), "Material", nif->get<int>( iShape, "Material" ) );
 		nif->setArray<float>( iPackedShape, "Unknown Floats", QVector<float>() << 0.0f << 0.0f << 0.1f << 0.0f << 1.0f << 1.0f << 1.0f << 1.0f << 0.1f );
 		nif->set<float>( iPackedShape, "Scale", 1.0f );
@@ -485,7 +485,7 @@ public:
 			nif->set<Vector3>( iTriangles.child( t, 0 ), "Normal", normals.value( t ) );
 		}
 		
-		nif->set<int>( iPackedData, "Num Vertices", vertices.count() );
+		nif->set<int>( iPackedData, TA_NUMVERTICES, vertices.count() );
 		QModelIndex iVertices = nif->getIndex( iPackedData, "Vertices" );
 		nif->updateArray( iVertices );
 		nif->setArray<Vector3>( iVertices, vertices );

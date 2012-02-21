@@ -33,10 +33,19 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __NS_BASE_H__
 #define __NS_BASE_H__
 
+#define STR_NOTHING "None"
+
 #define NF_VSEPARATOR "."
 #define NF_V03030013 0x0303000D
 #define NF_V20000005 0x14000005
 #define NF_V10000100 0x0A000100
+#define NF_V20020000 0x14020000
+#define NF_V20010003 0x14010003
+#define NF_V10010000 0x0A010000
+#define NF_V10020000 0x0A020000
+#define NF_V10000000 0x0A000000
+#define NF_V20000004 0x14000004
+
 #define NF_H1 "NetImmerse File Format, Version "
 #define NF_H2 "Gamebryo File Format, Version "
 #define NF_V20000005_DEFAULT_UV 11
@@ -64,21 +73,57 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define FMASK_PCPATCH "*.pcpatch"
 #define FMASK_JMI "*.jmi"
 
-// XML attributes
-#define A_ARG "ARG"
+// XML attribute values
+#define AV_ARG "ARG"
+#define AV_TEMPLATE "TEMPLATE"
 
 // XML tags
 #define T_ATEXTURERENDERDATA "ATextureRenderData"
+#define T_NIDATASTREAM "NiDataStream"
+	#define TA_NIDS_USAGE "Usage"
+	#define TA_NIDS_ACCESS "Access"
 #define T_HEADER "Header"
+	#define TA_HVERSION "Version"
+	#define TA_HSTRING "Header String"
+	#define TA_HUV "User Version"
+	#define TA_HUV2	"User Version 2"
+	#define TA_HCR "Copyright"
+	#define TA_HBLOCKSNUM "Num Blocks"
+	#define TA_HBLOCKTYPES "Block Types"
+	#define TA_HBLOCTYPEIDX "Block Type Index"
+	#define TA_HBLOCKSIZE "Block Size"
+	#define TA_HBLOCKTYPESNUM "Num Block Types"
+	#define TA_HSTRINGSNUM "Num Strings"
+	#define TA_HSTRINGS "Strings"
+	#define TA_HSTRINGMAXLEN "Max String Length"
 #define T_FOOTER "Footer"
-#define TA_HVERSION "Version"
-#define TA_HSTRING "Header String"
-#define TA_HUV "User Version"
-#define TA_HUV2	"User Version 2"
-#define TA_HCR "Copyright"
+	#define TA_FROOTS "Roots"
+	#define TA_FROOTSNUM "Num Roots"
+
+#define T_NISOURCETEXTURE "NiSourceTexture"
+#define T_NIIMAGE "NiImage"
+#define T_NISTRINGEXTRADATA "NiStringExtraData"
+#define T_CONTROLLERLINK "ControllerLink"
+
+#define TA_FILENAME "File Name"
+#define TA_STRINGDATA "String Data"
+#define TA_NAME "Name"
+#define TA_CONTROLLEDBLOCKS "Controlled Blocks"
+#define TA_NODENAME "Node Name"
+#define TA_NODENAMEOFFSET "Node Name Offset"
+#define TA_STRINGPALETTE "String Palette"
+#define TA_PALETTE "Palette"
+#define TA_NUMVERTICES "Num Vertices"
+#define TA_TEXTURESOURCE "Texture Source"
+#define TA_INDEX "Index"
+#define TA_STRING "String"
 
 // NiBlocks - artificial blocks
 #define B_NIHEADER "NiHeader"
 #define B_NIFOOTER "NiFooter"
+#define B_NIBLOCK "NiBlock"
+
+// XML type names
+#define TN_STRING "string"
 
 #endif /* __NS_BASE_H__ */

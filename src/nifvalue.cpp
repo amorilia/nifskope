@@ -92,7 +92,7 @@ void NifValue::initialize()
 	typeMap.insert( "stringindex", NifValue::tStringIndex );
 	typeMap.insert( "blocktypeindex", NifValue::tBlockTypeIndex );
 	typeMap.insert( "char8string", NifValue::tChar8String );
-	typeMap.insert( "string", NifValue::tString );
+	typeMap.insert( TN_STRING, NifValue::tString );
 	typeMap.insert( "filepath", NifValue::tFilePath);
 	typeMap.insert( "blob", NifValue::tBlob);
 	
@@ -787,7 +787,7 @@ void NifOStream::init()
 {
 	bool32bit =  ( model->inherits( "NifModel" ) && model->getVersionNumber() <= 0x04000002 );
 	linkAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() < NF_V03030013 );
-	stringAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() >= 0x14010003 );
+	stringAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() >= NF_V20010003 );
 }
 
 bool NifIStream::read( NifValue & val )
@@ -990,7 +990,7 @@ bool NifIStream::read( NifValue & val )
 			if ( device->read( (char *) &val.val.u32, 4 ) != 4 )	return false;
 			//bool x = model->setVersion( val.val.u32 );
 			//init();
-			if( model->inherits( "NifModel" ) && model->getVersionNumber() >= 0x14000004 )
+			if( model->inherits( "NifModel" ) && model->getVersionNumber() >= NF_V20000004 )
 			{
 				bool littleEndian;
 				device->peek( (char *) &littleEndian, 1 );
@@ -1000,7 +1000,7 @@ bool NifIStream::read( NifValue & val )
 			// hack for neosteam
 			if ( val.val.u32 == 0x08F35232 )
 			{
-				val.val.u32 = 0x0a010000;
+				val.val.u32 = NF_V10010000;
 			}
 			return true;
 		}
@@ -1065,7 +1065,7 @@ void NifIStream::init()
 {
 	bool32bit =  ( model->inherits( "NifModel" ) && model->getVersionNumber() <= 0x04000002 );
 	linkAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() < NF_V03030013 );
-	stringAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() >= 0x14010003 );
+	stringAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() >= NF_V20010003 );
 	bigEndian = false; // set when tFileVersion is read
 	dataStream = new QDataStream( device );
 	dataStream->setByteOrder( QDataStream::LittleEndian );
@@ -1276,7 +1276,7 @@ bool NifOStream::write( const NifValue & val )
 void NifSStream::init()
 {
 	bool32bit =  ( model->inherits( "NifModel" ) && model->getVersionNumber() <= 0x04000002 );
-	stringAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() >= 0x14010003 );
+	stringAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() >= NF_V20010003 );
 }
 
 int NifSStream::size( const NifValue & val )

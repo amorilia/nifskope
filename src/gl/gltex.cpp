@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 // include before GLee.h to avoid compile error on linux
 #include <QDebug>
 #include <QDir>
@@ -394,8 +396,8 @@ int TexCache::bind( const QModelIndex & iSource )
 				glBindTexture( GL_TEXTURE_2D, tx->id );
 				return tx->mipmaps;
 			}
-		} else if ( ! nif->get<QString>( iSource, "File Name").isEmpty() ) {
-			return bind( nif->get<QString>( iSource, "File Name" ) );
+		} else if ( ! nif->get<QString>( iSource, TA_FILENAME).isEmpty() ) {
+			return bind( nif->get<QString>( iSource, TA_FILENAME ) );
 		}
 	}
 	return 0;
@@ -449,7 +451,7 @@ QString TexCache::info( const QModelIndex& iSource )
 				temp = QString("Embedded texture invalid");
 			}
 		} else {
-			QString filename = nif->get<QString>( iSource, "File Name" );
+			QString filename = nif->get<QString>( iSource, TA_FILENAME );
 			Tex * tx = textures.value( filename );
 			temp = QString("External texture file: %1\nTexture path: %2\nFormat: %3\nWidth: %4\nHeight: %5\nMipmaps: %6")
 				.arg(tx->filename)
@@ -480,7 +482,7 @@ bool TexCache::importFile( NifModel * nif, const QModelIndex & iSource, QModelIn
 	{
 		if( nif->get<quint8>( iSource, "Use External" ) == 1 )
 		{
-			QString filename = nif->get<QString>( iSource, "File Name" );
+			QString filename = nif->get<QString>( iSource, TA_FILENAME );
 			//qWarning() << "TexCache::importFile: Texture has filename (from NIF) " << filename;
 			Tex * tx = textures.value( filename );
 			return tx->savePixelData( nif, iSource, iData );

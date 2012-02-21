@@ -292,7 +292,7 @@ public:
 		chkHidden->setChecked( flags & 1 );
 		
 		QStringList collideModes = QStringList()
-			<< Spell::tr("None")
+			<< Spell::tr(STR_NOTHING)
 			<< Spell::tr("Triangles")
 			<< Spell::tr("Bounding Box")
 			<< Spell::tr("Continue");
@@ -388,7 +388,7 @@ public:
 		chkHidden->setChecked( flags & 0x01 );
 		
 		QStringList collideModes = QStringList()
-			<< Spell::tr("None")
+			<< Spell::tr(STR_NOTHING)
 			<< Spell::tr("Triangles")
 			<< Spell::tr("Bounding Box")
 			<< Spell::tr("Continue");
@@ -469,7 +469,7 @@ public:
 				nif->set<int>( nif->getBlock( index ), "Function", cmbFunc->currentIndex() );
 			}
 			
-			if( nif->checkVersion( 0x14010003, 0 ) || ( setFlags != 0 && setFlags->isChecked() ) )
+			if( nif->checkVersion( NF_V20010003, 0 ) || ( setFlags != 0 && setFlags->isChecked() ) )
 			{
 				flags = ( flags & 0xffe3 ) | ( cmbFunc->currentIndex() << 2 );
 			}
@@ -531,7 +531,7 @@ public:
 		chkHidden->setChecked( flags & 1 );
 		
 		QStringList collideModes = QStringList()
-			<< Spell::tr("None") // 0
+			<< Spell::tr(STR_NOTHING) // 0
 			<< Spell::tr("Triangles") // 2
 			<< Spell::tr("Bounding Box") // 4
 			<< Spell::tr("Continue"); // 6
@@ -546,7 +546,7 @@ public:
 		
 		QComboBox * cmbMode = dlgCombo( vbox, Spell::tr("Billboard Mode"), billboardModes );
 		// Billboard Mode is an enum as of 10.1.0.0
-		if ( nif->checkVersion( 0x0A010000, 0 ) )
+		if ( nif->checkVersion( NF_V10010000, 0 ) )
 		{
 			// this value doesn't exist before 10.1.0.0
 			// ROTATE_ABOUT_UP2 is too hard to put in and possibly meaningless
@@ -564,7 +564,7 @@ public:
 		{
 			flags = ( flags & 0xfffe ) | ( chkHidden->isChecked() ? 1 : 0 );
 			flags = ( flags & 0xfff9 ) | ( cmbCollision->currentIndex() << 1);
-			if ( nif->checkVersion( 0x0A010000, 0 ) )
+			if ( nif->checkVersion( NF_V10010000, 0 ) )
 			{
 				nif->set<int>( nif->getBlock( index ), "Billboard Mode", cmbMode->currentIndex() );
 			}
@@ -725,7 +725,7 @@ public:
 				nif->set<int>( nif->getBlock( index ), "Vertex Mode", cmbVert->currentIndex() );
 			}
 			
-			if( nif->checkVersion( 0x14010003, 0 ) || ( setFlags != 0 && setFlags->isChecked() ) )
+			if( nif->checkVersion( NF_V20010003, 0 ) || ( setFlags != 0 && setFlags->isChecked() ) )
 			{
 				flags = ( flags & 0xfff7 ) | ( cmbLight->currentIndex() << 3 );
 				flags = ( flags & 0xffcf ) | ( cmbVert->currentIndex() << 4 );
@@ -762,7 +762,7 @@ public:
 		
 		QComboBox * cmbColor = dlgCombo( vbox, Spell::tr("Target Color"), targetColor );
 		// Target Color enum exists as of 10.1.0.0
-		if ( nif->checkVersion( 0x0A010000, 0 ) )
+		if ( nif->checkVersion( NF_V10010000, 0 ) )
 		{
 			cmbColor->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Target Color" ) );
 		}
@@ -778,7 +778,7 @@ public:
 			flags = ( flags & 0xfff7 ) | ( chkActive->isChecked() ? 8 : 0 );
 			flags = ( flags & 0xfff9 ) | ( cmbLoop->currentIndex() << 1 );
 			
-			if ( nif->checkVersion( 0x0A010000, 0 ) )
+			if ( nif->checkVersion( NF_V10010000, 0 ) )
 			{
 				nif->set<int>( nif->getBlock( index ), "Target Color", cmbColor->currentIndex() );
 			}

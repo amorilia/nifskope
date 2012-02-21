@@ -167,7 +167,7 @@ public:
 	//! Gets the string palette referred to by this string offset
 	static QModelIndex getStringPalette( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex iPalette = nif->getBlock( nif->getLink( index.parent(), "String Palette" ) );
+		QModelIndex iPalette = nif->getBlock( nif->getLink( index.parent(), TA_STRINGPALETTE ) );
 		if ( iPalette.isValid() )
 			return iPalette;
 		
@@ -177,7 +177,7 @@ public:
 	//! Reads a string palette and returns a map of strings to offsets
 	static QMap<QString,int> readStringPalette( const NifModel * nif, const QModelIndex & iPalette )
 	{
-		QByteArray bytes = nif->get<QByteArray>( iPalette, "Palette" );
+		QByteArray bytes = nif->get<QByteArray>( iPalette, TA_PALETTE );
 		QMap<QString,int> strings;
 		int x = 0;
 		while ( x < bytes.count() )
@@ -221,11 +221,11 @@ public:
 		if ( strings.contains( string ) )
 			return strings[ string ];
 		
-		QByteArray bytes = nif->get<QByteArray>( iPalette, "Palette" );
+		QByteArray bytes = nif->get<QByteArray>( iPalette, TA_PALETTE );
 		int ofs = bytes.count();
 		bytes += string.toAscii();
 		bytes.append( '\0' );
-		nif->set<QByteArray>( iPalette, "Palette", bytes );
+		nif->set<QByteArray>( iPalette, TA_PALETTE, bytes );
 		return ofs;
 	}
 };
@@ -318,15 +318,15 @@ class spEditStringEntries : public Spell
 {
 public:
 	QString name() const { return Spell::tr("Replace Entries"); }
-	QString page() const { return Spell::tr("String Palette"); }
+	QString page() const { return Spell::tr(TA_STRINGPALETTE); }
 	
 	bool instant() const { return false; }
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
 		return nif->inherits( index, "NiSequence" )
-			&& nif->getBlock( nif->getLink( index, "String Palette" ) ).isValid()
-			&& nif->checkVersion( 0x0A020000, NF_V20000005 );
+			&& nif->getBlock( nif->getLink( index, TA_STRINGPALETTE ) ).isValid()
+			&& nif->checkVersion( NF_V10020000, NF_V20000005 );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -334,13 +334,13 @@ public:
 		// string offset is used in ControllerLink which exists in NiSequence
 		// a single palette could be share by multiple NiSequences
 		
-		QPersistentModelIndex iPalette = nif->getBlock( nif->getLink( index, "String Palette" ) );
+		QPersistentModelIndex iPalette = nif->getBlock( nif->getLink( index, TA_STRINGPALETTE ) );
 #ifndef QT_NO_DEBUG
 		qWarning() << "This block uses " << iPalette;
 #endif
 		if ( ! iPalette.isValid() )
 		{
-			iPalette = nif->getBlock( nif->getLink( index.parent(), "String Palette" ) );
+			iPalette = nif->getBlock( nif->getLink( index.parent(), TA_STRINGPALETTE ) );
 			
 			if ( ! iPalette.isValid() )
 			{
@@ -352,7 +352,7 @@ public:
 		// display entries in current string palette, in order they appear
 		StringPaletteRegexDialog * sprd = new StringPaletteRegexDialog( nif, iPalette );
 		
-		QByteArray bytes = nif->get<QByteArray>( iPalette, "Palette" );
+		QByteArray bytes = nif->get<QByteArray>( iPalette, TA_PALETTE );
 		
 		// map of old offsets to strings
 		// QMap is always sorted by key, in this case the offsets
@@ -426,7 +426,7 @@ public:
 		while ( sequenceListIterator.hasNext() )
 		{
 			QPersistentModelIndex temp = sequenceListIterator.next();
-			QPersistentModelIndex tempPalette = nif->getBlock( nif->getLink( temp, "String Palette" ) );
+			QPersistentModelIndex tempPalette = nif->getBlock( nif->getLink( temp, TA_STRINGPALETTE ) );
 			//qWarning() << "Sequence " << temp << " uses " << tempPalette;
 			if ( iPalette == tempPalette )
 			{
@@ -443,7 +443,7 @@ public:
 			QPersistentModelIndex nextBlock = sequenceUpdateIterator.next();
 			//qWarning() << "Need to update " << nextBlock;
 			
-			QPersistentModelIndex blocks = nif->getIndex( nextBlock, "Controlled Blocks" );
+			QPersistentModelIndex blocks = nif->getIndex( nextBlock, TA_CONTROLLEDBLOCKS );
 			for ( int i = 0; i < nif->rowCount( blocks ); i++ )
 			{
 				QPersistentModelIndex thisBlock = blocks.child( i, 0 );
@@ -473,7 +473,7 @@ public:
 		}
 		
 		// update the palette itself
-		nif->set<QByteArray>( iPalette, "Palette", bytes );
+		nif->set<QByteArray>( iPalette, TA_PALETTE, bytes );
 		
 		QMessageBox::information( 0, "NifSkope",
 				Spell::tr( "Updated %1 offsets in %2 sequences" ).arg( numRefsUpdated ).arg( sequenceUpdateList.size() ) );
@@ -495,7 +495,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( ! index.isValid() && nif->checkVersion( 0x0A020000, NF_V20000005 ) );
+		return ( ! index.isValid() && nif->checkVersion( NF_V10020000, NF_V20000005 ) );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -509,7 +509,7 @@ public:
 			if ( current.isValid() )
 			{
 				sequenceList.append( current );
-				QString key = QString( "%1 %2" ).arg( current.row(), 4, 10, QChar('0') ).arg( nif->get<QString>( current, "Name" ) );
+				QString key = QString( "%1 %2" ).arg( current.row(), 4, 10, QChar('0') ).arg( nif->get<QString>( current, TA_NAME ) );
 				sequenceMap.insert( key , current );
 			}
 		}

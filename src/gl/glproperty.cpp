@@ -253,7 +253,7 @@ void ZBufferProperty::update( const NifModel * nif, const QModelIndex & block )
 		{
 			depthFunc = depthMap[ nif->get<int>( iBlock, "Function" ) & 0x07 ];
 		}
-		else if ( nif->checkVersion( 0x14010003, 0 ) )
+		else if ( nif->checkVersion( NF_V20010003, 0 ) )
 		{
 			depthFunc = depthMap[ (flags >> 2 ) & 0x07 ];
 		}
@@ -301,7 +301,7 @@ void TexturingProperty::update( const NifModel * nif, const QModelIndex & proper
 			QModelIndex iTex = nif->getIndex( property, texnames[t] );
 			if ( iTex.isValid() )
 			{
-				textures[t].iSource = nif->getBlock( nif->getLink( iTex, "Source" ), "NiSourceTexture" );
+				textures[t].iSource = nif->getBlock( nif->getLink( iTex, "Source" ), T_NISOURCETEXTURE );
 				textures[t].coordset = nif->get<int>( iTex, "UV Set" );
 				int filterMode = 0, clampMode = 0;
 				if( nif->checkVersion( 0, NF_V20000005 ) )
@@ -309,7 +309,7 @@ void TexturingProperty::update( const NifModel * nif, const QModelIndex & proper
 					filterMode = nif->get<int>( iTex, "Filter Mode" );
 					clampMode = nif->get<int>( iTex, "Clamp Mode" );
 				}
-				else if( nif->checkVersion( 0x14010003, 0 ) )
+				else if( nif->checkVersion( NF_V20010003, 0 ) )
 				{
 					filterMode = ( ( nif->get<ushort>( iTex, "Flags" ) & 0x0F00 ) >> 0x08 );
 					clampMode = ( ( nif->get<ushort>(iTex, "Flags" ) & 0xF000 ) >> 0x0C );
@@ -435,7 +435,7 @@ QString TexturingProperty::fileName( int id ) const
 		QModelIndex iSource = textures[ id ].iSource;
 		const NifModel * nif = qobject_cast<const NifModel *>( iSource.model() );
 		if ( nif && iSource.isValid() ) {
-			return nif->get<QString>( iSource, "File Name" );
+			return nif->get<QString>( iSource, TA_FILENAME );
 		}
 	}
 	return QString();
@@ -476,11 +476,11 @@ public:
 		// TexturingProperty
 		if ( target )
 		{
-			target->textures[flipSlot & 7 ].iSource = nif->getBlock( nif->getLink( iSources.child( (int) r, 0 ) ), "NiSourceTexture" );
+			target->textures[flipSlot & 7 ].iSource = nif->getBlock( nif->getLink( iSources.child( (int) r, 0 ) ), T_NISOURCETEXTURE );
 		}
 		else if ( oldTarget )
 		{
-			oldTarget->iImage = nif->getBlock( nif->getLink( iSources.child( (int) r, 0 ) ), "NiImage" );
+			oldTarget->iImage = nif->getBlock( nif->getLink( iSources.child( (int) r, 0 ) ), T_NIIMAGE );
 		}
 	}
 	
@@ -635,7 +635,7 @@ void TextureProperty::update( const NifModel * nif, const QModelIndex & property
 	
 	if ( iBlock.isValid() && iBlock == property )
 	{
-		iImage = nif->getBlock( nif->getLink( iBlock, "Image" ), "NiImage" );
+		iImage = nif->getBlock( nif->getLink( iBlock, "Image" ), T_NIIMAGE );
 	}
 }
 
@@ -676,7 +676,7 @@ QString TextureProperty::fileName() const
 {
 	const NifModel * nif = qobject_cast<const NifModel *>( iImage.model() );
 	if ( nif && iImage.isValid() )
-		return nif->get<QString>( iImage, "File Name" );
+		return nif->get<QString>( iImage, TA_FILENAME );
 	return QString();
 }
 
@@ -805,7 +805,7 @@ public:
 	{
 		if ( Controller::update( nif, index ) )
 		{
-			if ( nif->checkVersion( 0x0A010000, 0 ) )
+			if ( nif->checkVersion( NF_V10010000, 0 ) )
 			{
 				tColor = nif->get<int>( iBlock, "Target Color" );
 			}

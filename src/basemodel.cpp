@@ -131,7 +131,7 @@ int BaseModel::evaluateString( NifItem * array, const QString & text ) const
 			{
 				NifItem * dim1 = parent;
 				
-				while ( left == A_ARG )
+				while ( left == AV_ARG )
 				{
 					if ( ! dim1->parent() )	return 0;
 					left = dim1->arg();
@@ -531,7 +531,7 @@ QVariant BaseModel::headerData( int section, Qt::Orientation orientation, int ro
 		case Qt::DisplayRole:
 			switch ( section )
 			{
-				case NameCol:		return tr("Name");
+				case NameCol:		return tr(TA_NAME);
 				case TypeCol:		return tr("Type");
 				case ValueCol:		return tr("Value");
 				case ArgCol:		return tr("Argument");
@@ -669,7 +669,7 @@ public:
 		if ( v.type() == QVariant::String ) {
 			QString left = v.toString();
 			const NifItem * i = item;
-			while ( left == A_ARG ) {
+			while ( left == AV_ARG ) {
 				if ( ! i->parent() )	return false;
 				i = i->parent();
 				left = i->arg();
@@ -744,7 +744,7 @@ bool BaseModel::evalConditionHelper( NifItem * item, const QString & cond ) cons
 		{
 			NifItem * i = item;
 			
-			while ( left == A_ARG )
+			while ( left == AV_ARG )
 			{
 				if ( ! i->parent() )	return false;
 				i = i->parent();

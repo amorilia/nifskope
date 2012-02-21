@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "nifmodel.h"
 #include "niftypes.h"
 
@@ -449,13 +451,13 @@ public:
 	//! Checks that the type of the data is valid
 	bool checkType( const NifData & data )
 	{
-		return NifModel::compounds.contains( data.type() ) || NifValue::type( data.type() ) != NifValue::tNone || data.type() == "TEMPLATE";
+		return NifModel::compounds.contains( data.type() ) || NifValue::type( data.type() ) != NifValue::tNone || data.type() == AV_TEMPLATE;
 	}
 	
 	//! Checks that a template type is valid
 	bool checkTemp( const NifData & data )
 	{
-		return data.temp().isEmpty() || NifValue::type( data.temp() ) != NifValue::tNone || data.temp() == "TEMPLATE" || NifModel::blocks.contains( data.temp() ) || NifModel::compounds.contains( data.temp() );
+		return data.temp().isEmpty() || NifValue::type( data.temp() ) != NifValue::tNone || data.temp() == AV_TEMPLATE || NifModel::blocks.contains( data.temp() ) || NifModel::compounds.contains( data.temp() );
 	}
 	
 	//! Reimplemented from QXmlContentHandler

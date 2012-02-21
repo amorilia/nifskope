@@ -232,7 +232,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 					{
 						QModelIndex temp = nif->getBlock( *it );
 						QString type = nif->itemName( temp );
-						if ( (type == "NiSourceTexture") || (type == "NiImage") )
+						if ( (type == T_NISOURCETEXTURE) || (type == T_NIIMAGE) )
 						{
 							iTexSource = temp;
 						}
@@ -277,7 +277,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 	settings.beginGroup( "import-export" );
 	settings.beginGroup( "3ds" );
 	
-	QString fname = QFileDialog::getOpenFileName( 0, tr("Choose a .3ds file to import"), settings.value( tr("File Name") ).toString(), "*.3ds" );
+	QString fname = QFileDialog::getOpenFileName( 0, tr("Choose a .3ds file to import"), settings.value( tr(TA_FILENAME) ).toString(), "*.3ds" );
 	if ( fname.isEmpty() ) {
 		return;
 	}
@@ -600,7 +600,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 	if ( iNode.isValid() == false )
 	{
 		iNode = nif->insertNiBlock( "NiNode" );
-		nif->set<QString>( iNode, "Name", "Scene Root" );
+		nif->set<QString>( iNode, TA_NAME, "Scene Root" );
 	}
 
 	//Record root object
@@ -620,7 +620,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			groupNode = true;
 
 			iNode = nif->insertNiBlock( "NiNode" );
-			nif->set<QString>( iNode, "Name", mesh->name );
+			nif->set<QString>( iNode, TA_NAME, mesh->name );
 			addLink( nif, iRoot, "Children", nif->getBlockNumber( iNode ) );
 		}
 
@@ -639,12 +639,12 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			}
 			if ( groupNode )
 			{
-				nif->set<QString>( iShape, "Name", QString( "%1:%2" ).arg( nif->get<QString>( iNode, "Name" ) ).arg( shapecount++ ) );
+				nif->set<QString>( iShape, TA_NAME, QString( "%1:%2" ).arg( nif->get<QString>( iNode, TA_NAME ) ).arg( shapecount++ ) );
 				addLink( nif, iNode, "Children", nif->getBlockNumber( iShape ) );
 			}
 			else
 			{
-				nif->set<QString>( iShape, "Name", mesh->name );
+				nif->set<QString>( iShape, TA_NAME, mesh->name );
 				addLink( nif, iRoot, "Children", nif->getBlockNumber( iShape ) );
 			}
 			
@@ -652,7 +652,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			{
 				iMaterial = nif->insertNiBlock( "NiMaterialProperty" );
 			}
-			nif->set<QString>( iMaterial, "Name", mat->name );
+			nif->set<QString>( iMaterial, TA_NAME, mat->name );
 			nif->set<Color3>( iMaterial, "Ambient Color", mat->Ka );
 			nif->set<Color3>( iMaterial, "Diffuse Color", mat->Kd );
 			nif->set<Color3>( iMaterial, "Specular Color", mat->Ks );
@@ -678,9 +678,9 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 					nif->set<int>( iBaseMap, "Clamp Mode", 3 );
 					nif->set<int>( iBaseMap, "Filter Mode", 2 );
 					
-					if ( iTexSource.isValid() == false || objIndex != 0 || nif->itemType(iTexSource) != "NiSourceTexture" )
+					if ( iTexSource.isValid() == false || objIndex != 0 || nif->itemType(iTexSource) != T_NISOURCETEXTURE )
 					{
-						iTexSource = nif->insertNiBlock( "NiSourceTexture" );
+						iTexSource = nif->insertNiBlock( T_NISOURCETEXTURE );
 					}
 					nif->setLink( iBaseMap, "Source", nif->getBlockNumber( iTexSource ) );
 					
@@ -691,7 +691,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 					nif->set<int>( iTexSource, "Unknown Byte 2", 1 );
 					
 					nif->set<int>( iTexSource, "Use External", 1 );
-					nif->set<QString>( iTexSource, "File Name", mat->map_Kd );
+					nif->set<QString>( iTexSource, TA_FILENAME, mat->map_Kd );
 				}
 				else
 				{
@@ -702,15 +702,15 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 					}
 					addLink( nif, iShape, "Properties", nif->getBlockNumber( iTexProp ) );
 					
-					if ( iTexSource.isValid() == false || objIndex != 0 || nif->itemType(iTexSource) != "NiImage" )
+					if ( iTexSource.isValid() == false || objIndex != 0 || nif->itemType(iTexSource) != T_NIIMAGE )
 					{
-						iTexSource = nif->insertNiBlock( "NiImage" );
+						iTexSource = nif->insertNiBlock( T_NIIMAGE );
 					}
 
 					nif->setLink( iTexProp, "Image", nif->getBlockNumber( iTexSource ) );
 					
 					nif->set<int>( iTexSource, "External", 1 );
-					nif->set<QString>( iTexSource, "File Name", mat->map_Kd );
+					nif->set<QString>( iTexSource, TA_FILENAME, mat->map_Kd );
 				}
 			}
 			
@@ -734,7 +734,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 				triangles.append( tri );
 			}
 			
-			nif->set<int>( iData, "Num Vertices", mesh->vertices.count() );
+			nif->set<int>( iData, TA_NUMVERTICES, mesh->vertices.count() );
 			nif->set<int>( iData, "Has Vertices", 1 );
 			nif->updateArray( iData, "Vertices" );
 			nif->setArray<Vector3>( iData, "Vertices",  mesh->vertices );
@@ -777,7 +777,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 		// set up a controller for animated objects
 	}
 	
-	settings.setValue( "File Name", fname );
+	settings.setValue( TA_FILENAME, fname );
 	
 	nif->reset();
 	return;

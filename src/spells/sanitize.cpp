@@ -56,7 +56,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return (! index.isValid() && ( nif->getVersionNumber() >= 0x14000004 ) );
+		return (! index.isValid() && ( nif->getVersionNumber() >= NF_V20000004 ) );
 	}
 	
 	//! Comparator for link sort.
@@ -175,10 +175,10 @@ public:
 	{
 		for ( int i = 0; i < nif->getBlockCount(); i++ )
 		{
-			QModelIndex iTexSrc = nif->getBlock( i, "NiSourceTexture" );
+			QModelIndex iTexSrc = nif->getBlock( i, T_NISOURCETEXTURE );
 			if ( iTexSrc.isValid() )
 			{
-				QModelIndex iFileName = nif->getIndex( iTexSrc, "File Name" );
+				QModelIndex iFileName = nif->getIndex( iTexSrc, TA_FILENAME );
 				if ( iFileName.isValid() ) // adjust file path
 					nif->set<QString>( iFileName, nif->get<QString>( iFileName ).replace( "/", "\\" ) );
 				

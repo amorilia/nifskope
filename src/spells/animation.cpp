@@ -122,14 +122,14 @@ public:
 					
 					QList< QPersistentModelIndex > controlledNodes;
 					
-					QModelIndex iCtrlBlcks = kf.getIndex( iSeq, "Controlled Blocks" );
+					QModelIndex iCtrlBlcks = kf.getIndex( iSeq, TA_CONTROLLEDBLOCKS );
 					for ( int r = 0; r < kf.rowCount( iCtrlBlcks ); r++ )
 					{
-						QString nodeName = kf.string( iCtrlBlcks.child( r, 0 ), "Node Name", false );
+						QString nodeName = kf.string( iCtrlBlcks.child( r, 0 ), TA_NODENAME, false );
 						if (nodeName.isEmpty())
 							nodeName = kf.string( iCtrlBlcks.child( r, 0 ), "Target Name", false );// 10.0.1.0
 						if (nodeName.isEmpty()) {
-							QModelIndex iNodeName = kf.getIndex( iCtrlBlcks.child( r, 0 ), "Node Name Offset" );
+							QModelIndex iNodeName = kf.getIndex( iCtrlBlcks.child( r, 0 ), TA_NODENAMEOFFSET );
 							nodeName = iNodeName.sibling( iNodeName.row(), NifModel::ValueCol ).data( NifSkopeDisplayRole ).toString();
 						}
 						QModelIndex iCtrlNode = findChildNode( nif, iRoot, nodeName );
@@ -181,7 +181,7 @@ public:
 					QModelIndex iSeq = nif->getBlock( nSeq, "NiControllerSequence" );
 					nif->setLink( iSeq, "Manager", nif->getBlockNumber( iCtrlManager ) );
 
-					QModelIndex iCtrlBlcks = nif->getIndex( iSeq, "Controlled Blocks" );
+					QModelIndex iCtrlBlcks = nif->getIndex( iSeq, TA_CONTROLLEDBLOCKS );
 					for ( int r = 0; r < nif->rowCount( iCtrlBlcks ); r++ )
 					{
 						QModelIndex iCtrlBlck = iCtrlBlcks.child( r, 0 );
@@ -215,7 +215,7 @@ public:
 		if ( ! nif->inherits( parent, "NiAVObject" ) )
 			return QModelIndex();
 		
-		QString thisName = nif->get<QString>( parent, "Name" );
+		QString thisName = nif->get<QString>( parent, TA_NAME );
 		if ( thisName == name )
 			return parent;
 		
@@ -307,11 +307,11 @@ public:
 		
 		foreach ( QPersistentModelIndex idx, iBlocks )
 		{
-			QString name = nif->get<QString>( idx, "Name" );
+			QString name = nif->get<QString>( idx, TA_NAME );
 			int r;
 			for ( r = 0; r < nif->rowCount( iArray ); r++ )
 			{
-				if ( nif->get<QString>( iArray.child( r, 0 ), "Name" ) == name )
+				if ( nif->get<QString>( iArray.child( r, 0 ), TA_NAME ) == name )
 					break;
 			}
 			if ( r == nif->rowCount( iArray ) )
@@ -323,7 +323,7 @@ public:
 		nif->updateArray( iArray );
 		foreach ( QPersistentModelIndex idx, blocksToAdd )
 		{
-			nif->set<QString>( iArray.child( r, 0 ), "Name", nif->get<QString>( idx, "Name" ) );
+			nif->set<QString>( iArray.child( r, 0 ), TA_NAME, nif->get<QString>( idx, TA_NAME ) );
 			nif->setLink( iArray.child( r, 0 ), "AV Object", nif->getBlockNumber( idx ) );
 			r++;
 		}

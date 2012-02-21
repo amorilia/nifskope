@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "glscene.h"
 #include "glmarker.h"
 #include "glnode.h"
@@ -216,7 +218,7 @@ public:
 					QModelIndex iSeq = nif->getBlock( l, "NiControllerSequence" );
 					if ( iSeq.isValid() )
 					{
-						QString name = nif->get<QString>( iSeq, "Name" );
+						QString name = nif->get<QString>( iSeq, TA_NAME );
 						if ( ! scene->animGroups.contains( name ) )
 						{
 							scene->animGroups.append( name );
@@ -259,23 +261,23 @@ public:
 			foreach ( qint32 l, lSequences )
 			{
 				QModelIndex iSeq = nif->getBlock( l, "NiControllerSequence" );
-				if ( iSeq.isValid() && nif->get<QString>( iSeq, "Name" ) == seqname )
+				if ( iSeq.isValid() && nif->get<QString>( iSeq, TA_NAME ) == seqname )
 				{
 					start = nif->get<float>( iSeq, "Start Time" );
 					stop = nif->get<float>( iSeq, "Stop Time" );
 					phase = nif->get<float>( iSeq, "Phase" );
 					frequency = nif->get<float>( iSeq, "Frequency" );
 					
-					QModelIndex iCtrlBlcks = nif->getIndex( iSeq, "Controlled Blocks" );
+					QModelIndex iCtrlBlcks = nif->getIndex( iSeq, TA_CONTROLLEDBLOCKS );
 					for ( int r = 0; r < nif->rowCount( iCtrlBlcks ); r++ )
 					{
 						QModelIndex iCB = iCtrlBlcks.child( r, 0 );
 						
 						QModelIndex iInterpolator = nif->getBlock( nif->getLink( iCB, "Interpolator" ), "NiInterpolator" );
 						
-						QString nodename = nif->get<QString>( iCB, "Node Name" );
+						QString nodename = nif->get<QString>( iCB, TA_NODENAME );
 						if ( nodename.isEmpty() ) {
-							QModelIndex idx = nif->getIndex( iCB, "Node Name Offset" );
+							QModelIndex idx = nif->getIndex( iCB, TA_NODENAMEOFFSET );
 							nodename = idx.sibling( idx.row(), NifModel::ValueCol ).data( NifSkopeDisplayRole ).toString();
 						}
 						QString proptype = nif->get<QString>( iCB, "Property Type" );
@@ -1161,7 +1163,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 					int end_vertex = 0;
 					for (int subshape = 0; subshape < nif->rowCount(iSubShapes); subshape++) {
 						QModelIndex iCurrentSubShape = iSubShapes.child(subshape, 0);
-						int num_vertices = nif->get<int>( iCurrentSubShape, "Num Vertices" );
+						int num_vertices = nif->get<int>( iCurrentSubShape, TA_NUMVERTICES );
 						//qDebug() << num_vertices;
 						end_vertex += num_vertices;
 						if ( iCurrentSubShape == iSubShape ) {

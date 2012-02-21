@@ -1397,10 +1397,10 @@ void GLView::dragMoveEvent( QDragMoveEvent * e )
 			QModelIndex iTxt = model->getBlock( l, "NiTexturingProperty" );
 			if ( iTxt.isValid() )
 			{
-				QModelIndex iSrc = model->getBlock( model->getLink( iTxt, "Base Texture/Source" ), "NiSourceTexture" );
+				QModelIndex iSrc = model->getBlock( model->getLink( iTxt, "Base Texture/Source" ), T_NISOURCETEXTURE );
 				if ( iSrc.isValid() )
 				{
-					iDragTarget = model->getIndex( iSrc, "File Name" );
+					iDragTarget = model->getIndex( iSrc, TA_FILENAME );
 					if ( iDragTarget.isValid() )
 					{
 						fnDragTexOrg = model->get<QString>( iDragTarget );

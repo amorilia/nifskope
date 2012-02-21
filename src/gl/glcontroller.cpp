@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "glcontroller.h"
 #include "glscene.h"
 #include "options.h"
@@ -97,7 +99,7 @@ void Controllable::update( const NifModel * nif, const QModelIndex & i )
 
 	if ( iBlock == i || x )
 	{	
-		name = nif->get<QString>( iBlock, "Name" );
+		name = nif->get<QString>( iBlock, TA_NAME );
 		// sync the list of attached controllers
 		QList<Controller*> rem( controllers );
 		QModelIndex iCtrl = nif->getBlock( nif->getLink( iBlock, "Controller" ) );

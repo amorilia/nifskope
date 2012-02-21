@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "transform.h"
 #include "config.h"
 
@@ -124,7 +126,7 @@ static char const * transform_xpm[] = {
 
 bool spApplyTransformation::isApplicable( const NifModel * nif, const QModelIndex & index )
 {
-	return nif->itemType( index ) == "NiBlock" && ( nif->inherits( nif->itemName( index ), "NiNode" )
+	return nif->itemType( index ) == B_NIBLOCK && ( nif->inherits( nif->itemName( index ), "NiNode" )
 			|| nif->itemName( index ) == "NiTriShape" || nif->itemName( index ) == "NiTriStrips" );
 }
 

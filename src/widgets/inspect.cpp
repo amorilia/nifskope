@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "inspect.h"
 
 #include <QApplication>
@@ -385,7 +387,7 @@ void InspectView::update()
    float x, y, z;
    mat.toEuler(x, y, z);
 
-   impl->nameText->setText( nif->get<QString>( selection, "Name" ) );
+   impl->nameText->setText( nif->get<QString>( selection, TA_NAME ) );
    impl->typeText->setText( nif->getBlockName( selection ) );
    impl->timeText->setText( QString("%1").Farg(impl->time) );
 

@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 
 #include "widgets/nifeditors.h"
@@ -98,7 +100,7 @@ public:
 	{
 		QModelIndex iBlock = nif->getBlock( index );
 		QModelIndex sibling = index.sibling( index.row(), 0 );
-		return index.isValid() && nif->inherits( iBlock, "NiLight" ) && ( iBlock == sibling || nif->getIndex( iBlock, "Name" ) == sibling );
+		return index.isValid() && nif->inherits( iBlock, "NiLight" ) && ( iBlock == sibling || nif->getIndex( iBlock, TA_NAME ) == sibling );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )

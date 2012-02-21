@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 
 #include "skeleton.h"
@@ -67,7 +69,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( nif->getVersion() == "4.0.0.2" && nif->itemType( index ) == "NiBlock" && nif->get<QString>( index, "Name" ) == "Bip01" ); //&& QFile::exists( SKEL_DAT ) );
+		return ( nif->getVersion() == "4.0.0.2" && nif->itemType( index ) == B_NIBLOCK && nif->get<QString>( index, TA_NAME ) == "Bip01" ); //&& QFile::exists( SKEL_DAT ) );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -121,7 +123,7 @@ public:
 	
 	void doBones( NifModel * nif, const QModelIndex & index, const Transform & tparent, const TransMap & local, TransMap & bones )
 	{
-		QString name = nif->get<QString>( index, "Name" );
+		QString name = nif->get<QString>( index, TA_NAME );
 		if ( name.startsWith( "Bip01" ) )
 		{
 			Transform tlocal( nif, index );
@@ -142,7 +144,7 @@ public:
 	{
 		bool hasSkinnedChildren = false;
 		
-		QString name = nif->get<QString>( index, "Name" );
+		QString name = nif->get<QString>( index, TA_NAME );
 		if ( ! name.startsWith( "Bip01" ) )
 		{
 			Transform tlocal( nif, index );
@@ -186,7 +188,7 @@ public:
 			{
 				QModelIndex iBone = nif->getBlock( nif->getLink( iNames.child( n, 0 ) ), "NiNode" );
 				if ( iBone.isValid() )
-					names.append( nif->get<QString>( iBone, "Name" ) );
+					names.append( nif->get<QString>( iBone, TA_NAME ) );
 				else
 					names.append("");
 			}
@@ -230,7 +232,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( nif->getVersion() == "4.0.0.2" && nif->itemType( index ) == "NiBlock" && nif->get<QString>( index, "Name" ) == "Bip01" );
+		return ( nif->getVersion() == "4.0.0.2" && nif->itemType( index ) == B_NIBLOCK && nif->get<QString>( index, TA_NAME ) == "Bip01" );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -247,7 +249,7 @@ public:
 	
 	void scan( NifModel * nif, const QModelIndex & index, const Transform & tparent, QDataStream & stream )
 	{
-		QString name = nif->get<QString>( index, "Name" );
+		QString name = nif->get<QString>( index, TA_NAME );
 		if ( name.startsWith( "Bip01" ) )
 		{
 			Transform local( nif, index );
@@ -364,7 +366,7 @@ public:
 			
 			// read in the weights from NiSkinData
 			
-			int numVerts = nif->get<int>( iData, "Num Vertices" );
+			int numVerts = nif->get<int>( iData, TA_NUMVERTICES );
 			QVector< QList< boneweight > > weights( numVerts );
 			
 			QModelIndex iBoneList = nif->getIndex( iSkinData, "Bone List" );
@@ -374,7 +376,7 @@ public:
 				QModelIndex iVertexWeights = nif->getIndex( iBoneList.child( bone, 0 ), "Vertex Weights" );
 				for ( int r = 0; r < nif->rowCount( iVertexWeights ); r++ )
 				{
-					int vertex = nif->get<int>( iVertexWeights.child( r, 0 ), "Index" );
+					int vertex = nif->get<int>( iVertexWeights.child( r, 0 ), TA_INDEX );
 					float weight = nif->get<float>( iVertexWeights.child( r, 0 ), "Weight" );
 					if ( vertex >= weights.count() )
 						throw QString( Spell::tr("bad NiSkinData - vertex count does not match") );
@@ -903,7 +905,7 @@ public:
 					qSort( bw.begin(), bw.end(), boneweight_equivalence() );
 				}
 
-				nif->set<int>( iPart, "Num Vertices", vertices.count() );
+				nif->set<int>( iPart, TA_NUMVERTICES, vertices.count() );
 				nif->set<int>( iPart, "Num Triangles", numTriangles );
 				nif->set<int>( iPart, "Num Bones", bones.count() );
 				nif->set<int>( iPart, "Num Strips", strips.count() );
@@ -1210,7 +1212,7 @@ public:
 			QModelIndex iWeightList = nif->getIndex( iBoneDataList.child( b, 0 ), "Vertex Weights" );
 			for ( int w = 0; w < nif->rowCount( iWeightList ); w++ )
 			{
-				int v = nif->get<int>( iWeightList.child( w, 0 ), "Index" );
+				int v = nif->get<int>( iWeightList.child( w, 0 ), TA_INDEX );
 				if ( w == 0 )
 				{
 					mn = verts.value( v );
@@ -1256,8 +1258,8 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( nif->getVersion() == "4.0.0.2" && nif->itemType( index ) == "NiBlock" )
-			&& ( ( nif->get<QString>( index, "Name" ).startsWith( "Bip01 L" ) ) || ( nif->get<QString>( index, "Name" ).startsWith( "Bip01 R" ) ) );
+		return ( nif->getVersion() == "4.0.0.2" && nif->itemType( index ) == B_NIBLOCK )
+			&& ( ( nif->get<QString>( index, TA_NAME ).startsWith( "Bip01 L" ) ) || ( nif->get<QString>( index, TA_NAME ).startsWith( "Bip01 R" ) ) );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -1291,7 +1293,7 @@ public:
 	void doBones( NifModel * nif, const QModelIndex & index )
 	{
 		// Need correct naming scheme!
-		QString name = nif->get<QString>( index, "Name" );
+		QString name = nif->get<QString>( index, TA_NAME );
 		if ( name.startsWith( "Bip01 L" ) || name.startsWith( "Bip01 R" ) )
 		{
 			Transform tlocal( nif, index );
@@ -1302,7 +1304,7 @@ public:
 			else
 				name.replace(QString(" R"), QString(" L"));
 			
-			nif->set<QString>( index, "Name", name );
+			nif->set<QString>( index, TA_NAME, name );
 			
 			// translation is a Vector3
 			// want [x,y,z] -> [x,y,-z]
@@ -1322,7 +1324,7 @@ public:
 		foreach ( int link, nif->getChildLinks( nif->getBlockNumber( index ) ) )
 		{
 			QModelIndex iChild = nif->getBlock( link );
-			QString childName = nif->get<QString>( iChild, "Name" );
+			QString childName = nif->get<QString>( iChild, TA_NAME );
 			// Might as well rename children now if we can - this is less case-critical than Bip01 L/R
 			if ( childName.contains( "Left ", Qt::CaseInsensitive ) ) {
 				childName.replace(QString("Left "), QString("Right "), Qt::CaseInsensitive );
@@ -1330,7 +1332,7 @@ public:
 				childName.replace(QString("Right "), QString("Left "), Qt::CaseInsensitive );
 			}
 			
-			nif->set<QString>( iChild, "Name", childName );
+			nif->set<QString>( iChild, TA_NAME, childName );
 
 			//qWarning() << "Checking child: " << iChild;
 			if ( iChild.isValid() )

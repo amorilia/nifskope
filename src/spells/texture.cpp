@@ -202,16 +202,16 @@ public:
 	bool isApplicable( const NifModel * nif, const QModelIndex & idx )
 	{
 		QModelIndex iBlock = nif->getBlock( idx );
-		if (  ( nif->isNiBlock( iBlock, "NiSourceTexture" ) || nif->isNiBlock( iBlock, "NiImage" ) )
-			&& ( iBlock == idx.sibling( idx.row(), 0 ) || nif->itemName( idx ) == "File Name" ) )
+		if (  ( nif->isNiBlock( iBlock, T_NISOURCETEXTURE ) || nif->isNiBlock( iBlock, T_NIIMAGE ) )
+			&& ( iBlock == idx.sibling( idx.row(), 0 ) || nif->itemName( idx ) == TA_FILENAME ) )
 			return true;
-		else if ( nif->isNiBlock( iBlock, "BSShaderNoLightingProperty" ) && nif->itemName( idx ) == "File Name" )
+		else if ( nif->isNiBlock( iBlock, "BSShaderNoLightingProperty" ) && nif->itemName( idx ) == TA_FILENAME )
 			return true;
 		else if ( nif->isNiBlock( iBlock, "BSShaderTextureSet" ) && nif->itemName( idx ) == "Textures" )
 			return true;
-		else if ( nif->isNiBlock( iBlock, "SkyShaderProperty" ) && nif->itemName( idx ) == "File Name" )
+		else if ( nif->isNiBlock( iBlock, "SkyShaderProperty" ) && nif->itemName( idx ) == TA_FILENAME )
 			return true;
-		else if ( nif->isNiBlock( iBlock, "TileShaderProperty" ) && nif->itemName( idx ) == "File Name" )
+		else if ( nif->isNiBlock( iBlock, "TileShaderProperty" ) && nif->itemName( idx ) == TA_FILENAME )
 			return true;
 		return false;
 	}
@@ -222,19 +222,19 @@ public:
 		QModelIndex iFile;
 		bool setExternal = false;
 
-		if (  ( nif->isNiBlock( iBlock, "NiSourceTexture" ) || nif->isNiBlock( iBlock, "NiImage" ) )
-			&& ( iBlock == idx.sibling( idx.row(), 0 ) || nif->itemName( idx ) == "File Name" ) )
+		if (  ( nif->isNiBlock( iBlock, T_NISOURCETEXTURE ) || nif->isNiBlock( iBlock, T_NIIMAGE ) )
+			&& ( iBlock == idx.sibling( idx.row(), 0 ) || nif->itemName( idx ) == TA_FILENAME ) )
 		{
-			iFile = nif->getIndex( iBlock, "File Name" );
+			iFile = nif->getIndex( iBlock, TA_FILENAME );
 			setExternal = true;
 		}
 		else if ( nif->isNiBlock( iBlock, "BSShaderTextureSet" ) && nif->itemName( idx ) == "Textures" )
 			iFile = idx;
-		else if ( nif->isNiBlock( iBlock, "BSShaderNoLightingProperty" ) && nif->itemName( idx ) == "File Name" )
+		else if ( nif->isNiBlock( iBlock, "BSShaderNoLightingProperty" ) && nif->itemName( idx ) == TA_FILENAME )
 			iFile = idx;
-		else if ( nif->isNiBlock( iBlock, "SkyShaderProperty" ) && nif->itemName( idx ) == "File Name" )
+		else if ( nif->isNiBlock( iBlock, "SkyShaderProperty" ) && nif->itemName( idx ) == TA_FILENAME )
 			iFile = idx;
-		else if ( nif->isNiBlock( iBlock, "TileShaderProperty" ) && nif->itemName( idx ) == "File Name" )
+		else if ( nif->isNiBlock( iBlock, "TileShaderProperty" ) && nif->itemName( idx ) == TA_FILENAME )
 			iFile = idx;
 
 		if (!iFile.isValid())
@@ -265,10 +265,10 @@ public:
 			if (setExternal)
 			{
 				nif->set<int>( iBlock, "Use External", 1 );
-				// update the "File Name" block reference, since it changes when we set Use External
-				if ( nif->checkVersion( 0x0A010000, 0 ) && nif->isNiBlock( iBlock, "NiSourceTexture" )  )
+				// update the TA_FILENAME block reference, since it changes when we set Use External
+				if ( nif->checkVersion( NF_V10010000, 0 ) && nif->isNiBlock( iBlock, T_NISOURCETEXTURE )  )
 				{
-					iFile = nif->getIndex( iBlock, "File Name" );
+					iFile = nif->getIndex( iBlock, TA_FILENAME );
 				}
 			}
 			nif->set<QString>( iFile, file.replace( "/", "\\" ) );
@@ -325,7 +325,7 @@ QModelIndex addTexture( NifModel * nif, const QModelIndex & index, const QString
 	nif->set<int>( iTex, "PS2 K", -75 );
 	nif->set<int>( iTex, "Unknown1", 257 );
 
-	QModelIndex iSrcTex = nif->insertNiBlock( "NiSourceTexture", nif->getBlockNumber( iTexProp ) + 1 );
+	QModelIndex iSrcTex = nif->insertNiBlock( T_NISOURCETEXTURE, nif->getBlockNumber( iTexProp ) + 1 );
 	nif->setLink( iTex, "Source", nif->getBlockNumber( iSrcTex ) );
 
 	nif->set<int>( iSrcTex, "Pixel Layout", ( nif->getVersion() == "20.0.0.5" && name == "Base Texture" ? 6 : 5 ) );
@@ -596,14 +596,14 @@ class spTextureTemplate : public Spell
 
 		wrap->setCurrentIndex( settings.value( "Wrap Mode", 0 ).toInt() );
 		size->setCurrentIndex( settings.value( "Image Size", 2 ).toInt() );
-		file->setText( settings.value( "File Name", "" ).toString() );
+		file->setText( settings.value( TA_FILENAME, "" ).toString() );
 
 		if ( dlg.exec() != QDialog::Accepted )
 			return index;
 
 		settings.setValue( "Wrap Mode", wrap->currentIndex() );
 		settings.setValue( "Image Size", size->currentIndex() );
-		settings.setValue( "File Name", file->text() );
+		settings.setValue( TA_FILENAME, file->text() );
 
 		// get the selected coord set
 		QModelIndex iSet = iUVs.child( set->currentIndex(), 0 );
@@ -792,7 +792,7 @@ public:
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iBlock = nif->getBlock( index );
-		if ( nif->isNiBlock( iBlock, "NiSourceTexture" ) )
+		if ( nif->isNiBlock( iBlock, T_NISOURCETEXTURE ) )
 			return true;
 		return false;
 	}
@@ -803,7 +803,7 @@ public:
 		tex->setNifFolder( nif->getFolder() );
 		int isExternal = nif->get<int>( index, "Use External" );
 		if ( isExternal ) {
-			QString filename = nif->get<QString>(index, "File Name");
+			QString filename = nif->get<QString>(index, TA_FILENAME);
 			tex->bind( filename );
 		} else {
 			tex->bind( index );
@@ -827,7 +827,7 @@ public:
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iBlock = nif->getBlock( index );
-		if ( nif->isNiBlock( iBlock, "NiSourceTexture" ) && nif->get<int>( iBlock, "Use External" ) == 0 )
+		if ( nif->isNiBlock( iBlock, T_NISOURCETEXTURE ) && nif->get<int>( iBlock, "Use External" ) == 0 )
 		{
 			QModelIndex iData = nif->getBlock( nif->getLink( index, "Pixel Data" ) );
 			if ( iData.isValid() )
@@ -852,14 +852,14 @@ public:
 		TexCache * tex = new TexCache();
 		tex->setNifFolder( nif->getFolder() );
 		QModelIndex iBlock = nif->getBlock( index );
-		if ( nif->inherits( iBlock, "NiSourceTexture" ) )
+		if ( nif->inherits( iBlock, T_NISOURCETEXTURE ) )
 		{
 			tex->bind( index );
 			QString file = nif->getFolder();
-			if ( nif->checkVersion( 0x0A010000, 0 ) )
+			if ( nif->checkVersion( NF_V10010000, 0 ) )
 			{
 				// Qt uses "/" regardless of platform
-				file.append( "/" + nif->get<QString>( index, "File Name" ) );
+				file.append( "/" + nif->get<QString>( index, TA_FILENAME ) );
 			}
 			QModelIndex iData = nif->getBlock( nif->getLink( index, "Pixel Data" ) );
 			QString filename = QFileDialog::getSaveFileName( 0, Spell::tr("Export texture"), file, FMASK_DDS" "FMASK_TGA );
@@ -869,7 +869,7 @@ public:
 				{
 					nif->set<int>( index, "Use External", 1 );
 					filename = TexCache::stripPath( filename, nif->getFolder() );
-					nif->set<QString>( index, "File Name", filename );
+					nif->set<QString>( index, TA_FILENAME, filename );
 					tex->bind( filename );
 				}
 			}
@@ -901,18 +901,18 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		if ( ! ( nif->checkVersion( 0, 0x0A020000 ) || nif->checkVersion( 0x14000004, 0 ) ) )
+		if ( ! ( nif->checkVersion( 0, NF_V10020000 ) || nif->checkVersion( NF_V20000004, 0 ) ) )
 		{
 			return false;
 		}
 		QModelIndex iBlock = nif->getBlock( index );
-		if ( !( nif->isNiBlock( iBlock, "NiSourceTexture" ) && nif->get<int>( iBlock, "Use External" ) == 1 ))
+		if ( !( nif->isNiBlock( iBlock, T_NISOURCETEXTURE ) && nif->get<int>( iBlock, "Use External" ) == 1 ))
 		{
 			return false;
 		}
 		TexCache * tex = new TexCache();
 		tex->setNifFolder( nif->getFolder() );
-		if ( tex->bind( nif->get<QString>( iBlock, "File Name" ) ) )
+		if ( tex->bind( nif->get<QString>( iBlock, TA_FILENAME ) ) )
 		{
 			return true;
 		}
@@ -929,7 +929,7 @@ public:
 
 			int blockNum = nif->getBlockNumber( index );
 			nif->insertNiBlock( "NiPixelData", blockNum+1 );
-			QPersistentModelIndex iSourceTexture = nif->getBlock( blockNum, "NiSourceTexture" );
+			QPersistentModelIndex iSourceTexture = nif->getBlock( blockNum, T_NISOURCETEXTURE );
 			QModelIndex iPixelData = nif->getBlock( blockNum+1, "NiPixelData" );
 
 			//qWarning() << "spEmbedTexture: Block number" << blockNum << "holds source" << iSourceTexture << "Pixel data will be stored in" << iPixelData;
@@ -937,18 +937,18 @@ public:
 			// finish writing this function
 			if ( tex->importFile( nif, iSourceTexture, iPixelData ) )
 			{
-				QString tempFileName = nif->get<QString>( iSourceTexture, "File Name" );
+				QString tempFileName = nif->get<QString>( iSourceTexture, TA_FILENAME );
 				tempFileName = TexCache::stripPath( tempFileName, nif->getFolder() );
 				nif->set<int>( iSourceTexture, "Use External", 0 );
 				nif->set<int>( iSourceTexture, "Unknown Byte", 1 );
 				nif->setLink( iSourceTexture, "Pixel Data", blockNum+1 );
-				if( nif->checkVersion( 0x0A010000, 0 ) )
+				if( nif->checkVersion( NF_V10010000, 0 ) )
 				{
-					nif->set<QString>( iSourceTexture, "File Name", tempFileName );
+					nif->set<QString>( iSourceTexture, TA_FILENAME, tempFileName );
 				}
 				else
 				{
-					nif->set<QString>( index, "Name", tempFileName );
+					nif->set<QString>( index, TA_NAME, tempFileName );
 				}
 			}
 			else
@@ -1083,7 +1083,7 @@ void TexFlipDialog::listFromNif()
 	for ( int i = 0; i < numSources; i++ )
 	{
 		QModelIndex source = nif->getBlock( nif->getLink( sources.child( i, 0 ) ) );
-		sourceFiles << nif->get<QString>( source, "File Name" );
+		sourceFiles << nif->get<QString>( source, TA_FILENAME );
 	}
 	
 	listmodel->setStringList( sourceFiles );
@@ -1145,14 +1145,14 @@ public:
 			QModelIndex sourceTex;
 			if( nif->getLink( sources.child( i, 0 ) ) == -1 )
 			{
-				sourceTex = nif->insertNiBlock( "NiSourceTexture", nif->getBlockNumber( flipController ) + i + 1 );
+				sourceTex = nif->insertNiBlock( T_NISOURCETEXTURE, nif->getBlockNumber( flipController ) + i + 1 );
 				nif->setLink( sources.child( i, 0 ), nif->getBlockNumber( sourceTex ) );
 			}
 			else
 			{
 				sourceTex = nif->getBlock( nif->getLink( sources.child( i, 0 ) ) );
 			}
-			nif->set<QString>( sourceTex, "File Name", name );
+			nif->set<QString>( sourceTex, TA_FILENAME, name );
 		}
 		
 		nif->set<float>( flipController, "Frequency", 1 );

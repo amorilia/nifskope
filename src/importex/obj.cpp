@@ -128,7 +128,7 @@ static void writeData( const NifModel * nif, const QModelIndex & iData, QTextStr
 
 static void writeShape( const NifModel * nif, const QModelIndex & iShape, QTextStream & obj, QTextStream & mtl, int ofs[], Transform t )
 {
-	QString name = nif->get<QString>( iShape, "Name" );
+	QString name = nif->get<QString>( iShape, TA_NAME );
 	QString matn = name, map_Kd, map_Ks, map_Ns, map_d ,disp, decal, bump;
 	
 	Color3 mata, matd, mats;
@@ -144,23 +144,23 @@ static void writeShape( const NifModel * nif, const QModelIndex & iShape, QTextS
 			mats = nif->get<Color3>( iProp, "Specular Color" );
 			matt = nif->get<float>( iProp, "Alpha" );
 			matg = nif->get<float>( iProp, "Glossiness" );
-			//matn = nif->get<QString>( iProp, "Name" );
+			//matn = nif->get<QString>( iProp, TA_NAME );
 		}
 		else if ( nif->isNiBlock( iProp, "NiTexturingProperty" ) )
 		{
-			QModelIndex iBase = nif->getBlock( nif->getLink( nif->getIndex( iProp, "Base Texture" ), "Source" ), "NiSourceTexture" );
-			map_Kd = TexCache::find( nif->get<QString>( iBase, "File Name" ), nif->getFolder() );
+			QModelIndex iBase = nif->getBlock( nif->getLink( nif->getIndex( iProp, "Base Texture" ), "Source" ), T_NISOURCETEXTURE );
+			map_Kd = TexCache::find( nif->get<QString>( iBase, TA_FILENAME ), nif->getFolder() );
 
-			QModelIndex iDark = nif->getBlock( nif->getLink( nif->getIndex( iProp, "Decal Texture 1" ), "Source" ), "NiSourceTexture" );
-			decal = TexCache::find( nif->get<QString>( iDark, "File Name" ), nif->getFolder() );
+			QModelIndex iDark = nif->getBlock( nif->getLink( nif->getIndex( iProp, "Decal Texture 1" ), "Source" ), T_NISOURCETEXTURE );
+			decal = TexCache::find( nif->get<QString>( iDark, TA_FILENAME ), nif->getFolder() );
 
-			QModelIndex iBump = nif->getBlock( nif->getLink( nif->getIndex( iProp, "Bump Map Texture" ), "Source" ), "NiSourceTexture" );
-			bump = TexCache::find( nif->get<QString>( iBump, "File Name" ), nif->getFolder() );
+			QModelIndex iBump = nif->getBlock( nif->getLink( nif->getIndex( iProp, "Bump Map Texture" ), "Source" ), T_NISOURCETEXTURE );
+			bump = TexCache::find( nif->get<QString>( iBump, TA_FILENAME ), nif->getFolder() );
 		}
 		else if ( nif->isNiBlock( iProp, "NiTextureProperty" ) )
 		{
-			QModelIndex iSource = nif->getBlock( nif->getLink( iProp, "Image" ), "NiImage" );
-			map_Kd = TexCache::find( nif->get<QString>( iSource, "File Name" ), nif->getFolder() );
+			QModelIndex iSource = nif->getBlock( nif->getLink( iProp, "Image" ), T_NIIMAGE );
+			map_Kd = TexCache::find( nif->get<QString>( iSource, TA_FILENAME ), nif->getFolder() );
 		}
 		else if ( nif->isNiBlock( iProp, "NiSkinInstance" ) )
 		{
@@ -177,7 +177,7 @@ static void writeShape( const NifModel * nif, const QModelIndex & iShape, QTextS
 				 || nif->isNiBlock( iProp, "TileShaderProperty" ) 
 			     )
 		{
-			map_Kd = TexCache::find( nif->get<QString>( iProp, "File Name" ), nif->getFolder() );
+			map_Kd = TexCache::find( nif->get<QString>( iProp, TA_FILENAME ), nif->getFolder() );
 		}
 		else if ( nif->isNiBlock( iProp, "BSShaderPPLightingProperty" ) 
 			    || nif->isNiBlock( iProp, "Lighting30ShaderProperty" ) 
@@ -326,7 +326,7 @@ void exportObj( const NifModel * nif, const QModelIndex & index )
 	settings.beginGroup( "import-export" );
 	settings.beginGroup( "obj" );
 
-	QString fname = QFileDialog::getSaveFileName( 0, tr("Choose a .OBJ file for export"), settings.value( "File Name" ).toString(), "*.obj" );
+	QString fname = QFileDialog::getSaveFileName( 0, tr("Choose a .OBJ file for export"), settings.value( TA_FILENAME ).toString(), "*.obj" );
 	if ( fname.isEmpty() )
 		return;
 	
@@ -369,7 +369,7 @@ void exportObj( const NifModel * nif, const QModelIndex & index )
 			writeShape( nif, iBlock, sobj, smtl, ofs, Transform() );
 	}
 	
-	settings.setValue( "File Name", fobj.fileName() );
+	settings.setValue( TA_FILENAME, fobj.fileName() );
 }
 
 
@@ -531,7 +531,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 					{
 						QModelIndex temp = nif->getBlock( *it );
 						QString type = nif->itemName( temp );
-						if ( (type == "NiSourceTexture") || (type == "NiImage") )
+						if ( (type == T_NISOURCETEXTURE) || (type == T_NIIMAGE) )
 						{
 							iTexSource = temp;
 						}
@@ -569,7 +569,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 	settings.beginGroup( "import-export" );
 	settings.beginGroup( "obj" );
 	
-	QString fname = QFileDialog::getOpenFileName( 0, tr("Choose a .OBJ file to import"), settings.value( "File Name" ).toString(), "*.obj" );
+	QString fname = QFileDialog::getOpenFileName( 0, tr("Choose a .OBJ file to import"), settings.value( TA_FILENAME ).toString(), "*.obj" );
 	if ( fname.isEmpty() )
 		return;
 	
@@ -590,7 +590,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 	
 	QVector<ObjFace> * mfaces = new QVector<ObjFace>();
 	
-	QString usemtl = "None";
+	QString usemtl = STR_NOTHING;
 	ofaces.insert( usemtl, mfaces );
 	
 	while ( ! sobj.atEnd() )
@@ -666,7 +666,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 	if ( iNode.isValid() == false )
 	{
 		iNode = nif->insertNiBlock( "NiNode" );
-		nif->set<QString>( iNode, "Name", "Scene Root" );
+		nif->set<QString>( iNode, TA_NAME, "Scene Root" );
 	}
 
 	// create a NiTriShape foreach material in the object
@@ -692,7 +692,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 
 			if (newiShape)// don't change a name what already exists; // don't add duplicates
 			{
-				nif->set<QString>( iShape, "Name", QString( "%1:%2" ).arg( nif->get<QString>( iNode, "Name" ) ).arg( shapecount++ ) );
+				nif->set<QString>( iShape, TA_NAME, QString( "%1:%2" ).arg( nif->get<QString>( iNode, TA_NAME ) ).arg( shapecount++ ) );
 				addLink( nif, iNode, "Children", nif->getBlockNumber( iShape ) );
 			}
 			
@@ -708,7 +708,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 				newiMaterial = true;
 			}
 			if (newiMaterial)// don't affect a property  that is already there - that name is generated above on export and it has nothign to do with the stored name
-				nif->set<QString>( iMaterial, "Name", it.key() );
+				nif->set<QString>( iMaterial, TA_NAME, it.key() );
 			nif->set<Color3>( iMaterial, "Ambient Color", mtl.Ka );
 			nif->set<Color3>( iMaterial, "Diffuse Color", mtl.Kd );
 			nif->set<Color3>( iMaterial, "Specular Color", mtl.Ks );
@@ -741,10 +741,10 @@ void importObj( NifModel * nif, const QModelIndex & index )
 						nif->set<int>( iBaseMap, "Filter Mode", 2 );
 					}
 					
-					if ( iTexSource.isValid() == false || first_tri_shape == false || nif->itemType(iTexSource) != "NiSourceTexture" )
+					if ( iTexSource.isValid() == false || first_tri_shape == false || nif->itemType(iTexSource) != T_NISOURCETEXTURE )
 					{
 						if (!cBSShaderPPLightingProperty)
-							iTexSource = nif->insertNiBlock( "NiSourceTexture" );
+							iTexSource = nif->insertNiBlock( T_NISOURCETEXTURE );
 					}
 					if (!cBSShaderPPLightingProperty)// no need of NiTexturingProperty when BSShaderPPLightingProperty is present
 						nif->setLink( iBaseMap, "Source", nif->getBlockNumber( iTexSource ) );
@@ -758,7 +758,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 						nif->set<int>( iTexSource, "Unknown Byte 2", 1 );
 					
 						nif->set<int>( iTexSource, "Use External", 1 );
-						nif->set<QString>( iTexSource, "File Name", TexCache::stripPath( mtl.map_Kd, nif->getFolder() ) );
+						nif->set<QString>( iTexSource, TA_FILENAME, TexCache::stripPath( mtl.map_Kd, nif->getFolder() ) );
 					}
 				} else {
 					//Older versions use NiTextureProperty and NiImage
@@ -768,15 +768,15 @@ void importObj( NifModel * nif, const QModelIndex & index )
 					}
 					addLink( nif, iShape, "Properties", nif->getBlockNumber( iTexProp ) );
 					
-					if ( iTexSource.isValid() == false || first_tri_shape == false || nif->itemType(iTexSource) != "NiImage" )
+					if ( iTexSource.isValid() == false || first_tri_shape == false || nif->itemType(iTexSource) != T_NIIMAGE )
 					{
-						iTexSource = nif->insertNiBlock( "NiImage" );
+						iTexSource = nif->insertNiBlock( T_NIIMAGE );
 					}
 
 					nif->setLink( iTexProp, "Image", nif->getBlockNumber( iTexSource ) );
 					
 					nif->set<int>( iTexSource, "External", 1 );
-					nif->set<QString>( iTexSource, "File Name", TexCache::stripPath( mtl.map_Kd, nif->getFolder() ) );
+					nif->set<QString>( iTexSource, TA_FILENAME, TexCache::stripPath( mtl.map_Kd, nif->getFolder() ) );
 				}
 			}
 			
@@ -819,7 +819,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 				triangles.append( tri );
 			}
 			
-			nif->set<int>( iData, "Num Vertices", verts.count() );
+			nif->set<int>( iData, TA_NUMVERTICES, verts.count() );
 			nif->set<int>( iData, "Has Vertices", 1 );
 			nif->updateArray( iData, "Vertices" );
 			nif->setArray<Vector3>( iData, "Vertices", verts );
@@ -915,7 +915,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 			
 			QPersistentModelIndex iData = nif->insertNiBlock( "NiTriStripsData" );
 			
-			nif->set<int>( iData, "Num Vertices", verts.count() );
+			nif->set<int>( iData, TA_NUMVERTICES, verts.count() );
 			nif->set<int>( iData, "Has Vertices", 1 );
 			nif->updateArray( iData, "Vertices" );
 			nif->setArray<Vector3>( iData, "Vertices", verts );
@@ -990,7 +990,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 	
 	qDeleteAll( ofaces );
 	
-	settings.setValue( "File Name", fname );
+	settings.setValue( TA_FILENAME, fname );
 	
 	nif->reset();
 }

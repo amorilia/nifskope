@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 
 #include <QDebug>
@@ -112,7 +114,7 @@ public:
 		NifValue::Type type = nif->getValue( index ).type() ;
 		if (type == NifValue::tStringIndex)
 				return true;
-		if ((type == NifValue::tString || type == NifValue::tFilePath) && nif->checkVersion( 0x14010003, 0 ) )
+		if ((type == NifValue::tString || type == NifValue::tFilePath) && nif->checkVersion( NF_V20010003, 0 ) )
 			return true;
 		return false;
 	}
@@ -122,10 +124,10 @@ public:
 		int offset = nif->get<int>( index );
 		QStringList strings;
 		QString string;
-		if (nif->getValue( index ).type() == NifValue::tStringIndex && nif->checkVersion( 0x14010003, 0 ) )
+		if (nif->getValue( index ).type() == NifValue::tStringIndex && nif->checkVersion( NF_V20010003, 0 ) )
 		{
 			QModelIndex header = nif->getHeader();
-			QVector<QString> stringVector = nif->getArray<QString>( header, "Strings" );
+			QVector<QString> stringVector = nif->getArray<QString>( header, TA_HSTRINGS );
 			strings = stringVector.toList();
 			if (offset >= 0 && offset < stringVector.size())
 				string = stringVector.at(offset);

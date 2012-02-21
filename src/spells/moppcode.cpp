@@ -172,7 +172,7 @@ public:
 			QModelIndex iData = nif->getBlock( nif->getLink( index, "Data" ) );
 			if ( nif->isNiBlock( index, "bhkMoppBvTreeShape" ) )
 			{
-				return ( nif->checkVersion( 0x14000004, NF_V20000005 ) 
+				return ( nif->checkVersion( NF_V20000004, NF_V20000005 ) 
 						|| nif->checkVersion( 0x14020007, 0x14020007 ) );
 			}			
 		}
@@ -200,19 +200,19 @@ public:
 			return iBlock;
 		
 		QVector<int> subshapeVerts;
-		if ( nif->checkVersion( 0x14000004, NF_V20000005 ) ) {
+		if ( nif->checkVersion( NF_V20000004, NF_V20000005 ) ) {
 			int nSubShapes = nif->get<int>( ibhkPackedNiTriStripsShape, "Num Sub Shapes" );
 			QModelIndex ihkSubShapes = nif->getIndex( ibhkPackedNiTriStripsShape, "Sub Shapes" );
 			subshapeVerts.resize(nSubShapes);
 			for ( int t = 0; t < nSubShapes; t++ ) {
-				subshapeVerts[t] = nif->get<int>( ihkSubShapes.child( t, 0 ), "Num Vertices" );
+				subshapeVerts[t] = nif->get<int>( ihkSubShapes.child( t, 0 ), TA_NUMVERTICES );
 			}
 		} else if ( nif->checkVersion( 0x14020007, 0x14020007 ) ) {
 			int nSubShapes = nif->get<int>( ihkPackedNiTriStripsData, "Num Sub Shapes" );
 			QModelIndex ihkSubShapes = nif->getIndex( ihkPackedNiTriStripsData, "Sub Shapes" );
 			subshapeVerts.resize(nSubShapes);
 			for ( int t = 0; t < nSubShapes; t++ ) {
-				subshapeVerts[t] = nif->get<int>( ihkSubShapes.child( t, 0 ), "Num Vertices" );
+				subshapeVerts[t] = nif->get<int>( ihkSubShapes.child( t, 0 ), TA_NUMVERTICES );
 			}
 		}
 		
@@ -284,7 +284,7 @@ public:
 		{
 			if ( nif && ! idx.isValid() )
 				{
-					return ( nif->checkVersion( 0x14000004, NF_V20000005 ) 
+					return ( nif->checkVersion( NF_V20000004, NF_V20000005 ) 
 							|| nif->checkVersion( 0x14020007, 0x14020007 ) );
 				}
 		}

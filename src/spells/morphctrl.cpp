@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 
 #include <QDebug>
@@ -53,7 +55,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->isNiBlock( index, "NiGeomMorpherController" ) && nif->checkVersion( 0x0a010000, 0 )
+		return nif->isNiBlock( index, "NiGeomMorpherController" ) && nif->checkVersion( NF_V10010000, 0 )
 			&& getMeshData( nif, index ).isValid() && listFrames( nif, index ).count() > 0;
 	}
 	
@@ -65,7 +67,7 @@ public:
 		QMenu menu;
 		QStringList frameList = listFrames( nif, index );
 		
-		if ( nif->get<int>( iMeshData, "Num Vertices" ) != nif->get<int>( iMorphData, "Num Vertices" ) )
+		if ( nif->get<int>( iMeshData, TA_NUMVERTICES ) != nif->get<int>( iMorphData, TA_NUMVERTICES ) )
 			menu.addAction( frameList.first() );
 		else
 			foreach ( QString f, frameList )
@@ -79,7 +81,7 @@ public:
 			if ( selFrame == 0 )
 			{
 				qWarning() << "overriding base key frame, all other frames will be cleared";
-				nif->set<int>( iMorphData, "Num Vertices", nif->get<int>( iMeshData, "Num Vertices" ) );
+				nif->set<int>( iMorphData, TA_NUMVERTICES, nif->get<int>( iMeshData, TA_NUMVERTICES ) );
 				QVector<Vector3> verts = nif->getArray<Vector3>( iMeshData, "Vertices" );
 				nif->updateArray( iFrames.child( 0, 0 ), "Vectors" );
 				nif->setArray( iFrames.child( 0, 0 ), "Vectors", verts );

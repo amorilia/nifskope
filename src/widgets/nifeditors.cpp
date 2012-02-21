@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "nifeditors.h"
 
 #include "nifmodel.h"
@@ -56,7 +58,7 @@ NifBlockEditor::NifBlockEditor( NifModel * n, const QModelIndex & i, bool fireAn
 	setLayout( layout );
 	layouts.push( layout );
 
-	QModelIndex iName = nif->getIndex( iBlock, "Name" );
+	QModelIndex iName = nif->getIndex( iBlock, TA_NAME );
 	if ( iName.isValid() )
 		add( new NifLineEdit( nif, iName ) );
 
@@ -149,7 +151,7 @@ void NifBlockEditor::updateData()
 	if ( nif && iBlock.isValid() )
 	{
 		QString x = nif->itemName( iBlock );
-		QModelIndex iName = nif->getIndex( iBlock, "Name" );
+		QModelIndex iName = nif->getIndex( iBlock, TA_NAME );
 		if ( iName.isValid() )
 			x += " - " + nif->get<QString>( iName );
 		setWindowTitle( x );

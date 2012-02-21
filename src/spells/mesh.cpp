@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "mesh.h"
 
 #include <QDebug>
@@ -107,7 +109,7 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 		
 		int numVerts = verts.count();
 		
-		if ( numVerts != nif->get<int>( iData, "Num Vertices" ) ||
+		if ( numVerts != nif->get<int>( iData, TA_NUMVERTICES ) ||
 			( norms.count() && norms.count() != numVerts ) ||
 			( colors.count() && colors.count() != numVerts ) )
 		{
@@ -182,7 +184,7 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 		nif->setArray<Triangle>( iData, "Triangles", tris );
 		for ( int r = 0; r < nif->rowCount( iPoints ); r++ )
 			nif->setArray<quint16>( iPoints.child( r, 0 ), strips[r] );
-		nif->set<int>( iData, "Num Vertices", verts.count() );
+		nif->set<int>( iData, TA_NUMVERTICES, verts.count() );
 		nif->updateArray( iData, "Vertices" );
 		nif->setArray<Vector3>( iData, "Vertices", verts );
 		nif->updateArray( iData, "Normals" );
@@ -207,7 +209,7 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 			QModelIndex iWeights = nif->getIndex( iBones.child( b, 0 ), "Vertex Weights" );
 			for ( int w = 0; w < nif->rowCount( iWeights ); w++ )
 			{
-				weights.append( QPair<int,float>( nif->get<int>( iWeights.child( w, 0 ), "Index" ), nif->get<float>( iWeights.child( w, 0 ), "Weight" ) ) );
+				weights.append( QPair<int,float>( nif->get<int>( iWeights.child( w, 0 ), TA_INDEX ), nif->get<float>( iWeights.child( w, 0 ), "Weight" ) ) );
 			}
 			
 			for ( int x = weights.count() - 1; x >= 0; x-- )
@@ -224,11 +226,11 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 					w.first = map[ w.first ];
 			}
 			
-			nif->set<int>( iBones.child( b, 0 ), "Num Vertices", weights.count() );
+			nif->set<int>( iBones.child( b, 0 ), TA_NUMVERTICES, weights.count() );
 			nif->updateArray( iWeights );
 			for ( int w = 0; w < weights.count(); w++ )
 			{
-				nif->set<int>( iWeights.child( w, 0 ), "Index", weights[w].first );
+				nif->set<int>( iWeights.child( w, 0 ), TA_INDEX, weights[w].first );
 				nif->set<float>( iWeights.child( w, 0 ), "Weight", weights[w].second );
 			}
 		}
@@ -500,7 +502,7 @@ public:
 			
 			int numVerts = verts.count();
 			
-			if ( numVerts != nif->get<int>( iData, "Num Vertices" ) ||
+			if ( numVerts != nif->get<int>( iData, TA_NUMVERTICES ) ||
 				( norms.count() && norms.count() != numVerts ) ||
 				( colors.count() && colors.count() != numVerts ) )
 			{

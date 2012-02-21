@@ -112,7 +112,7 @@ public:
 				{
 					iInterpolators = nif->getIndex( iBlock, "Interpolators" );
 				}
-				else if( nif->checkVersion( 0x14010003, 0 ) )
+				else if( nif->checkVersion( NF_V20010003, 0 ) )
 				{
 					iInterpolatorWeights = nif->getIndex( iBlock, "Interpolator Weights" );
 				}
@@ -379,8 +379,8 @@ void Mesh::transform()
 				QPersistentModelIndex componentSemantics = nif->getIndex( iData.child( i, 0 ), "Component Semantics" );
 				for( int j = 0; j < numComponents; j++ )
 				{
-					QString name = nif->get<QString>( componentSemantics.child( j, 0 ), "Name" );
-					uint index = nif->get<uint>( componentSemantics.child( j, 0 ), "Index" );
+					QString name = nif->get<QString>( componentSemantics.child( j, 0 ), TA_NAME );
+					uint index = nif->get<uint>( componentSemantics.child( j, 0 ), TA_INDEX );
 					qWarning() << "Component" << name << "at position" << index << "of component" << j << "in stream" << stream;
 					componentIndexMap.insert( j, QString( "%1 %2").arg( name ).arg( index ) );
 				}
@@ -651,7 +651,7 @@ void Mesh::transform()
 				for ( int e = 0; e < nif->rowCount( iExtraData ); e++ )
 				{
 					QModelIndex iExtra = nif->getBlock( nif->getLink( iExtraData.child( e, 0 ) ), "NiBinaryExtraData" );
-					if ( nif->get<QString>( iExtra, "Name" ) == "Tangent space (binormal & tangent vectors)" )
+					if ( nif->get<QString>( iExtra, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
 					{
 						iTangentData = iExtra;
 						QByteArray data = nif->get<QByteArray>( iExtra, "Binary Data" );

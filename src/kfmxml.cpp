@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "kfmmodel.h"
 
 #include <QtXml>
@@ -178,12 +180,12 @@ public:
 	
 	bool checkType( const NifData & data )
 	{
-		return KfmModel::compounds.contains( data.type() ) || NifValue::type( data.type() ) != NifValue::tNone || data.type() == "TEMPLATE";
+		return KfmModel::compounds.contains( data.type() ) || NifValue::type( data.type() ) != NifValue::tNone || data.type() == AV_TEMPLATE;
 	}
 	
 	bool checkTemp( const NifData & data )
 	{
-		return data.temp().isEmpty() || NifValue::type( data.temp() ) != NifValue::tNone || data.temp() == "TEMPLATE";
+		return data.temp().isEmpty() || NifValue::type( data.temp() ) != NifValue::tNone || data.temp() == AV_TEMPLATE;
 	}
 	
 	bool endDocument()

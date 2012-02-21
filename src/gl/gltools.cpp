@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "gltools.h"
 
 #include "nifmodel.h"
@@ -51,7 +53,7 @@ BoneWeights::BoneWeights( const NifModel * nif, const QModelIndex & index, int b
 		for ( int c = 0; c < nif->rowCount( idxWeights ); c++ )
 		{
 			QModelIndex idx = idxWeights.child( c, 0 );
-			weights.append( VertexWeight( nif->get<int>( idx, "Index" ), nif->get<float>( idx, "Weight" ) ) );
+			weights.append( VertexWeight( nif->get<int>( idx, TA_INDEX ), nif->get<float>( idx, "Weight" ) ) );
 		}
 	}
 	else // create artificial ones, TODO: should they weight nothing* instead?
@@ -68,7 +70,7 @@ SkinPartition::SkinPartition( const NifModel * nif, const QModelIndex & index )
 	
 	if ( vertexMap.isEmpty() )
 	{
-		vertexMap.resize( nif->get<int>( index, "Num Vertices" ) );
+		vertexMap.resize( nif->get<int>( index, TA_NUMVERTICES ) );
 		for ( int x = 0; x < vertexMap.count(); x++ )
 			vertexMap[x] = x;
 	}

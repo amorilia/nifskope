@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "blocks.h"
 #include "config.h"
 
@@ -164,7 +166,7 @@ static qint32 getBlockByName( NifModel * nif, const QString & tn )
 	for ( int b = 0; b < nif->getBlockCount(); b++ )
 	{
 		QModelIndex iBlock = nif->getBlock( b );
-		if ( nif->itemName( iBlock ) == type && nif->get<QString>( iBlock, "Name" ) == name )
+		if ( nif->itemName( iBlock ) == type && nif->get<QString>( iBlock, TA_NAME ) == name )
 			return b;
 	}
 	return -1;
@@ -241,10 +243,10 @@ public:
 			QModelIndex newindex = nif->insertNiBlock( act->text(), nif->getBlockNumber( index ) + 1 );
 			// Set values that can't be handled by defaults in nif.xml
 			if ( act->text() == "BSXFlags" ) {
-				nif->set<QString>( nif->getIndex( newindex, "Name" ), "BSX" );
+				nif->set<QString>( nif->getIndex( newindex, TA_NAME ), "BSX" );
 			}
 			else if ( act->text() == "BSBound" ) {
-				nif->set<QString>( nif->getIndex( newindex, "Name" ), "BBX" );
+				nif->set<QString>( nif->getIndex( newindex, TA_NAME ), "BBX" );
 			}
 			// return index to new block
 			return newindex;
@@ -265,7 +267,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->itemType( index ) == "NiBlock" && nif->inherits( index, "NiAVObject" );
+		return nif->itemType( index ) == B_NIBLOCK && nif->inherits( index, "NiAVObject" );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -366,7 +368,7 @@ public:
 
 			if ( act->text() == "NiTextureEffect" ) {
 				nif->set<int>( iLight, "Flags", 4 );
-				QModelIndex iSrcTex = nif->insertNiBlock( "NiSourceTexture", nif->getBlockNumber( iLight ) + 1 );
+				QModelIndex iSrcTex = nif->insertNiBlock( T_NISOURCETEXTURE, nif->getBlockNumber( iLight ) + 1 );
 				nif->setLink( iLight, "Source Texture", nif->getBlockNumber( iSrcTex ) );
 			}
 			
@@ -407,10 +409,10 @@ public:
 			
 			// fixup
 			if ( act->text() == "BSXFlags" ) {
-				nif->set<QString>( nif->getIndex( iExtra, "Name" ), "BSX" );
+				nif->set<QString>( nif->getIndex( iExtra, TA_NAME ), "BSX" );
 			}
 			else if ( act->text() == "BSBound" ) {
-				nif->set<QString>( nif->getIndex( iExtra, "Name" ), "BBX" );
+				nif->set<QString>( nif->getIndex( iExtra, TA_NAME ), "BBX" );
 			}
 			
 			addLink( nif, iParent, "Extra Data List", nif->getBlockNumber( iExtra ) );
@@ -617,7 +619,7 @@ public:
 					if ( iParent.isValid() )
 					{
 						failMessage = Spell::tr("parent unnamed");
-						QString name = nif->get<QString>( iParent, "Name" );
+						QString name = nif->get<QString>( iParent, TA_NAME );
 						if ( ! name.isEmpty() )
 						{
 							parentMap.insert( link, nif->itemName( iParent ) + "|" + name );
@@ -1158,7 +1160,7 @@ public:
 					if ( iParent.isValid() )
 					{
 						failMessage = Spell::tr("parent unnamed");
-						QString name = nif->get<QString>( iParent, "Name" );
+						QString name = nif->get<QString>( iParent, TA_NAME );
 						if ( ! name.isEmpty() )
 						{
 							parentMap.insert( link, nif->itemName( iParent ) + "|" + name );
@@ -1294,7 +1296,7 @@ public:
 				{
 					qint32 l = nif->getLink( iChildren.child( r, 0 ) );
 					if ( l >= 0 )
-						links.append( QPair<QString, qint32>( nif->get<QString>( nif->getBlock( l ), "Name" ), l ) );
+						links.append( QPair<QString, qint32>( nif->get<QString>( nif->getBlock( l ), TA_NAME ), l ) );
 				}
 				
 				qStableSort( links.begin(), links.end() );

@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 
 #include "NvTriStrip/qtwrapper.h"
@@ -62,7 +64,7 @@ class spStrippify : public Spell
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->checkVersion( 0x0a000000, 0 ) && nif->isNiBlock( index, "NiTriShape" );
+		return nif->checkVersion( NF_V10000000, 0 ) && nif->isNiBlock( index, "NiTriShape" );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -99,7 +101,7 @@ class spStrippify : public Spell
 		QModelIndex iStripData = nif->getBlock( nif->getBlockNumber( idx ) + 1, "NiTriStripsData" );
 		if ( iStripData.isValid() )
 		{
-			copyValue<int>( nif, iStripData, iData, "Num Vertices" );
+			copyValue<int>( nif, iStripData, iData, TA_NUMVERTICES );
 			
 			nif->set<int>( iStripData, "Has Vertices", 1 );
 			copyArray<Vector3>( nif, iStripData, iData, "Vertices" );
@@ -186,7 +188,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->checkVersion( 0x0a000000, 0 ) && ! index.isValid();
+		return nif->checkVersion( NF_V10000000, 0 ) && ! index.isValid();
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & )
@@ -250,7 +252,7 @@ class spTriangulate : public Spell
 		QModelIndex iTriData = nif->getBlock( nif->getBlockNumber( idx ) + 1, "NiTriShapeData" );
 		if ( iTriData.isValid() )
 		{
-			copyValue<int>( nif, iTriData, iStripData, "Num Vertices" );
+			copyValue<int>( nif, iTriData, iStripData, TA_NUMVERTICES );
 			
 			nif->set<int>( iTriData, "Has Vertices", 1 );
 			copyArray<Vector3>( nif, iTriData, iStripData, "Vertices" );

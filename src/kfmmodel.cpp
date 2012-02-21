@@ -165,10 +165,10 @@ void KfmModel::insertType( NifItem * parent, const NifData & data, int at )
 		{
 			QString arg = parentPrefix( data.arg() );
 			QString tmp = data.temp();
-			if ( tmp == "TEMPLATE" )
+			if ( tmp == AV_TEMPLATE )
 			{
 				NifItem * tItem = branch;
-				while ( tmp == "TEMPLATE" && tItem->parent() )
+				while ( tmp == AV_TEMPLATE && tItem->parent() )
 				{
 					tItem = tItem->parent();
 					tmp = tItem->temp();
@@ -176,15 +176,15 @@ void KfmModel::insertType( NifItem * parent, const NifData & data, int at )
 			}
 			foreach ( NifData d, compound->types )
 			{
-				if ( d.type() == "TEMPLATE" )
+				if ( d.type() == AV_TEMPLATE )
 				{
 					d.setType( tmp );
 					d.value.changeType( NifValue::type( tmp ) );
 				}
-				if ( d.arg() == A_ARG )	d.setArg( data.arg() );
-				if ( d.arr1() == A_ARG ) d.setArr1( arg );
-				if ( d.arr2() == A_ARG ) d.setArr2( arg );
-				if ( d.cond().contains( A_ARG ) ) { QString x = d.cond(); x.replace( x.indexOf( A_ARG ), 5, arg ); d.setCond( x ); }
+				if ( d.arg() == AV_ARG )	d.setArg( data.arg() );
+				if ( d.arr1() == AV_ARG ) d.setArr1( arg );
+				if ( d.arr2() == AV_ARG ) d.setArr2( arg );
+				if ( d.cond().contains( AV_ARG ) ) { QString x = d.cond(); x.replace( x.indexOf( AV_ARG ), 5, arg ); d.setCond( x ); }
 				insertType( branch, d );
 			}
 		}

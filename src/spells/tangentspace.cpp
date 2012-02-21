@@ -49,7 +49,7 @@ bool spTangentSpace::isApplicable( const NifModel * nif, const QModelIndex & ind
 	if ( !nif->get<bool>( iData, "Has Normals" ) )
 		return false;
 
-	if ( nif->checkVersion( 0x14000004, NF_V20000005 ) && (nif->getUserVersion() == 11) )
+	if ( nif->checkVersion( NF_V20000004, NF_V20000005 ) && (nif->getUserVersion() == 11) )
 		return true;
 
 	// If bethesda then we will configure the settings for the mesh.
@@ -57,7 +57,7 @@ bool spTangentSpace::isApplicable( const NifModel * nif, const QModelIndex & ind
 		return true;
 
 	// 10.1.0.0 and greater can have tangents and binormals
-	if (  nif->checkVersion( 0x0A010000, 0 ) )
+	if (  nif->checkVersion( NF_V10010000, 0 ) )
 		return true;
 
 	return false;
@@ -213,7 +213,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 	//qWarning() << "unassigned vertices" << cnt;
 
 	bool isOblivion = false;
-	if ( nif->checkVersion( 0x14000004, NF_V20000005 ) && (nif->getUserVersion() == 11) )
+	if ( nif->checkVersion( NF_V20000004, NF_V20000005 ) && (nif->getUserVersion() == 11) )
 		isOblivion = true;
 
 	if (isOblivion)
@@ -222,7 +222,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 		foreach ( qint32 link, nif->getChildLinks( nif->getBlockNumber( iShape ) ) )
 		{
 			iTSpace = nif->getBlock( link, "NiBinaryExtraData" );
-			if ( iTSpace.isValid() && nif->get<QString>( iTSpace, "Name" ) == "Tangent space (binormal & tangent vectors)" )
+			if ( iTSpace.isValid() && nif->get<QString>( iTSpace, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
 				break;
 			else
 				iTSpace = QModelIndex();
@@ -231,7 +231,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 		if ( ! iTSpace.isValid() )
 		{
 			iTSpace = nif->insertNiBlock( "NiBinaryExtraData", nif->getBlockNumber( iShape ) + 1 );
-			nif->set<QString>( iTSpace, "Name", "Tangent space (binormal & tangent vectors)" );
+			nif->set<QString>( iTSpace, TA_NAME, "Tangent space (binormal & tangent vectors)" );
 			QModelIndex iNumExtras = nif->getIndex( iShape, "Num Extra Data List" );
 			QModelIndex iExtras = nif->getIndex( iShape, "Extra Data List" );
 			if ( iNumExtras.isValid() && iExtras.isValid() )
@@ -279,7 +279,7 @@ public:
 			return true;
 
 		// 10.1.0.0 and greater can have tangents and binormals
-		if (  nif->checkVersion( 0x0A010000, 0 ) )
+		if (  nif->checkVersion( NF_V10010000, 0 ) )
 			return true;
 
 		return false;
