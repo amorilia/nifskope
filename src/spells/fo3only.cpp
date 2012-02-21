@@ -1,5 +1,3 @@
-// NOTE: Run makeconfig.sh on this file
-
 /***** BEGIN LICENSE BLOCK *****
 
 BSD License
@@ -32,59 +30,58 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-// defines
+#include "spellbook.h"
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#include <QDebug>
 
-#include <QStringList>
-
-/*! \file config.h
- * \brief Configuration info
+// Brief description is deliberately not autolinked to class Spell
+/*! \file fo3only.cpp
+ * \brief Fallout 3 specific spells (spFO3FixShapeDataName)
  *
- * Include this if you want to access the current version or persistent QSettings.
+ * All classes here inherit from the Spell class.
  */
 
-//! QSettings keys for older versions of nifskope
-/*!
- * Add versions to this list (most recent first) whenever incrementing NIFSKOPE_VERSION
- */
-const QStringList NIFSKOPE_OLDERVERSIONS = (QStringList()
-		<< "NifSkope-1.1.1-alpha"
-		<< "NifSkope-1.1.0-RC6"
-		<< "NifSkope-1.1.0-RC5"
-		<< "NifSkope-1.1.0-RC4"
-		<< "NifSkope-1.1.0-RC3"
-		<< "NifSkope-1.1.0-RC2"
-		<< "NifSkope-1.1.0-RC1"
-		<< "NifSkope-1.1.0-beta"
-		<< "NifSkope-1.0.22"
-		<< "NifSkope-1.0.21"
-		<< "NifSkope-1.0.20"
-		<< "NifSkope-1.0.19"
-		<< "NifSkope-1.0.18"
-		<< "NifSkope-1.0.17"
-		<< "NifSkope-1.0.16"
-		<< "NifSkope-1.0.15"
-		<< "NifSkope-1.0.14"
-		<< "NifSkope-1.0.13"
-		<< "NifSkope-1.0.12"
-		<< "NifSkope-1.0.11"
-		<< "NifSkope-1.0.10"
-		<< "NifSkope-1.0.9"
-		<< "NifSkope-1.0.8"
-		<< "NifSkope-1.0.7"
-		<< "NifSkope-1.0.6"
-		<< "NifSkope-1.0.5"
-		<< "NifSkope");
+//! Set the name of the NiGeometryData node to parent name or zero
+class spFO3FixShapeDataName : public Spell
+{
+public:
+	QString name() const { return Spell::tr("Fix Geometry Data Names"); }
+	QString page() const { return Spell::tr("Sanitize"); }
+	bool sanity() const { return true; }
+	
+	//////////////////////////////////////////////////////////////////////////
+	// Valid if nothing or NiGeometryData-based node is selected
+	bool isApplicable( const NifModel * nif, const QModelIndex & index )
+	{
+		//if ( !index.isValid() )
+		//	return false;
+		
+		if ( !nif->checkVersion( 0x14020007, 0x14020007 ) || (nif->getUserVersion() != 11) )
+			return false;
+		
+		return !index.isValid() || nif->getBlock( index, "NiGeometryData" ).isValid();
+	}
+	
+	QModelIndex cast( NifModel * nif, const QModelIndex & index )
+	{
+		if ( index.isValid() && nif->getBlock( index, "NiGeometryData" ).isValid() )
+		{
+			nif->set<int>(index, "Unknown ID", 0);        
+		}
+		else
+		{
+			// set all blocks
+			for ( int n = 0; n < nif->getBlockCount(); n++ ) {
+				QModelIndex iBlock = nif->getBlock( n );
+				if ( nif->getBlock( iBlock, "NiGeometryData" ).isValid() ) 
+				{
+					cast(nif, iBlock);
+				}
+			}
+		}
+		return index;
+	}
+};
 
-//! A string describing the version of nifskope
-#define NIFSKOPE_VERSION "2.0.0-alpha"
+REGISTER_SPELL( spFO3FixShapeDataName )
 
-//! The repository revision number; generated with TortoiseSVN's SubWCRev.exe
-#define NIFSKOPE_REVISION "$WCREV$"
-
-//! Create or use a QSettings variable for nifskope
-#define NIFSKOPE_QSETTINGS(config) QSettings config( "NifTools", "NifSkope-"NIFSKOPE_VERSION )
-
-#endif

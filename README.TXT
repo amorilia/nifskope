@@ -4,37 +4,29 @@
  
 NifSkope is a tool for analyzing and editing NetImmerse files (.nif)
 
-This is version 1.1.0-RC6 of NifSkope.
+This is version 2.0.0 of NifSkope.
 
 Known Issues and Workarounds
 ----------------------------
 
-* On some graphic cards textures show up black or distorted. If this happens,
-  uncheck "Shaders" in NifSkope's settings.
-
-* Models with multiple texture maps may appear to be missing some textures,
-  but they will become visible when some texture maps are disabled. This is
-  due to the limited number of texture units in graphics hardware.
-
-* If one of NifSkope's windows disappears due to moving it to a location
-  outside of the desktop view, close NifSkope and remove the NifSkope settings
-  by deleting the registry key(s)
-
-    HKEY_USERS\S-1-5-***\Software\NifTools\NifSkope-***
-
-  Launch NifSkope again, and all windows will appear at their default
-  position.
-
-* If NifSkope does not start at all, check your firewall. NifSkope uses the
-  network (locally, nothing is sent to the outside world) to communicate with
-  itself.
+* TODO
 
 Reporting bugs
 --------------
 
 http://sourceforge.net/tracker/?group_id=149157&atid=776343
  
-Compiling NifSkope from source
+Compiling NifSkope 2.0.0 from source
 ------------------------------
 
-http://niftools.sourceforge.net/wiki/NifSkope/Compile
+1. Get the source:
+* git clone --recursive - TODO
+* download - TODO
+
+2. Compile:
+	- run "makeconfig.sh" - TODO
+2.1 "GNU make":
+	- set QTDIR to "Qt" 4 root dir
+	- type "make"
+2.2 "Qt Creator" - open build/qtcreator/NifSkope.pro (TODO: generator)
+2.3 "Visual Studio" - open build/vs/NifSkope.sln (TODO: generator, cmake)

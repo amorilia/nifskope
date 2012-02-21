@@ -1,5 +1,3 @@
-// NOTE: Run makeconfig.sh on this file
-
 /***** BEGIN LICENSE BLOCK *****
 
 BSD License
@@ -32,59 +30,64 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-// defines
 
-#ifndef CONFIG_H
-#define CONFIG_H
 
-#include <QStringList>
+#include "nifskope.h"
+#include "widgets/nifview.h"
+#include "nifproxy.h"
+#include "nifmodel.h"
 
-/*! \file config.h
- * \brief Configuration info
- *
- * Include this if you want to access the current version or persistent QSettings.
- */
+#include <QMenu>
+#include <QModelIndex>
+#include <QDockWidget>
 
-//! QSettings keys for older versions of nifskope
-/*!
- * Add versions to this list (most recent first) whenever incrementing NIFSKOPE_VERSION
- */
-const QStringList NIFSKOPE_OLDERVERSIONS = (QStringList()
-		<< "NifSkope-1.1.1-alpha"
-		<< "NifSkope-1.1.0-RC6"
-		<< "NifSkope-1.1.0-RC5"
-		<< "NifSkope-1.1.0-RC4"
-		<< "NifSkope-1.1.0-RC3"
-		<< "NifSkope-1.1.0-RC2"
-		<< "NifSkope-1.1.0-RC1"
-		<< "NifSkope-1.1.0-beta"
-		<< "NifSkope-1.0.22"
-		<< "NifSkope-1.0.21"
-		<< "NifSkope-1.0.20"
-		<< "NifSkope-1.0.19"
-		<< "NifSkope-1.0.18"
-		<< "NifSkope-1.0.17"
-		<< "NifSkope-1.0.16"
-		<< "NifSkope-1.0.15"
-		<< "NifSkope-1.0.14"
-		<< "NifSkope-1.0.13"
-		<< "NifSkope-1.0.12"
-		<< "NifSkope-1.0.11"
-		<< "NifSkope-1.0.10"
-		<< "NifSkope-1.0.9"
-		<< "NifSkope-1.0.8"
-		<< "NifSkope-1.0.7"
-		<< "NifSkope-1.0.6"
-		<< "NifSkope-1.0.5"
-		<< "NifSkope");
 
-//! A string describing the version of nifskope
-#define NIFSKOPE_VERSION "2.0.0-alpha"
+void exportObj( const NifModel * nif, const QModelIndex & index );
+void importObj( NifModel * nif, const QModelIndex & index );
 
-//! The repository revision number; generated with TortoiseSVN's SubWCRev.exe
-#define NIFSKOPE_REVISION "$WCREV$"
+void import3ds( NifModel * nif, const QModelIndex & index );
 
-//! Create or use a QSettings variable for nifskope
-#define NIFSKOPE_QSETTINGS(config) QSettings config( "NifTools", "NifSkope-"NIFSKOPE_VERSION )
 
-#endif
+void NifSkope::fillImportExportMenus()
+{
+	mExport->addAction( tr( "Export .OBJ" ) );
+	mImport->addAction( tr( "Import .3DS" ) );
+	mImport->addAction( tr( "Import .OBJ" ) );
+}
+
+void NifSkope::sltImportExport( QAction * a )
+{
+	QModelIndex index;
+
+
+	//Get the currently selected NiBlock index in the list or tree view
+	if ( dList->isVisible() )
+	{
+		if ( list->model() == proxy )
+		{
+			index = proxy->mapTo( list->currentIndex() );
+		}
+		else if ( list->model() == nif )
+		{
+			index = list->currentIndex();
+		}
+	}
+	else if ( dTree->isVisible() )
+	{
+		if ( tree->model() == proxy )
+		{
+			index = proxy->mapTo( tree->currentIndex() );
+		}
+		else if ( tree->model() == nif )
+		{
+			index = tree->currentIndex();
+		}
+	}
+	
+	if ( a->text() == tr( "Export .OBJ" ) )
+		exportObj( nif, index );
+	else if ( a->text() == tr( "Import .OBJ" ) )
+		importObj( nif, index );
+	else if ( a->text() == tr( "Import .3DS" ) )
+		import3ds( nif, index );
+}

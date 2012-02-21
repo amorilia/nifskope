@@ -1,5 +1,3 @@
-// NOTE: Run makeconfig.sh on this file
-
 /***** BEGIN LICENSE BLOCK *****
 
 BSD License
@@ -32,59 +30,56 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-// defines
+#ifndef SPELL_STRINGPALETTE_H
+#define SPELL_STRINGPALETTE_H
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#include <QDialog>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QListView>
+#include <QListWidget>
+#include <QPushButton>
+#include <QStringListModel>
 
-#include <QStringList>
+//! \file stringpalette.h StringPaletteRegexDialog
 
-/*! \file config.h
- * \brief Configuration info
- *
- * Include this if you want to access the current version or persistent QSettings.
- */
+class NifModel;
 
-//! QSettings keys for older versions of nifskope
-/*!
- * Add versions to this list (most recent first) whenever incrementing NIFSKOPE_VERSION
- */
-const QStringList NIFSKOPE_OLDERVERSIONS = (QStringList()
-		<< "NifSkope-1.1.1-alpha"
-		<< "NifSkope-1.1.0-RC6"
-		<< "NifSkope-1.1.0-RC5"
-		<< "NifSkope-1.1.0-RC4"
-		<< "NifSkope-1.1.0-RC3"
-		<< "NifSkope-1.1.0-RC2"
-		<< "NifSkope-1.1.0-RC1"
-		<< "NifSkope-1.1.0-beta"
-		<< "NifSkope-1.0.22"
-		<< "NifSkope-1.0.21"
-		<< "NifSkope-1.0.20"
-		<< "NifSkope-1.0.19"
-		<< "NifSkope-1.0.18"
-		<< "NifSkope-1.0.17"
-		<< "NifSkope-1.0.16"
-		<< "NifSkope-1.0.15"
-		<< "NifSkope-1.0.14"
-		<< "NifSkope-1.0.13"
-		<< "NifSkope-1.0.12"
-		<< "NifSkope-1.0.11"
-		<< "NifSkope-1.0.10"
-		<< "NifSkope-1.0.9"
-		<< "NifSkope-1.0.8"
-		<< "NifSkope-1.0.7"
-		<< "NifSkope-1.0.6"
-		<< "NifSkope-1.0.5"
-		<< "NifSkope");
+//! String palette QRegExp dialog for spEditStringEntries
+class StringPaletteRegexDialog : public QDialog
+{
+	Q_OBJECT
+public:
+	//! Constructor. Sets widgets and layout.
+	StringPaletteRegexDialog( NifModel * nif, QPersistentModelIndex & index, QWidget * parent = 0 );
 
-//! A string describing the version of nifskope
-#define NIFSKOPE_VERSION "2.0.0-alpha"
+protected:
+	//! Model used
+	NifModel * nif;
+	//! Index of the string palette
+	QPersistentModelIndex iPalette;
+	//! Lists the strings in the palette
+	QListView * listview;
+	//! Internal representation of the current state of the palette
+	QStringListModel * listmodel;
+	//! Original palette
+	QStringList * originalList;
+	//! Grid layout
+	QGridLayout * grid;
+	//! Regular expression to search for
+	QLineEdit * search;
+	//! String to replace with
+	QLineEdit * replace;
 
-//! The repository revision number; generated with TortoiseSVN's SubWCRev.exe
-#define NIFSKOPE_REVISION "$WCREV$"
+public slots:
+	//! Performs regex replacement of \link search \endlink to \link replace \endlink in \link listmodel \endlink
+	void stringlistRegex();
+	//! Set the string palette entries
+	void setStringList( QStringList & list );
+	//! Get the modified string palette
+	QStringList getStringList();
 
-//! Create or use a QSettings variable for nifskope
-#define NIFSKOPE_QSETTINGS(config) QSettings config( "NifTools", "NifSkope-"NIFSKOPE_VERSION )
+};
 
 #endif

@@ -1,6 +1,12 @@
  == CHANGELOG ==
 
-This is version 1.1.0-RC6 of NifSkope.
+This is version 2.0.0 of NifSkope.
+
+changes since 2.0.0:
+... get magic strings and numbers into a header
+* Remove all relative paths from "#include" directives
+* Set up "GNU Make" build system
+* Reorganize file and directory structure
 
 changes since 1.1.0-RC6:
 * Added initial support for "BSLODTriShape" - its being rendered
