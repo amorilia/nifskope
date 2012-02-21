@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "3ds.h"
 
 #include "spellbook.h"
@@ -662,7 +664,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			
 			if ( !mat->map_Kd.isEmpty() )
 			{
-				if ( nif->getVersionNumber() >= 0x0303000D )
+				if ( nif->getVersionNumber() >= NF_V03030013 )
 				{
 					//Newer versions use NiTexturingProperty and NiSourceTexture
 					if ( iTexProp.isValid() == false || objIndex != 0 || nif->itemType(iTexProp) != "NiTexturingProperty" )

@@ -107,21 +107,21 @@ src/gl/glscene.o: glscene.h glcontroller.h glnode.h glmesh.h glparticles.h gltex
 src/gl/gltex.o: GLee.h glscene.h gltex.h gltexloaders.h options.h fsengine/fsmanager.h fsengine/fsengine.h
 src/gl/glcontroller.o: glcontroller.h glscene.h options.h
 src/gl/gltools.o: gltools.h nifmodel.h
-src/gl/gltexloaders.o: GLee.h gltexloaders.h dds/dds_api.h dds/DirectDrawSurface.h nifmodel.h
+src/gl/gltexloaders.o: ns_base.h GLee.h gltexloaders.h dds/dds_api.h dds/DirectDrawSurface.h nifmodel.h
 src/gl/glnode.o: glscene.h glmarker.h glnode.h glcontroller.h options.h NvTriStrip/qtwrapper.h furniture.h constraints.h
-src/gl/renderer.o: GLee.h renderer.h gltex.h glmesh.h glscene.h glproperty.h options.h
+src/gl/renderer.o: ns_base.h GLee.h renderer.h gltex.h glmesh.h glscene.h glproperty.h options.h
 src/gl/glproperty.o: ns_base.h glproperty.h glcontroller.h glscene.h options.h
 src/nifmodel.o: ns_base.h nifmodel.h niftypes.h options.h config.h spellbook.h
-src/options.o: options.h config.h widgets/colorwheel.h widgets/fileselect.h widgets/floatslider.h widgets/groupbox.h
+src/options.o: ns_base.h options.h config.h widgets/colorwheel.h widgets/fileselect.h widgets/floatslider.h widgets/groupbox.h
 src/message.o: message.h
 src/qhull.o: qhull.h math.h qhull/src/qhull_a.h
 src/NvTriStrip/VertexCache.o: VertexCache.h
 src/NvTriStrip/qtwrapper.o: qtwrapper.h NvTriStrip.h
 src/NvTriStrip/NvTriStripObjects.o: assert.h string.h stdio.h NvTriStripObjects.h VertexCache.h
 src/NvTriStrip/NvTriStrip.o: NvTriStripObjects.h NvTriStrip.h string.h
-src/kfmmodel.o: kfmmodel.h
-src/nifvalue.o: nifvalue.h nifmodel.h config.h options.h
-src/basemodel.o: basemodel.h niftypes.h options.h
+src/kfmmodel.o: ns_base.h kfmmodel.h
+src/nifvalue.o: ns_base.h nifvalue.h nifmodel.h config.h options.h
+src/basemodel.o: ns_base.h basemodel.h niftypes.h options.h
 src/kfmxml.o: kfmmodel.h
 src/nifdelegate.o: nifmodel.h nifproxy.h kfmmodel.h spellbook.h widgets/valueedit.h widgets/nifcheckboxlist.h options.h
 src/nifexpr.o: nifexpr.h basemodel.h
@@ -140,30 +140,30 @@ src/spells/morphctrl.o: spellbook.h
 src/spells/flags.o: ns_base.h spellbook.h
 src/spells/optimize.o: spellbook.h blocks.h mesh.h tangentspace.h transform.h
 src/spells/stringpalette.o: ns_base.h spellbook.h stringpalette.h
-src/spells/animation.o: spellbook.h options.h
+src/spells/animation.o: ns_base.h spellbook.h options.h
 src/spells/bounds.o: spellbook.h widgets/nifeditors.h
 src/spells/strippify.o: spellbook.h NvTriStrip/qtwrapper.h
 src/spells/tangentspace.o: ns_base.h tangentspace.h NvTriStrip/qtwrapper.h
 src/spells/material.o: spellbook.h widgets/nifeditors.h
-src/spells/misc.o: misc.h
+src/spells/misc.o: ns_base.h misc.h
 src/spells/blocks.o: blocks.h config.h
 src/spells/texture.o: ns_base.h blocks.h texture.h spellbook.h gl/gltex.h config.h widgets/fileselect.h widgets/uvedit.h NvTriStrip/qtwrapper.h
 src/spells/light.o: spellbook.h widgets/nifeditors.h
 src/spells/sanitize.o: ns_base.h spellbook.h misc.h
-src/spells/havok.o: spellbook.h qhull.h NvTriStrip/qtwrapper.h blocks.h
-src/fsengine/fsmanager.o: fsmanager.h fsengine.h bsa.h options.h
-src/fsengine/fsengine.o: fsengine.h bsa.h
+src/spells/havok.o: ns_base.h spellbook.h qhull.h NvTriStrip/qtwrapper.h blocks.h
+src/fsengine/fsmanager.o: ns_base.h fsmanager.h fsengine.h bsa.h options.h
+src/fsengine/fsengine.o: ns_base.h fsengine.h bsa.h
 src/fsengine/bsa.o: bsa.h
 src/importex/importex.o: nifskope.h widgets/nifview.h nifproxy.h nifmodel.h
 src/importex/obj.o: ns_base.h nifmodel.h NvTriStrip/qtwrapper.h gl/gltex.h
-src/importex/3ds.o: 3ds.h spellbook.h NvTriStrip/qtwrapper.h gl/gltex.h
+src/importex/3ds.o: ns_base.h 3ds.h spellbook.h NvTriStrip/qtwrapper.h gl/gltex.h
 src/widgets/refrbrowser.o: refrbrowser.h nifmodel.h
 src/widgets/nifeditors.o: nifeditors.h nifmodel.h colorwheel.h floatslider.h valueedit.h
 src/widgets/groupbox.o: groupbox.h
 src/widgets/inspect.o: inspect.h nifmodel.h gl/glscene.h gl/glnode.h
 src/widgets/nifcheckboxlist.o: nifcheckboxlist.h options.h
 src/widgets/colorwheel.o: colorwheel.h floatslider.h niftypes.h math.h
-src/widgets/xmlcheck.o: xmlcheck.h kfmmodel.h nifmodel.h config.h fileselect.h
+src/widgets/xmlcheck.o: ns_base.h xmlcheck.h kfmmodel.h nifmodel.h config.h fileselect.h
 src/widgets/nifview.o: nifview.h basemodel.h nifproxy.h spellbook.h
 src/widgets/uvedit.o: uvedit.h nifmodel.h niftypes.h options.h gl/gltex.h gl/gltools.h NvTriStrip/qtwrapper.h math.h GL/glext.h
 src/widgets/floatslider.o: floatslider.h floatedit.h
@@ -171,9 +171,9 @@ src/widgets/copyfnam.o: copyfnam.h
 src/widgets/valueedit.o: valueedit.h floatedit.h
 src/widgets/fileselect.o: fileselect.h config.h
 src/widgets/floatedit.o: floatedit.h nifvalue.h
-src/nifskope.o: nifskope.h config.h kfmmodel.h nifmodel.h nifproxy.h widgets/nifview.h widgets/refrbrowser.h widgets/inspect.h glview.h spellbook.h widgets/fileselect.h widgets/copyfnam.h widgets/xmlcheck.h options.h fsengine/fsmanager.h
+src/nifskope.o: ns_base.h nifskope.h config.h kfmmodel.h nifmodel.h nifproxy.h widgets/nifview.h widgets/refrbrowser.h widgets/inspect.h glview.h spellbook.h widgets/fileselect.h widgets/copyfnam.h widgets/xmlcheck.h options.h fsengine/fsmanager.h
 src/niftypes.o: niftypes.h nifmodel.h
-src/glview.o: gl/GLee.h glview.h math.h nifmodel.h gl/glscene.h gl/gltex.h options.h widgets/fileselect.h widgets/floatedit.h widgets/floatslider.h
+src/glview.o: ns_base.h gl/GLee.h glview.h math.h nifmodel.h gl/glscene.h gl/gltex.h options.h widgets/fileselect.h widgets/floatedit.h widgets/floatslider.h
 src/gl/dds/PixelFormat.h: Common.h
 src/gl/dds/Image.h: Common.h Color.h
 src/gl/dds/ColorBlock.h: Color.h Image.h
@@ -194,7 +194,7 @@ src/gl/glproperty.h: GLee.h glcontrolable.h
 src/gl/furniture.h: glmarker.h
 src/gl/constraints.h: glmarker.h
 src/qhull.h: niftypes.h
-src/nifmodel.h: basemodel.h
+src/nifmodel.h: ns_base.h basemodel.h
 src/nifvalue.h: niftypes.h
 src/NvTriStrip/qtwrapper.h: niftypes.h
 src/NvTriStrip/NvTriStripObjects.h: assert.h VertexCache.h

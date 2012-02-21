@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 #include "qhull.h"
 
@@ -65,7 +67,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		if( ! nif->inherits( index, "NiTriBasedGeom" ) || ! nif->checkVersion( 0x0A000100, 0 ) )
+		if( ! nif->inherits( index, "NiTriBasedGeom" ) || ! nif->checkVersion( NF_V10000100, 0 ) )
 			return false;
 		
 		QModelIndex iData = nif->getBlock( nif->getLink( index, "Data" ) );

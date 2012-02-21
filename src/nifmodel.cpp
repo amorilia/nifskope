@@ -178,42 +178,43 @@ void NifModel::clear()
 {
 	folder = QString();
 	root->killChildren();
-	insertType( root, NifData( "NiHeader", "Header" ) );
-	insertType( root, NifData( "NiFooter", "Footer" ) );
+	insertType( root, NifData( B_NIHEADER, T_HEADER ) );
+	insertType( root, NifData( B_NIFOOTER, T_FOOTER ) );
 	version = version2number( Options::startupVersion() );
 	if( !isVersionSupported(version) ) {
 		msg( Message() << tr("Unsupported 'Startup Version' %1 specified, reverting to 20.0.0.5").arg( Options::startupVersion() ).toAscii() );
 		version = NF_V20000005;
 	}
 	reset();
-	NifItem * item = getItem( getHeaderItem(), "Version" );
+	NifItem * item = getItem( getHeaderItem(), TA_HVERSION );
 	if ( item ) item->value().setFileVersion( version );
 
 	QString header_string;
-	if ( version <= 0x0A000100 ) {
-		header_string = "NetImmerse File Format, Version ";
+	if ( version <= NF_V10000100 ) {
+		header_string = NF_H1;
 	} else {
-		header_string = "Gamebryo File Format, Version ";
+		header_string = NF_H2;
 	}
 
 	header_string += version2string(version);
 
-	set<QString>( getHeaderItem(), "Header String", header_string );
+	set<QString>( getHeaderItem(), TA_HSTRING, header_string );
 
 	if ( version == NF_V20000005 ) {
 		//Just set this if version is 20.0.0.5 for now.  Probably should be a separate option.
-		set<int>( getHeaderItem(), "User Version", 11 );
-		set<int>( getHeaderItem(), "User Version 2", 11 );
+		set<int>( getHeaderItem(), TA_HUV, NF_V20000005_DEFAULT_UV );
+		set<int>( getHeaderItem(), TA_HUV2, NF_V20000005_DEFAULT_UV2 );
 	}
 	//set<int>( getHeaderItem(), "Unknown Int 3", 11 );
 
-	if ( version < 0x0303000D ) {
-		QVector<QString> copyright(3);
-		copyright[0] = "Numerical Design Limited, Chapel Hill, NC 27514";
-		copyright[1] = "Copyright (c) 1996-2000";
-		copyright[2] = "All Rights Reserved";
+	if ( version < NF_V03030013 ) {
+		QVector<QString> copyright( QVector<QString> () 
+			<< NF_V03030013_DEF_CR1
+			<< NF_V03030013_DEF_CR2
+			<< NF_V03030013_DEF_CR3
+		);
 
-		setArray<QString>( getHeader(), "Copyright", copyright );
+		setArray<QString>( getHeader(), TA_HCR, copyright );
 	}
 	lockUpdates = false;
 	needUpdates = utNone;
@@ -1515,7 +1516,7 @@ bool NifModel::setHeaderString( const QString & s )
 		return false;
 	}
 
-	int p = s.indexOf( "Version", 0, Qt::CaseInsensitive );
+	int p = s.indexOf( TA_HVERSION, 0, Qt::CaseInsensitive );
 	if ( p >= 0 )
 	{
 		QString v = s;
@@ -1573,8 +1574,8 @@ bool NifModel::load( QIODevice & device )
 	// will not reset them to zero on older files...)
 	if (header)
 	{
-		set<int>( header, "User Version 2", 0 );
-		set<int>( header, "User Version", 0 );
+		set<int>( header, TA_HUV2, 0 );
+		set<int>( header, TA_HUV, 0 );
 	}
 	if ( !header || !load( header, stream, true ) )
 	{
@@ -1934,7 +1935,7 @@ bool NifModel::earlyRejection( const QString & filepath, const QString & blockId
 	}
 
 	bool blk_match = false;
-	if ( blockId.isEmpty() == true || version < 0x0A000100 )
+	if ( blockId.isEmpty() == true || version < NF_V10000100 )
 	{
 		blk_match = true;
 	}
@@ -2098,7 +2099,7 @@ bool NifModel::load( NifItem * parent, NifIStream & stream, bool fast )
 		}
 		
 		// these values are always little-endian
-		if( (child->name() == "Num Blocks") || (child->name() == "User Version") || (child->name() == "User Version 2") )
+		if( (child->name() == "Num Blocks") || (child->name() == TA_HUV) || (child->name() == TA_HUV2) )
 		{
 			if( version >= 0x14000004 && get<quint8>( getHeaderItem(), "Endian Type" ) == 0 )
 			{

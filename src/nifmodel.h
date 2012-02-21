@@ -33,6 +33,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NIFMODEL_H
 #define NIFMODEL_H
 
+#include "ns_base.h"
+
 #include "basemodel.h"
 
 #include <QHash>
@@ -203,7 +205,7 @@ public:
 
 	QString getVersion() const { return version2string( version ); }
 	quint32 getVersionNumber() const { return version; }
-	quint32 getUserVersion() const { return get<int>(getHeader(), "User Version"); }
+	quint32 getUserVersion() const { return get<int>(getHeader(), TA_HUV); }
 	
 	// QAbstractModel interface
 	QVariant data( const QModelIndex & index, int role = Qt::DisplayRole ) const;

@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "misc.h"
 
 #include <QDebug>
@@ -97,7 +99,7 @@ class spUpdateHeader : public Spell
 {
 public:
 	QString name() const { return Spell::tr( "Update" ); }
-	QString page() const { return Spell::tr( "Header" ); }
+	QString page() const { return Spell::tr( T_HEADER ); }
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
@@ -118,7 +120,7 @@ class spUpdateFooter : public Spell
 {
 public:
 	QString name() const { return Spell::tr( "Update" ); }
-	QString page() const { return Spell::tr( "Footer" ); }
+	QString page() const { return Spell::tr( T_FOOTER ); }
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{

@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 
 #include <QDebug>
@@ -67,12 +69,12 @@ public:
 		if (nif == NULL)
 			return index;
 
-		QStringList kfnames = QFileDialog::getOpenFileNames( 0, Spell::tr("Choose .kf file(s)"), nif->getFolder(), "*.kf" );
+		QStringList kfnames = QFileDialog::getOpenFileNames( 0, Spell::tr("Choose .kf file(s)"), nif->getFolder(), FMASK_KF );
 		foreach( QString kfname, kfnames )
 		{
 			try
 			{
-				//QString kfname = QFileDialog::getOpenFileName( 0, Spell::tr("Choose a .kf file"), nif->getFolder(), "*.kf" );
+				//QString kfname = QFileDialog::getOpenFileName( 0, Spell::tr("Choose a .kf file"), nif->getFolder(), FMASK_KF );
 				
 				if ( kfname.isEmpty() )
 					return index;

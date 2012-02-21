@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "nifvalue.h"
 #include "nifmodel.h"
 #include "config.h"
@@ -784,7 +786,7 @@ QColor NifValue::toColor() const
 void NifOStream::init()
 {
 	bool32bit =  ( model->inherits( "NifModel" ) && model->getVersionNumber() <= 0x04000002 );
-	linkAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() < 0x0303000D );
+	linkAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() < NF_V03030013 );
 	stringAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() >= 0x14010003 );
 }
 
@@ -1062,7 +1064,7 @@ bool NifIStream::read( NifValue & val )
 void NifIStream::init()
 {
 	bool32bit =  ( model->inherits( "NifModel" ) && model->getVersionNumber() <= 0x04000002 );
-	linkAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() < 0x0303000D );
+	linkAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() < NF_V03030013 );
 	stringAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() >= 0x14010003 );
 	bigEndian = false; // set when tFileVersion is read
 	dataStream = new QDataStream( device );
@@ -1100,7 +1102,7 @@ bool NifOStream::write( const NifValue & val )
 		{
 			if( NifModel* mdl = static_cast<NifModel*>(const_cast<BaseModel*>(model)) )
 			{
-				QString headerString = mdl->getItem( mdl->getHeaderItem(), "Header String" )->value().toString();
+				QString headerString = mdl->getItem( mdl->getHeaderItem(), TA_HSTRING )->value().toString();
 				quint32 version;
 				// hack for neosteam
 				if( headerString.startsWith( "NS" ) )

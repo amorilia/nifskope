@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "options.h"
 
 #include <QAction>
@@ -673,7 +675,7 @@ void Options::textureFolderAutoDetect()
 
 			list.append( dir.path() );
 			
-			dir.setNameFilters( QStringList() << "*.bsa" );
+			dir.setNameFilters( QStringList() << FMASK_BSA );
 			dir.setFilter( QDir::Dirs );
 			foreach ( QString dn, dir.entryList() )
 				list << dir.filePath( dn );
@@ -701,7 +703,7 @@ void Options::textureFolderAutoDetect()
 			list.append( dir.path() );
 			list.append( dir.path() + "/Textures" );
 			
-			dir.setNameFilters( QStringList() << "*.bsa" );
+			dir.setNameFilters( QStringList() << FMASK_BSA );
 			dir.setFilter( QDir::Dirs );
 			foreach ( QString dn, dir.entryList() )
 				list << dir.filePath( dn ) << dir.filePath( dn ) + "/Textures";
@@ -763,7 +765,7 @@ void Options::textureFolderAutoDetect()
 
          list.append( dir.path() );
 
-         dir.setNameFilters( QStringList() << "*.bsa" );
+         dir.setNameFilters( QStringList() << FMASK_BSA );
          dir.setFilter( QDir::Dirs );
          foreach ( QString dn, dir.entryList() )
             list << dir.filePath( dn );

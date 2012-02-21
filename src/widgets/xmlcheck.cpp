@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "xmlcheck.h"
 
 #include "kfmmodel.h"
@@ -83,15 +85,15 @@ TestShredder::TestShredder()
 	recursive->setChecked( settings.value( "Recursive", true ).toBool() );
 	recursive->setToolTip( tr("Recurse into sub directories") );
 	
-	chkNif = new QCheckBox( tr("*.nif"), this );
+	chkNif = new QCheckBox( tr(FMASK_NIF), this );
 	chkNif->setChecked( settings.value( "check nif", true ).toBool() );
 	chkNif->setToolTip( tr("Check .nif files") );
 	
-	chkKf = new QCheckBox( tr("*.kf(a)"), this );
+	chkKf = new QCheckBox( tr(FMASK_KF_A), this );
 	chkKf->setChecked( settings.value( "check kf", true ).toBool() );
 	chkKf->setToolTip( tr("Check .kf files") );
 	
-	chkKfm = new QCheckBox( tr("*.kfm"), this );
+	chkKfm = new QCheckBox( tr(FMASK_KFM), this );
 	chkKfm->setChecked( settings.value( "check kfm", true ).toBool() );
 	chkKfm->setToolTip( tr("Check .kfm files") );
 	
@@ -237,11 +239,11 @@ void TestShredder::run()
 	
 	QStringList extensions;
 	if ( chkNif->isChecked() )
-		extensions << "*.nif" << "*.nifcache" << "*.texcache" << "*.pcpatch";
+		extensions << FMASK_NIF << FMASK_NIFCACHE << FMASK_TEXCACHE << FMASK_PCPATCH;
 	if ( chkKf->isChecked() )
-		extensions << "*.kf" << "*.kfa";
+		extensions << FMASK_KF << FMASK_KFA;
 	if ( chkKfm->isChecked() )
-		extensions << "*.kfm";
+		extensions << FMASK_KFM;
 	
 	queue.init( directory->text(), extensions, recursive->isChecked() );
 	

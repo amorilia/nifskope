@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include <QtCore/QtCore> // extra include to avoid compile error
 #include <QtGui/QtGui>   // dito
 #include "GLee.h"
@@ -1110,7 +1112,7 @@ GLuint texLoadNIF( QIODevice & f, QString & texformat ) {
 
 	foreach ( qint32 l, pix.getRootLinks() )
 	{
-		QModelIndex iData = pix.getBlock( l, "ATextureRenderData" );
+		QModelIndex iData = pix.getBlock( l, T_ATEXTURERENDERDATA );
 		if ( ! iData.isValid() || iData == QModelIndex() )
 			throw QString( "this is not a normal .nif file; there should be only pixel data as root blocks" );
 

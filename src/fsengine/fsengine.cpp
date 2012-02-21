@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "fsengine.h"
 #include "bsa.h"
 
@@ -562,7 +564,7 @@ int main( int argc, char * argv[] )
 		view.show();
 		
 		QLineEdit line;
-		line.setCompleter( new QCompleter( new QDirModel( QStringList() << "*.nif", QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot, QDir::DirsFirst, & line ), & line ) );
+		line.setCompleter( new QCompleter( new QDirModel( QStringList() << FMASK_NIF, QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot, QDir::DirsFirst, & line ), & line ) );
 		line.show();
 		
 		return app.exec();

@@ -722,7 +722,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 			
 			if ( ! mtl.map_Kd.isEmpty() )
 			{
-				if ( nif->getVersionNumber() >= 0x0303000D )
+				if ( nif->getVersionNumber() >= NF_V03030013 )
 				{
 					//Newer versions use NiTexturingProperty and NiSourceTexture
 					if ( iTexProp.isValid() == false || first_tri_shape == false || nif->itemType(iTexProp) != "NiTexturingProperty" )

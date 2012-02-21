@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "kfmmodel.h"
 
 KfmModel::KfmModel( QObject * parent ) : BaseModel( parent )
@@ -92,7 +94,7 @@ void KfmModel::clear()
 	version = 0x0200000b;
 	reset();
 	if ( kfmroot )
-		set<QString>( kfmroot, "Header String", ";Gamebryo KFM File Version 2.0.0.0b" );
+		set<QString>( kfmroot, TA_HSTRING, ";Gamebryo KFM File Version 2.0.0.0b" );
 }
 
 /*
@@ -179,10 +181,10 @@ void KfmModel::insertType( NifItem * parent, const NifData & data, int at )
 					d.setType( tmp );
 					d.value.changeType( NifValue::type( tmp ) );
 				}
-				if ( d.arg() == "ARG" )	d.setArg( data.arg() );
-				if ( d.arr1() == "ARG" ) d.setArr1( arg );
-				if ( d.arr2() == "ARG" ) d.setArr2( arg );
-				if ( d.cond().contains( "ARG" ) ) { QString x = d.cond(); x.replace( x.indexOf( "ARG" ), 5, arg ); d.setCond( x ); }
+				if ( d.arg() == A_ARG )	d.setArg( data.arg() );
+				if ( d.arr1() == A_ARG ) d.setArr1( arg );
+				if ( d.arr2() == A_ARG ) d.setArr2( arg );
+				if ( d.cond().contains( A_ARG ) ) { QString x = d.cond(); x.replace( x.indexOf( A_ARG ), 5, arg ); d.setCond( x ); }
 				insertType( branch, d );
 			}
 		}

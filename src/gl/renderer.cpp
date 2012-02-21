@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include <QApplication>
 #include <QDebug>
 #include <QDir>
@@ -397,7 +399,7 @@ void Renderer::updateShaders()
 	
 // linux does not want to load the shaders so disable them for now
 #ifdef WIN32
-	dir.setNameFilters( QStringList() << "*.vert" );
+	dir.setNameFilters( QStringList() << FMASK_VERT );
 	foreach ( QString name, dir.entryList() )
 	{
 		Shader * shader = new Shader( name, GL_VERTEX_SHADER );
@@ -405,7 +407,7 @@ void Renderer::updateShaders()
 		shaders.insert( name, shader );
 	}
 	
-	dir.setNameFilters( QStringList() << "*.frag" );
+	dir.setNameFilters( QStringList() << FMASK_FRAG );
 	foreach ( QString name, dir.entryList() )
 	{
 		Shader * shader = new Shader( name, GL_FRAGMENT_SHADER );
@@ -413,7 +415,7 @@ void Renderer::updateShaders()
 		shaders.insert( name, shader );
 	}
 	
-	dir.setNameFilters( QStringList() << "*.prog" );
+	dir.setNameFilters( QStringList() << FMASK_PROG );
 	foreach ( QString name, dir.entryList() )
 	{
 		Program * program = new Program( name );

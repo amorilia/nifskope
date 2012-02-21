@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 // include these before GLee.h to avoid linux compile error
 #include <QActionGroup>
 #include <QComboBox>
@@ -1445,7 +1447,7 @@ void GLView::savePixmap()
 	dlg.setLayout( lay );
 	
 	FileSelector * file = new FileSelector( FileSelector::SaveFile, tr("File"), QBoxLayout::RightToLeft );
-	file->setFilter( QStringList() << "*.bmp *.jpg *.png" << "*.bmp" << "*.jpg" << "*.png" );
+	file->setFilter( QStringList() << FMASK_BMP" "FMASK_JPG" "FMASK_PNG << FMASK_BMP << FMASK_JPG << FMASK_PNG );
 	file->setFile( model->getFolder() + "/" );
 	lay->addWidget( file, 0, 0, 1, -1 );
 

@@ -33,23 +33,52 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __NS_BASE_H__
 #define __NS_BASE_H__
 
-#define EXPR_OPLIST "(!=|==|>=|<=|>|<|\\&|\\+|-|\\&\\&|\\|\\|)"
 #define NF_VSEPARATOR "."
 #define NF_V03030013 0x0303000D
 #define NF_V20000005 0x14000005
 #define NF_V10000100 0x0A000100
+#define NF_H1 "NetImmerse File Format, Version "
+#define NF_H2 "Gamebryo File Format, Version "
+#define NF_V20000005_DEFAULT_UV 11
+#define NF_V20000005_DEFAULT_UV2 11
+#define NF_V03030013_DEF_CR1 "Numerical Design Limited, Chapel Hill, NC 27514"
+#define NF_V03030013_DEF_CR2 "Copyright (c) 1996-2000"
+#define NF_V03030013_DEF_CR3 "All Rights Reserved"
 
 #define FMASK_BSA  "*.bsa"
 #define FMASK_FRAG "*.frag"
-#define FMASK_KFA  "*.kf(a)"
+#define FMASK_PROG "*.prog"
+#define FMASK_VERT "*.vert"
+#define FMASK_KF   "*.kf"
+#define FMASK_KFA  "*.kfa"
+#define FMASK_KF_A "*.kf(a)"
 #define FMASK_KFM  "*.kfm"
 #define FMASK_NIF  "*.nif"
-#define FMASK_PROG "*.prog"
 #define FMASK_TGA  "*.tga"
-#define FMASK_VERT "*.vert"
+#define FMASK_DDS  "*.dds"
+#define FMASK_BMP  "*.bmp"
+#define FMASK_PNG  "*.png"
+#define FMASK_JPG  "*.jpg"
+#define FMASK_NIFCACHE "*.nifcache"
+#define FMASK_TEXCACHE "*.texcache"
+#define FMASK_PCPATCH "*.pcpatch"
+#define FMASK_JMI "*.jmi"
 
-#define AARG "ARG"
-#define NATEXTURERENDERDATA "ATextureRenderData"
-//#define "NiHeader"
+// XML attributes
+#define A_ARG "ARG"
+
+// XML tags
+#define T_ATEXTURERENDERDATA "ATextureRenderData"
+#define T_HEADER "Header"
+#define T_FOOTER "Footer"
+#define TA_HVERSION "Version"
+#define TA_HSTRING "Header String"
+#define TA_HUV "User Version"
+#define TA_HUV2	"User Version 2"
+#define TA_HCR "Copyright"
+
+// NiBlocks - artificial blocks
+#define B_NIHEADER "NiHeader"
+#define B_NIFOOTER "NiFooter"
 
 #endif /* __NS_BASE_H__ */

@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "basemodel.h"
 #include "niftypes.h"
 #include "options.h"
@@ -129,7 +131,7 @@ int BaseModel::evaluateString( NifItem * array, const QString & text ) const
 			{
 				NifItem * dim1 = parent;
 				
-				while ( left == "ARG" )
+				while ( left == A_ARG )
 				{
 					if ( ! dim1->parent() )	return 0;
 					left = dim1->arg();
@@ -667,7 +669,7 @@ public:
 		if ( v.type() == QVariant::String ) {
 			QString left = v.toString();
 			const NifItem * i = item;
-			while ( left == "ARG" ) {
+			while ( left == A_ARG ) {
 				if ( ! i->parent() )	return false;
 				i = i->parent();
 				left = i->arg();
@@ -742,7 +744,7 @@ bool BaseModel::evalConditionHelper( NifItem * item, const QString & cond ) cons
 		{
 			NifItem * i = item;
 			
-			while ( left == "ARG" )
+			while ( left == A_ARG )
 			{
 				if ( ! i->parent() )	return false;
 				i = i->parent();

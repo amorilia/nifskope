@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 // MinGW hack to ensure that GetLongPathNameW is defined
 #ifdef WIN32 
 #  ifdef __GNUC__
@@ -423,7 +425,7 @@ NifSkope::NifSkope()
 	tool->setObjectName( "toolbar" );
 	tool->setAllowedAreas( Qt::TopToolBarArea | Qt::BottomToolBarArea );
 	
-	QStringList fileExtensions( QStringList() << "*.nif" << "*.kf" << "*.kfa" << "*.kfm" << "*.nifcache" << "*.texcache" << "*.pcpatch" << "*.jmi" );
+	QStringList fileExtensions( QStringList() << FMASK_NIF << FMASK_KF << FMASK_KFA << FMASK_KFM << FMASK_NIFCACHE << FMASK_TEXCACHE << FMASK_PCPATCH << FMASK_JMI );
 	
 	// create the load portion of the toolbar
 	aLineLoad = tool->addWidget( lineLoad = new FileSelector( FileSelector::LoadFile, tr("&Load..."), QBoxLayout::RightToLeft, QKeySequence::Open ) );

@@ -564,7 +564,7 @@ class spTextureTemplate : public Spell
 		dlg.setLayout( lay );
 
 		FileSelector * file = new FileSelector( FileSelector::SaveFile, "File", QBoxLayout::RightToLeft );
-		file->setFilter( QStringList() << "*.tga" );
+		file->setFilter( QStringList() << FMASK_TGA );
 		lay->addWidget( file, 0, 0, 1, 2 );
 
 		lay->addWidget( new QLabel( "Size" ), 1, 0 );
@@ -835,7 +835,7 @@ public:
 				return true;
 			}
 		}
-		else if ( nif->inherits( iBlock, "ATextureRenderData" ) )
+		else if ( nif->inherits( iBlock, T_ATEXTURERENDERDATA ) )
 		{
 			int thisBlockNumber = nif->getBlockNumber( index );
 			QModelIndex iParent = nif->getBlock( nif->getParent( thisBlockNumber ) );
@@ -862,7 +862,7 @@ public:
 				file.append( "/" + nif->get<QString>( index, "File Name" ) );
 			}
 			QModelIndex iData = nif->getBlock( nif->getLink( index, "Pixel Data" ) );
-			QString filename = QFileDialog::getSaveFileName( 0, Spell::tr("Export texture"), file, "*.dds *.tga" );
+			QString filename = QFileDialog::getSaveFileName( 0, Spell::tr("Export texture"), file, FMASK_DDS" "FMASK_TGA );
 			if ( ! filename.isEmpty() )
 			{
 				if ( tex->exportFile( iData, filename ) )
@@ -875,12 +875,12 @@ public:
 			}
 			return index;
 		}
-		else if ( nif->inherits( iBlock, "ATextureRenderData" ) )
+		else if ( nif->inherits( iBlock, T_ATEXTURERENDERDATA ) )
 		{
 			TexCache * tex = new TexCache();
 			tex->setNifFolder( nif->getFolder() );
 			QString file = nif->getFolder();
-			QString filename = QFileDialog::getSaveFileName( 0, Spell::tr("Export texture"), file, "*.dds *.tga" );
+			QString filename = QFileDialog::getSaveFileName( 0, Spell::tr("Export texture"), file, FMASK_DDS" "FMASK_TGA );
 			if ( ! filename.isEmpty() )
 			{
 				tex->exportFile( index, filename );
@@ -1023,7 +1023,7 @@ void TexFlipDialog::textureAction( int i )
 	switch ( i )
 	{
 		case 0: // add
-			flipnames = QFileDialog::getOpenFileNames( this, Spell::tr("Choose texture file(s)"), nif->getFolder(), "*.dds *.tga *.bmp" );
+			flipnames = QFileDialog::getOpenFileNames( this, Spell::tr("Choose texture file(s)"), nif->getFolder(), FMASK_DDS" "FMASK_TGA" "FMASK_BMP );
 			listmodel->setStringList( listmodel->stringList() << flipnames );
 			break;
 		case 1: // remove

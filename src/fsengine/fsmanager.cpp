@@ -30,6 +30,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
 
 #include "fsmanager.h"
 #include "fsengine.h"
@@ -113,7 +114,7 @@ QStringList FSManager::regPathBSAList( QString regKey, QString dataDir )
 			dataPath += "/";
 		dataPath += dataDir;
 		QFSFileEngine fs( dataPath );
-		foreach ( QString fn, fs.entryList( QDir::Files, QStringList() << "*.bsa" ) )
+		foreach ( QString fn, fs.entryList( QDir::Files, QStringList() << FMASK_BSA ) )
 		{
 			list << dataPath + "/" + fn;
 		}
@@ -207,7 +208,7 @@ void FSSelector::sltAuto( bool x )
 
 void FSSelector::sltAdd()
 {
-	QStringList list = QFileDialog::getOpenFileNames( this, "Select resource files to add", QString(), "*.bsa" );
+	QStringList list = QFileDialog::getOpenFileNames( this, "Select resource files to add", QString(), FMASK_BSA );
 	
 	foreach ( QString an, list )
 	{
