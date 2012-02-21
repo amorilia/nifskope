@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "glscene.h"
 #include "glmesh.h"
 #include "glcontroller.h"
@@ -106,7 +108,7 @@ public:
 			for ( int r = 0; r < nif->rowCount( midx ); r++ )
 			{
 				QModelIndex iInterpolators, iInterpolatorWeights;
-				if( nif->checkVersion( 0, 0x14000005 ) )
+				if( nif->checkVersion( 0, NF_V20000005 ) )
 				{
 					iInterpolators = nif->getIndex( iBlock, "Interpolators" );
 				}

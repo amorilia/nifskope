@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 
 #include <QDebug>
@@ -170,7 +172,7 @@ public:
 			QModelIndex iData = nif->getBlock( nif->getLink( index, "Data" ) );
 			if ( nif->isNiBlock( index, "bhkMoppBvTreeShape" ) )
 			{
-				return ( nif->checkVersion( 0x14000004, 0x14000005 ) 
+				return ( nif->checkVersion( 0x14000004, NF_V20000005 ) 
 						|| nif->checkVersion( 0x14020007, 0x14020007 ) );
 			}			
 		}
@@ -198,7 +200,7 @@ public:
 			return iBlock;
 		
 		QVector<int> subshapeVerts;
-		if ( nif->checkVersion( 0x14000004, 0x14000005 ) ) {
+		if ( nif->checkVersion( 0x14000004, NF_V20000005 ) ) {
 			int nSubShapes = nif->get<int>( ibhkPackedNiTriStripsShape, "Num Sub Shapes" );
 			QModelIndex ihkSubShapes = nif->getIndex( ibhkPackedNiTriStripsShape, "Sub Shapes" );
 			subshapeVerts.resize(nSubShapes);
@@ -282,7 +284,7 @@ public:
 		{
 			if ( nif && ! idx.isValid() )
 				{
-					return ( nif->checkVersion( 0x14000004, 0x14000005 ) 
+					return ( nif->checkVersion( 0x14000004, NF_V20000005 ) 
 							|| nif->checkVersion( 0x14020007, 0x14020007 ) );
 				}
 		}

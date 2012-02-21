@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "nifmodel.h"
 #include "niftypes.h"
 #include "options.h"
@@ -55,9 +57,9 @@ QString NifModel::version2string( quint32 v )
 {
 	if ( v == 0 )	return QString();
 	QString s;
-	if ( v < 0x0303000D ) {
+	if ( v < NF_V03030013 ) {
 		//This is an old-style 2-number version with one period
-		s = QString::number( ( v >> 24 ) & 0xff, 10 ) + "."
+		s = QString::number( ( v >> 24 ) & 0xff, 10 ) + NF_VSEPARATOR
 		+ QString::number( ( v >> 16 ) & 0xff, 10 );
 
 		quint32 sub_num1 = ((v >> 8) & 0xff);
@@ -71,9 +73,9 @@ QString NifModel::version2string( quint32 v )
 		}
 	} else {
 		//This is a new-style 4-number version with 3 periods
-		s = QString::number( ( v >> 24 ) & 0xff, 10 ) + "."
-			+ QString::number( ( v >> 16 ) & 0xff, 10 ) + "."
-			+ QString::number( ( v >> 8 ) & 0xff, 10 ) + "."
+		s = QString::number( ( v >> 24 ) & 0xff, 10 ) + NF_VSEPARATOR
+			+ QString::number( ( v >> 16 ) & 0xff, 10 ) + NF_VSEPARATOR
+			+ QString::number( ( v >> 8 ) & 0xff, 10 ) + NF_VSEPARATOR
 			+ QString::number( v & 0xff, 10 );
 	}
 	return s;
@@ -83,9 +85,9 @@ quint32 NifModel::version2number( const QString & s )
 {
 	if ( s.isEmpty() )	return 0;
 
-	if ( s.contains( "." ) )
+	if ( s.contains( NF_VSEPARATOR ) )
 	{
-		QStringList l = s.split( "." );
+		QStringList l = s.split( NF_VSEPARATOR );
 
 		quint32 v = 0;
 
@@ -181,7 +183,7 @@ void NifModel::clear()
 	version = version2number( Options::startupVersion() );
 	if( !isVersionSupported(version) ) {
 		msg( Message() << tr("Unsupported 'Startup Version' %1 specified, reverting to 20.0.0.5").arg( Options::startupVersion() ).toAscii() );
-		version = 0x14000005;
+		version = NF_V20000005;
 	}
 	reset();
 	NifItem * item = getItem( getHeaderItem(), "Version" );
@@ -198,7 +200,7 @@ void NifModel::clear()
 
 	set<QString>( getHeaderItem(), "Header String", header_string );
 
-	if ( version == 0x14000005 ) {
+	if ( version == NF_V20000005 ) {
 		//Just set this if version is 20.0.0.5 for now.  Probably should be a separate option.
 		set<int>( getHeaderItem(), "User Version", 11 );
 		set<int>( getHeaderItem(), "User Version 2", 11 );
@@ -1052,7 +1054,7 @@ QVariant NifModel::data( const QModelIndex & idx, int role ) const
 			  if ( buddy.isValid() )
 				  return data( buddy, role );
 		  }
-		  else if (version <= 0x14000005)
+		  else if (version <= NF_V20000005)
 		  {
 			  buddy = getIndex( index, "Node Name Offset" );
 			  if ( buddy.isValid() )

@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 
 #include "stringpalette.h"
@@ -324,7 +326,7 @@ public:
 	{
 		return nif->inherits( index, "NiSequence" )
 			&& nif->getBlock( nif->getLink( index, "String Palette" ) ).isValid()
-			&& nif->checkVersion( 0x0A020000, 0x14000005 );
+			&& nif->checkVersion( 0x0A020000, NF_V20000005 );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -493,7 +495,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( ! index.isValid() && nif->checkVersion( 0x0A020000, 0x14000005 ) );
+		return ( ! index.isValid() && nif->checkVersion( 0x0A020000, NF_V20000005 ) );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )

@@ -99,8 +99,7 @@ src/gl/dds/dds_api.o: dds_api.h Stream.h DirectDrawSurface.h stdio.h
 src/gl/dds/ColorBlock.o: ColorBlock.h Image.h Common.h
 src/gl/dds/Stream.o: Stream.h stdio.h string.h
 src/gl/dds/BlockDXT.o: Common.h Stream.h ColorBlock.h BlockDXT.h
-src/gl/glmesh.o: glscene.h glmesh.h glcontroller.h gltools.h options.h GL/glext.h
-src/gl/gltex.moc.o: gltex.h
+src/gl/glmesh.o: ns_base.h glscene.h glmesh.h glcontroller.h gltools.h options.h GL/glext.h
 src/gl/glmarker.o: glmarker.h
 src/gl/GLee.o: stdio.h stdlib.h string.h GLee.h Carbon/Carbon.h
 src/gl/glparticles.o: glscene.h glcontroller.h glparticles.h math.h
@@ -111,8 +110,8 @@ src/gl/gltools.o: gltools.h nifmodel.h
 src/gl/gltexloaders.o: GLee.h gltexloaders.h dds/dds_api.h dds/DirectDrawSurface.h nifmodel.h
 src/gl/glnode.o: glscene.h glmarker.h glnode.h glcontroller.h options.h NvTriStrip/qtwrapper.h furniture.h constraints.h
 src/gl/renderer.o: GLee.h renderer.h gltex.h glmesh.h glscene.h glproperty.h options.h
-src/gl/glproperty.o: glproperty.h glcontroller.h glscene.h options.h
-src/nifmodel.o: nifmodel.h niftypes.h options.h config.h spellbook.h
+src/gl/glproperty.o: ns_base.h glproperty.h glcontroller.h glscene.h options.h
+src/nifmodel.o: ns_base.h nifmodel.h niftypes.h options.h config.h spellbook.h
 src/options.o: options.h config.h widgets/colorwheel.h widgets/fileselect.h widgets/floatslider.h widgets/groupbox.h
 src/message.o: message.h
 src/qhull.o: qhull.h math.h qhull/src/qhull_a.h
@@ -133,30 +132,30 @@ src/spells/headerstring.o: spellbook.h
 src/spells/color.o: spellbook.h widgets/colorwheel.h
 src/spells/mesh.o: mesh.h
 src/spells/transform.o: transform.h config.h widgets/nifeditors.h
-src/spells/moppcode.o: spellbook.h
+src/spells/moppcode.o: ns_base.h spellbook.h
 src/spells/skeleton.o: spellbook.h skeleton.h gl/gltools.h NvTriStrip/qtwrapper.h
 src/spells/normals.o: spellbook.h NvTriStrip/qtwrapper.h
 src/spells/fo3only.o: spellbook.h
 src/spells/morphctrl.o: spellbook.h
-src/spells/flags.o: spellbook.h
+src/spells/flags.o: ns_base.h spellbook.h
 src/spells/optimize.o: spellbook.h blocks.h mesh.h tangentspace.h transform.h
-src/spells/stringpalette.o: spellbook.h stringpalette.h
+src/spells/stringpalette.o: ns_base.h spellbook.h stringpalette.h
 src/spells/animation.o: spellbook.h options.h
 src/spells/bounds.o: spellbook.h widgets/nifeditors.h
 src/spells/strippify.o: spellbook.h NvTriStrip/qtwrapper.h
-src/spells/tangentspace.o: tangentspace.h NvTriStrip/qtwrapper.h
+src/spells/tangentspace.o: ns_base.h tangentspace.h NvTriStrip/qtwrapper.h
 src/spells/material.o: spellbook.h widgets/nifeditors.h
 src/spells/misc.o: misc.h
 src/spells/blocks.o: blocks.h config.h
-src/spells/texture.o: blocks.h texture.h spellbook.h gl/gltex.h config.h widgets/fileselect.h widgets/uvedit.h NvTriStrip/qtwrapper.h
+src/spells/texture.o: ns_base.h blocks.h texture.h spellbook.h gl/gltex.h config.h widgets/fileselect.h widgets/uvedit.h NvTriStrip/qtwrapper.h
 src/spells/light.o: spellbook.h widgets/nifeditors.h
-src/spells/sanitize.o: spellbook.h misc.h
+src/spells/sanitize.o: ns_base.h spellbook.h misc.h
 src/spells/havok.o: spellbook.h qhull.h NvTriStrip/qtwrapper.h blocks.h
 src/fsengine/fsmanager.o: fsmanager.h fsengine.h bsa.h options.h
 src/fsengine/fsengine.o: fsengine.h bsa.h
 src/fsengine/bsa.o: bsa.h
 src/importex/importex.o: nifskope.h widgets/nifview.h nifproxy.h nifmodel.h
-src/importex/obj.o: nifmodel.h NvTriStrip/qtwrapper.h gl/gltex.h
+src/importex/obj.o: ns_base.h nifmodel.h NvTriStrip/qtwrapper.h gl/gltex.h
 src/importex/3ds.o: 3ds.h spellbook.h NvTriStrip/qtwrapper.h gl/gltex.h
 src/widgets/refrbrowser.o: refrbrowser.h nifmodel.h
 src/widgets/nifeditors.o: nifeditors.h nifmodel.h colorwheel.h floatslider.h valueedit.h
@@ -285,6 +284,7 @@ xmlcheck.h: src/widgets/xmlcheck.h
 nifskope.h: src/nifskope.h
 include/nifitem.h: nifvalue.h nifexpr.h
 hacking.h: include/hacking.h
+ns_base.h: include/ns_base.h
 nifitem.h: include/nifitem.h
 %.h:
 	

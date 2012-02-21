@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 #include "misc.h"
 
@@ -180,7 +182,7 @@ public:
 				if ( iFileName.isValid() ) // adjust file path
 					nif->set<QString>( iFileName, nif->get<QString>( iFileName ).replace( "/", "\\" ) );
 				
-				if ( nif->checkVersion( 0x14000005, 0x14000005 ) )
+				if ( nif->checkVersion( NF_V20000005, NF_V20000005 ) )
 				{	// adjust format options (oblivion only)
 					nif->set<int>( iTexSrc, "Pixel Layout", 6 );
 					nif->set<int>( iTexSrc, "Use Mipmaps", 1 );

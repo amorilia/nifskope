@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 
 #include <QDialog>
@@ -442,13 +444,13 @@ public:
 			<< Spell::tr("Never"); // 7
 		
 		QComboBox * cmbFunc = dlgCombo( vbox, Spell::tr("Z Buffer Test Function"), compareFunc, chkEnable );
-		if ( nif->checkVersion( 0x0401000C, 0x14000005 ) )
+		if ( nif->checkVersion( 0x0401000C, NF_V20000005 ) )
 			cmbFunc->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Function" ) );
 		else
 			cmbFunc->setCurrentIndex( ( flags >> 2 ) & 0x07 );
 		
 		QCheckBox * setFlags = 0;
-		if( nif->checkVersion( 0x0401000C, 0x14000005 ) )
+		if( nif->checkVersion( 0x0401000C, NF_V20000005 ) )
 		{
 			setFlags = dlgCheck( vbox, Spell::tr("Set Flags also") );
 			setFlags->setChecked( flags > 3 );
@@ -462,7 +464,7 @@ public:
 		{
 			flags = ( flags & 0xfffe ) | ( chkEnable->isChecked() ? 1 : 0 );
 			flags = ( flags & 0xfffd ) | ( chkROnly->isChecked() ? 0 : 2 );
-			if ( nif->checkVersion( 0x0401000C, 0x14000005 ) )
+			if ( nif->checkVersion( 0x0401000C, NF_V20000005 ) )
 			{
 				nif->set<int>( nif->getBlock( index ), "Function", cmbFunc->currentIndex() );
 			}
@@ -623,7 +625,7 @@ public:
 		
 		// prior to 20.1.0.3 flags itself appears unused; after 10.0.1.2 and until 20.1.0.3 it is not present
 		// 20.0.0.5 is the last version with these values
-		if ( nif->checkVersion( 0, 0x14000005 ) )
+		if ( nif->checkVersion( 0, NF_V20000005 ) )
 		{
 			// set based on Stencil Enabled, Stencil Function, Fail Action, Z Fail Action, Pass Action, Draw Mode
 			// Possibly include Stencil Ref and Stencil Mask except they don't seem to ever vary from the default
@@ -649,7 +651,7 @@ public:
 		
 		if ( dlg.exec() && QDialog::Accepted )
 		{
-			if ( nif->checkVersion( 0, 0x14000005 ) )
+			if ( nif->checkVersion( 0, NF_V20000005 ) )
 			{
 				nif->set<bool>( nif->getBlock( index ), "Stencil Enabled", chkEnable->isChecked() );
 				nif->set<int>( nif->getBlock( index ), "Fail Action", cmbFail->currentIndex() );
@@ -682,7 +684,7 @@ public:
 		
 		// For versions < 20.1.0.3 (<= 20.0.0.5), give option to set flags regardless
 		QCheckBox * setFlags = 0;
-		if( nif->checkVersion( 0, 0x14000005 ) )
+		if( nif->checkVersion( 0, NF_V20000005 ) )
 		{
 			setFlags = dlgCheck( vbox, Spell::tr("Set Flags also") );
 			setFlags->setChecked( flags != 0 );
@@ -702,7 +704,7 @@ public:
 		QComboBox * cmbVert = dlgCombo( vbox, Spell::tr("Vertex Mode"), vertMode );
 		
 		// Use enums in preference to flags since they probably have a higher priority
-		if ( nif->checkVersion( 0, 0x14000005 ) )
+		if ( nif->checkVersion( 0, NF_V20000005 ) )
 		{
 			cmbLight->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Lighting Mode" ) );
 			cmbVert->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Vertex Mode" ) );
@@ -717,7 +719,7 @@ public:
 		
 		if ( dlg.exec() && QDialog::Accepted )
 		{
-			if ( nif->checkVersion( 0, 0x14000005 ) )
+			if ( nif->checkVersion( 0, NF_V20000005 ) )
 			{
 				nif->set<int>( nif->getBlock( index ), "Lighting Mode", cmbLight->currentIndex() );
 				nif->set<int>( nif->getBlock( index ), "Vertex Mode", cmbVert->currentIndex() );

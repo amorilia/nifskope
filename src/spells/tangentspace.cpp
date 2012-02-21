@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "tangentspace.h"
 
 #include "NvTriStrip/qtwrapper.h"
@@ -47,7 +49,7 @@ bool spTangentSpace::isApplicable( const NifModel * nif, const QModelIndex & ind
 	if ( !nif->get<bool>( iData, "Has Normals" ) )
 		return false;
 
-	if ( nif->checkVersion( 0x14000004, 0x14000005 ) && (nif->getUserVersion() == 11) )
+	if ( nif->checkVersion( 0x14000004, NF_V20000005 ) && (nif->getUserVersion() == 11) )
 		return true;
 
 	// If bethesda then we will configure the settings for the mesh.
@@ -211,7 +213,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 	//qWarning() << "unassigned vertices" << cnt;
 
 	bool isOblivion = false;
-	if ( nif->checkVersion( 0x14000004, 0x14000005 ) && (nif->getUserVersion() == 11) )
+	if ( nif->checkVersion( 0x14000004, NF_V20000005 ) && (nif->getUserVersion() == 11) )
 		isOblivion = true;
 
 	if (isOblivion)

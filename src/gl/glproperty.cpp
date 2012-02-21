@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "glproperty.h"
 #include "glcontroller.h"
 #include "glscene.h"
@@ -247,7 +249,7 @@ void ZBufferProperty::update( const NifModel * nif, const QModelIndex & block )
 		};
 
 		// This was checking version 0x10000001 ?
-		if ( nif->checkVersion( 0x04010012, 0x14000005 ) )
+		if ( nif->checkVersion( 0x04010012, NF_V20000005 ) )
 		{
 			depthFunc = depthMap[ nif->get<int>( iBlock, "Function" ) & 0x07 ];
 		}
@@ -302,7 +304,7 @@ void TexturingProperty::update( const NifModel * nif, const QModelIndex & proper
 				textures[t].iSource = nif->getBlock( nif->getLink( iTex, "Source" ), "NiSourceTexture" );
 				textures[t].coordset = nif->get<int>( iTex, "UV Set" );
 				int filterMode = 0, clampMode = 0;
-				if( nif->checkVersion( 0, 0x14000005 ) )
+				if( nif->checkVersion( 0, NF_V20000005 ) )
 				{
 					filterMode = nif->get<int>( iTex, "Filter Mode" );
 					clampMode = nif->get<int>( iTex, "Clamp Mode" );
@@ -979,7 +981,7 @@ void StencilProperty::update( const NifModel * nif, const QModelIndex & block )
 		//static const GLenum operations[8] = { GL_KEEP, GL_ZERO, GL_REPLACE, GL_INCR, GL_DECR, GL_INVERT, GL_KEEP, GL_KEEP };
 		
 		// ! glFrontFace( GL_CCW )
-		if ( nif->checkVersion( 0, 0x14000005 ) )
+		if ( nif->checkVersion( 0, NF_V20000005 ) )
 		{
 			switch ( nif->get<int>( iBlock, "Draw Mode" ) )
 			{

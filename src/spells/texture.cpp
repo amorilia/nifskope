@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "blocks.h"
 #include "texture.h"
 
@@ -689,7 +691,7 @@ public:
 	bool isApplicable( const NifModel * nif, const QModelIndex &index )
 	{
 		// Apply Mode field is defined in nifs up to version 20.0.0.5
-		return nif->checkVersion( 0, 0x14000005 ) && ! index.isValid();
+		return nif->checkVersion( 0, NF_V20000005 ) && ! index.isValid();
 	}
 	
 	QModelIndex cast( NifModel *nif, const QModelIndex &index )

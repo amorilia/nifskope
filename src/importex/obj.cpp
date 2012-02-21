@@ -30,7 +30,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-
+#include "ns_base.h"
 
 #include "nifmodel.h"
 
@@ -879,7 +879,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 			
 			nif->set<int>( iData, "Unknown Short 2", 0x4000 );
 		}
-		else if ( nif->getVersionNumber() == 0x14000005 )
+		else if ( nif->getVersionNumber() == NF_V20000005 )
 		{
 			// create experimental havok collision mesh
 			QVector<Vector3> verts;
