@@ -531,16 +531,16 @@ QVariant BaseModel::headerData( int section, Qt::Orientation orientation, int ro
 		case Qt::DisplayRole:
 			switch ( section )
 			{
-				case NameCol:		return tr(TA_NAME);
-				case TypeCol:		return tr("Type");
-				case ValueCol:		return tr("Value");
-				case ArgCol:		return tr("Argument");
-				case Arr1Col:		return tr("Array1");
-				case Arr2Col:		return tr("Array2");
-				case CondCol:		return tr("Condition");
-				case Ver1Col:		return tr("since");
-				case Ver2Col:		return tr("until");
-				case VerCondCol:	return tr("Version Condition");
+				case NameCol:		return tr(DN_NAME);
+				case TypeCol:		return tr(DN_TYPE);
+				case ValueCol:		return tr(DN_VAL);
+				case ArgCol:		return tr(DN_ARG);
+				case Arr1Col:		return tr(DN_ARR1);
+				case Arr2Col:		return tr(DN_ARR2);
+				case CondCol:		return tr(DN_COND);
+				case Ver1Col:		return tr(DN_VER1);
+				case Ver2Col:		return tr(DN_VER2);
+				case VerCondCol:	return tr(DN_VERCOND);
 				default:			return QVariant();
 			}
 		default:

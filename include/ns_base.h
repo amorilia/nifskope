@@ -77,7 +77,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define AV_ARG "ARG"
 #define AV_TEMPLATE "TEMPLATE"
 
-// XML tags
+// XML "tag" "tag add"
 #define T_ATEXTURERENDERDATA "ATextureRenderData"
 #define T_NIDATASTREAM "NiDataStream"
 	#define TA_NIDS_USAGE "Usage"
@@ -125,5 +125,17 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // XML type names
 #define TN_STRING "string"
+
+// display names - column headers
+#define DN_NAME "Name"
+#define DN_TYPE "Type"
+#define DN_VAL "Value"
+#define DN_ARG "Argument"
+#define DN_ARR1 "Array1"
+#define DN_ARR2 "Array2"
+#define DN_COND "Condition"
+#define DN_VER1 "since"
+#define DN_VER2 "until"
+#define DN_VERCOND "Version Condition"
 
 #endif /* __NS_BASE_H__ */
