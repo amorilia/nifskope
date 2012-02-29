@@ -669,7 +669,7 @@ void Options::textureFolderAutoDetect()
 	{
 		QSettings reg( "HKEY_LOCAL_MACHINE\\SOFTWARE\\Bethesda Softworks\\Oblivion", QSettings::NativeFormat );
 		QDir dir( reg.value( "Installed Path" ).toString() );
-		if ( dir.exists() && dir.cd( "Data" ) )
+		if ( dir.exists() && dir.cd( TA_DATA ) )
 		{
 			game_list.append( "TES4: Oblivion\n" );
 
@@ -759,7 +759,7 @@ void Options::textureFolderAutoDetect()
    {
       QSettings reg( "HKEY_LOCAL_MACHINE\\SOFTWARE\\Bethesda Softworks\\Fallout3", QSettings::NativeFormat );
       QDir dir( reg.value( "Installed Path" ).toString() );
-      if ( dir.exists() && dir.cd( "Data" ) )
+      if ( dir.exists() && dir.cd( TA_DATA ) )
       {
          game_list.append( "Fallout 3\n" );
 

@@ -54,7 +54,7 @@ static QModelIndex getShape( const NifModel * nif, const QModelIndex & index )
 	if ( nif->isNiBlock( iShape, "NiTriBasedGeomData" ) )
 		iShape = nif->getBlock( nif->getParent( nif->getBlockNumber( iShape ) ) );
 	if ( nif->isNiBlock( iShape, "NiTriShape" ) || nif->isNiBlock( index, "NiTriStrips" ) )
-		if ( nif->getBlock( nif->getLink( iShape, "Data" ), "NiTriBasedGeomData" ).isValid() )
+		if ( nif->getBlock( nif->getLink( iShape, TA_DATA ), "NiTriBasedGeomData" ).isValid() )
 			return iShape;
 	return QModelIndex();
 }
@@ -62,15 +62,15 @@ static QModelIndex getShape( const NifModel * nif, const QModelIndex & index )
 //! Find triangle geometry
 /*!
  * Subtly different to getShape(); that requires
- * <tt>nif->getBlock( nif->getLink( getShape( nif, index ), "Data" ) );</tt>
+ * <tt>nif->getBlock( nif->getLink( getShape( nif, index ), TA_DATA ) );</tt>
  * to return the same result.
  */
 static QModelIndex getTriShapeData( const NifModel * nif, const QModelIndex & index )
 {
 	QModelIndex iData = nif->getBlock( index );
 	if ( nif->isNiBlock( index, "NiTriShape" ) )
-		iData = nif->getBlock( nif->getLink( index, "Data" ) );
-	if ( nif->isNiBlock( iData, "NiTriShapeData" ) )
+		iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
+	if ( nif->isNiBlock( iData, T_NITRISHAPEDATA ) )
 		return iData;
 	else return QModelIndex();
 }
@@ -199,9 +199,9 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 		
 		// process NiSkinData
 		
-		QModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), "NiSkinInstance" );
+		QModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), T_NISKININSTANCE );
 		
-		QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInst, "Data" ), "NiSkinData" );
+		QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), "NiSkinData" );
 		QModelIndex iBones = nif->getIndex( iSkinData, "Bone List" );
 		for ( int b = 0; b < nif->rowCount( iBones ); b++ )
 		{
@@ -482,7 +482,7 @@ public:
 		try
 		{
 			QModelIndex iShape = getShape( nif, index );
-			QModelIndex iData = nif->getBlock( nif->getLink( iShape, "Data" ) );
+			QModelIndex iData = nif->getBlock( nif->getLink( iShape, TA_DATA ) );
 			
 			// read the data
 			
@@ -596,7 +596,7 @@ public:
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iShape = getShape( nif, index );
-		QModelIndex iData = nif->getBlock( nif->getLink( iShape, "Data" ) );
+		QModelIndex iData = nif->getBlock( nif->getLink( iShape, TA_DATA ) );
 		
 		removeWasteVertices( nif, iData, iShape );
 		

@@ -175,8 +175,8 @@ public:
 	}
 	bool doShape( NifModel * nif, const QModelIndex & index, const Transform & tparent, const TransMap & world, const TransMap & bones )
 	{
-		QModelIndex iShapeData = nif->getBlock( nif->getLink( index, "Data" ) );
-		QModelIndex iSkinInstance = nif->getBlock( nif->getLink( index, "Skin Instance" ), "NiSkinInstance" );
+		QModelIndex iShapeData = nif->getBlock( nif->getLink( index, TA_DATA ) );
+		QModelIndex iSkinInstance = nif->getBlock( nif->getLink( index, "Skin Instance" ), T_NISKININSTANCE );
 		if ( ! iSkinInstance.isValid() || ! iShapeData.isValid() )
 			return false;
 		QStringList names;
@@ -192,7 +192,7 @@ public:
 				else
 					names.append("");
 			}
-		QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInstance, "Data" ), "NiSkinData" );
+		QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInstance, TA_DATA ), "NiSkinData" );
 		if ( !iSkinData.isValid() )
 			return false;
 		QModelIndex iBones = nif->getIndex( iSkinData, "Bone List" );
@@ -298,10 +298,10 @@ public:
 	{
 		if ( nif->isNiBlock( iShape, "NiTriShape" ) || nif->isNiBlock( iShape, "NiTriStrips" ) )
 		{
-			QModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), "NiSkinInstance" );
+			QModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), T_NISKININSTANCE );
 			if ( iSkinInst.isValid() )
 			{
-				return nif->getBlock( nif->getLink( iSkinInst, "Data" ), "NiSkinData" ).isValid();
+				return nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), "NiSkinData" ).isValid();
 			}
 		}
 		return false;
@@ -354,12 +354,12 @@ public:
 		{
 			QPersistentModelIndex iData;
 			if ( iShapeType == "NiTriShape" ) {
-				iData = nif->getBlock( nif->getLink( iShape, "Data" ), "NiTriShapeData" );
+				iData = nif->getBlock( nif->getLink( iShape, TA_DATA ), T_NITRISHAPEDATA );
 			} else if ( iShapeType == "NiTriStrips" ) {
-				iData = nif->getBlock( nif->getLink( iShape, "Data" ), "NiTriStripsData" );
+				iData = nif->getBlock( nif->getLink( iShape, TA_DATA ), T_NITRISTRIPSDATA );
 			}
-			QPersistentModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), "NiSkinInstance" );
-			QPersistentModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInst, "Data" ), "NiSkinData" );
+			QPersistentModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), T_NISKININSTANCE );
+			QPersistentModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), "NiSkinData" );
 			QModelIndex iSkinPart = nif->getBlock( nif->getLink( iSkinInst, "Skin Partition" ), "NiSkinPartition" );
 			if ( ! iSkinPart.isValid() )
 				iSkinPart = nif->getBlock( nif->getLink( iSkinData, "Skin Partition" ), "NiSkinPartition" );
@@ -1179,9 +1179,9 @@ public:
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & iSkinData )
 	{
-		QModelIndex iSkinInstance = nif->getBlock( nif->getParent( nif->getBlockNumber( iSkinData ) ), "NiSkinInstance" );
+		QModelIndex iSkinInstance = nif->getBlock( nif->getParent( nif->getBlockNumber( iSkinData ) ), T_NISKININSTANCE );
 		QModelIndex iMesh = nif->getBlock( nif->getParent( nif->getBlockNumber( iSkinInstance ) ) );
-		QModelIndex iMeshData = nif->getBlock( nif->getLink( iMesh, "Data" ) );
+		QModelIndex iMeshData = nif->getBlock( nif->getLink( iMesh, TA_DATA ) );
 		int skelRoot = nif->getLink( iSkinInstance, "Skeleton Root" );
 		if ( ! nif->inherits( iMeshData, "NiTriBasedGeomData" ) || skelRoot < 0 || skelRoot != nif->getParent( nif->getBlockNumber( iMesh ) ) )
 			return iSkinData;
@@ -1360,8 +1360,8 @@ public:
 	void doShapes( NifModel * nif, const QModelIndex & index )
 	{
 		//qWarning() << "Entering doShapes";
-		QModelIndex iData = nif->getBlock( nif->getLink( index, "Data" ) );
-		QModelIndex iSkinInstance = nif->getBlock( nif->getLink( index, "Skin Instance" ), "NiSkinInstance" );
+		QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
+		QModelIndex iSkinInstance = nif->getBlock( nif->getLink( index, "Skin Instance" ), T_NISKININSTANCE );
 		if ( iData.isValid() && iSkinInstance.isValid() )
 		{
 			// from spScaleVertices
@@ -1398,7 +1398,7 @@ public:
 			
 			// from spFixSkeleton - get the bones from the skin data
 			// weirdness with rounding, sometimes...? probably "good enough" for 99% of cases
-			QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInstance, "Data" ), "NiSkinData" );
+			QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInstance, TA_DATA ), "NiSkinData" );
 			if ( ! iSkinData.isValid() ) return;
 			QModelIndex iBones = nif->getIndex( iSkinData, "Bone List" );
 			if ( ! iBones.isValid() ) return;
@@ -1433,7 +1433,7 @@ public:
 	void doKeyframes( NifModel * nif, QModelIndex & index )
 	{
 		// do stuff
-		QModelIndex keyframeData = nif->getBlock( nif->getLink( index, "Data" ), "NiKeyframeData" );
+		QModelIndex keyframeData = nif->getBlock( nif->getLink( index, TA_DATA ), "NiKeyframeData" );
 		if ( ! keyframeData.isValid() ) return;
 		QModelIndex iQuats = nif->getIndex( keyframeData, "Quaternion Keys" );
 		if ( iQuats.isValid() )

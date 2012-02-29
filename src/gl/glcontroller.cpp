@@ -184,7 +184,7 @@ void Controller::setInterpolator( const QModelIndex & index )
 	
 	const NifModel * nif = static_cast<const NifModel *>( index.model() );
 	if ( nif )
-		iData = nif->getBlock( nif->getLink( iInterpolator, "Data" ) );
+		iData = nif->getBlock( nif->getLink( iInterpolator, TA_DATA ) );
 }
 
 bool Controller::update( const NifModel * nif, const QModelIndex & index )
@@ -200,14 +200,14 @@ bool Controller::update( const NifModel * nif, const QModelIndex & index )
 		active = flags & 0x08;
 		extrapolation = (Extrapolation) ( ( flags & 0x06 ) >> 1 );
 		
-		QModelIndex idx = nif->getBlock( nif->getLink( iBlock, "Interpolator" ) );
+		QModelIndex idx = nif->getBlock( nif->getLink( iBlock, TA_INTERPOLATOR ) );
 		if ( idx.isValid() )
 		{
 			setInterpolator( idx );
 		}
 		else
 		{
-			idx = nif->getBlock( nif->getLink( iBlock, "Data" ) );
+			idx = nif->getBlock( nif->getLink( iBlock, TA_DATA ) );
 			if ( idx.isValid() )
 				iData = idx;
 		}
@@ -215,7 +215,7 @@ bool Controller::update( const NifModel * nif, const QModelIndex & index )
 	
 	if ( iInterpolator.isValid() && (iInterpolator == index) )
 	{
-		iData = nif->getBlock( nif->getLink( iInterpolator, "Data" ) );
+		iData = nif->getBlock( nif->getLink( iInterpolator, TA_DATA ) );
 	}
 	
 	return (index.isValid() && ((index == iBlock) || (index == iInterpolator) || (index == iData)));
@@ -614,7 +614,7 @@ bool TransformInterpolator::update( const NifModel * nif, const QModelIndex & in
 {
 	if ( Interpolator::update( nif, index ) )
 	{
-		QModelIndex iData = nif->getBlock( nif->getLink( index, "Data" ), "NiTransformData" );
+		QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ), "NiTransformData" );
 		iTranslations = nif->getIndex( iData, "Translations" );
 		iRotations = nif->getIndex( iData, "Rotations" );
 		if ( ! iRotations.isValid() ) iRotations = iData;

@@ -45,6 +45,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NF_V10020000 0x0A020000
 #define NF_V10000000 0x0A000000
 #define NF_V20000004 0x14000004
+#define NF_V20050000 0x14050000
 
 #define NF_H1 "NetImmerse File Format, Version "
 #define NF_H2 "Gamebryo File Format, Version "
@@ -76,6 +77,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // XML attribute values
 #define AV_ARG "ARG"
 #define AV_TEMPLATE "TEMPLATE"
+#define AV_SEMANTICDATA_TEXTCOORD "TEXCOORD"
+#define AV_SEMANTICDATA_POSITION "POSITION"
+#define AV_SEMANTICDATA_NORMAL "NORMAL"
+#define AV_SEMANTICDATA_INDEX "INDEX"
+#define AV_COMPONENTFORMAT_F_FLOAT32_3 "F_FLOAT32_3"
+#define AV_MESHPRMITIVETYPE_MESH_PRIMITIVE_TRIANGLES "MESH_PRIMITIVE_TRIANGLES"
 
 // XML "tag" "tag add"
 #define T_ATEXTURERENDERDATA "ATextureRenderData"
@@ -104,6 +111,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define T_NIIMAGE "NiImage"
 #define T_NISTRINGEXTRADATA "NiStringExtraData"
 #define T_CONTROLLERLINK "ControllerLink"
+#define T_NIFLOATINTERPOLATOR "NiFloatInterpolator"
+#define T_NIFLOATDATA "NiFloatData"
+#define T_NITRISHAPEDATA "NiTriShapeData"
+#define T_NITRISTRIPSDATA "NiTriStripsData"
+#define T_NISKININSTANCE "NiSkinInstance"
+#define T_NIGEOMMORPHERCONTROLLER "NiGeomMorpherController"
+#define T_NIUVCONTROLLER "NiUVController"
 
 #define TA_FILENAME "File Name"
 #define TA_STRINGDATA "String Data"
@@ -117,6 +131,22 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TA_TEXTURESOURCE "Texture Source"
 #define TA_INDEX "Index"
 #define TA_STRING "String"
+#define TA_MORPHS "Morphs"
+#define TA_INTERPOLATOR "Interpolator"
+#define TA_INTERPOLATORS "Interpolators"
+#define TA_INTERPOLATORWEIGHTS "Interpolator Weights"
+#define TA_DATA "Data"
+#define TA_VECTORS "Vectors"
+#define TA_UVGROUPS "UV Groups"
+#define TA_NUMSUBMESHES "Num Submeshes"
+#define TA_DATAS "Datas"
+#define TA_PRIMITIVETYPE "Primitive Type"
+#define TA_NUMREGIONS "Num Regions"
+#define TA_REGIONS "Regions"
+#define TA_STARTINDEX "Start Index"
+#define TA_NUMINDICES "Num Indices"
+#define TA_NUMCOMPONENTS "Num Components"
+#define TA_COMPONENTFORMATS "Component Formats"
 
 // NiBlocks - artificial blocks
 #define B_NIHEADER "NiHeader"
@@ -125,6 +155,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // XML type names
 #define TN_STRING "string"
+#define TN_MESHPRIMITIVETYPE "MeshPrimitiveType"
+#define TN_COMPONENTFORMAT "ComponentFormat"
 
 // display names - column headers
 #define DN_NAME "Name"

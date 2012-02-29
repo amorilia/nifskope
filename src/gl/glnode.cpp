@@ -273,7 +273,7 @@ public:
 					{
 						QModelIndex iCB = iCtrlBlcks.child( r, 0 );
 						
-						QModelIndex iInterpolator = nif->getBlock( nif->getLink( iCB, "Interpolator" ), "NiInterpolator" );
+						QModelIndex iInterpolator = nif->getBlock( nif->getLink( iCB, TA_INTERPOLATOR ), "NiInterpolator" );
 						
 						QString nodename = nif->get<QString>( iCB, TA_NODENAME );
 						if ( nodename.isEmpty() ) {
@@ -402,7 +402,7 @@ public:
 		{
 			// iData already points to the NiVisData
 			// note that nif.xml needs to have "Keys" not "Vis Keys" for interpolate() to work
-			//iKeys = nif->getIndex( iData, "Data" );
+			//iKeys = nif->getIndex( iData, TA_DATA );
 			return true;
 		}
 		return false;
@@ -1014,7 +1014,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 		QModelIndex iStrips = nif->getIndex( iShape, "Strips Data" );
 		for ( int r = 0; r < nif->rowCount( iStrips ); r++ )
 		{
-			QModelIndex iStripData = nif->getBlock( nif->getLink( iStrips.child( r, 0 ) ), "NiTriStripsData" );
+			QModelIndex iStripData = nif->getBlock( nif->getLink( iStrips.child( r, 0 ) ), T_NITRISTRIPSDATA );
 			if ( iStripData.isValid() )
 			{
 				QVector<Vector3> verts = nif->getArray<Vector3>( iStripData, "Vertices" );
@@ -1080,7 +1080,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 			int s_nodeId = ID2COLORKEY( nif->getBlockNumber( iShape ) );
 			glColor4ubv( (GLubyte *)&s_nodeId );
 		}
-		QModelIndex iData = nif->getBlock( nif->getLink( iShape, "Data" ) );
+		QModelIndex iData = nif->getBlock( nif->getLink( iShape, TA_DATA ) );
 		if ( iData.isValid() )
 		{
 			QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );

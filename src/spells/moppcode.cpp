@@ -169,7 +169,7 @@ public:
 			return false;
 		if ( TheHavokCode.Initialize() )
 		{
-			QModelIndex iData = nif->getBlock( nif->getLink( index, "Data" ) );
+			QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
 			if ( nif->isNiBlock( index, "bhkMoppBvTreeShape" ) )
 			{
 				return ( nif->checkVersion( NF_V20000004, NF_V20000005 ) 
@@ -195,7 +195,7 @@ public:
 			return iBlock;
 		}
 		
-		QModelIndex ihkPackedNiTriStripsData = nif->getBlock( nif->getLink( ibhkPackedNiTriStripsShape, "Data" ) );
+		QModelIndex ihkPackedNiTriStripsData = nif->getBlock( nif->getLink( ibhkPackedNiTriStripsShape, TA_DATA ) );
 		if ( !nif->isNiBlock( ihkPackedNiTriStripsData, "hkPackedNiTriStripsData" ))
 			return iBlock;
 		

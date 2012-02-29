@@ -70,7 +70,7 @@ class spStrippify : public Spell
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
 		QPersistentModelIndex idx = index;
-		QPersistentModelIndex iData = nif->getBlock( nif->getLink( idx, "Data" ), "NiTriShapeData" );
+		QPersistentModelIndex iData = nif->getBlock( nif->getLink( idx, TA_DATA ), T_NITRISHAPEDATA );
 		
 		if ( ! iData.isValid() )	return idx;
 		
@@ -97,8 +97,8 @@ class spStrippify : public Spell
 		if ( strips.count() <= 0 )
 			return idx;
 		
-		nif->insertNiBlock( "NiTriStripsData", nif->getBlockNumber( idx )+1 );
-		QModelIndex iStripData = nif->getBlock( nif->getBlockNumber( idx ) + 1, "NiTriStripsData" );
+		nif->insertNiBlock( T_NITRISTRIPSDATA, nif->getBlockNumber( idx )+1 );
+		QModelIndex iStripData = nif->getBlock( nif->getBlockNumber( idx ) + 1, T_NITRISTRIPSDATA );
 		if ( iStripData.isValid() )
 		{
 			copyValue<int>( nif, iStripData, iData, TA_NUMVERTICES );
@@ -168,8 +168,8 @@ class spStrippify : public Spell
 				nif->set<int>( iStripData, "Num Triangles", z );
 				
 				nif->setData( idx.sibling( idx.row(), NifModel::NameCol ), "NiTriStrips" );
-				int lnk = nif->getLink( idx, "Data" );
-				nif->setLink( idx, "Data", nif->getBlockNumber( iStripData ) );
+				int lnk = nif->getLink( idx, TA_DATA );
+				nif->setLink( idx, TA_DATA, nif->getBlockNumber( iStripData ) );
 				nif->removeNiBlock( lnk );
 			}
 		}
@@ -227,7 +227,7 @@ class spTriangulate : public Spell
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
 		QPersistentModelIndex idx = index;
-		QPersistentModelIndex iStripData = nif->getBlock( nif->getLink( idx, "Data" ), "NiTriStripsData" );
+		QPersistentModelIndex iStripData = nif->getBlock( nif->getLink( idx, TA_DATA ), T_NITRISTRIPSDATA );
 		
 		if ( ! iStripData.isValid() )	return idx;
 		
@@ -248,8 +248,8 @@ class spTriangulate : public Spell
 		
 		QVector<Triangle> triangles = triangulate ( strips );
 		
-		nif->insertNiBlock( "NiTriShapeData", nif->getBlockNumber( idx ) + 1 );
-		QModelIndex iTriData = nif->getBlock( nif->getBlockNumber( idx ) + 1, "NiTriShapeData" );
+		nif->insertNiBlock( T_NITRISHAPEDATA, nif->getBlockNumber( idx ) + 1 );
+		QModelIndex iTriData = nif->getBlock( nif->getBlockNumber( idx ) + 1, T_NITRISHAPEDATA );
 		if ( iTriData.isValid() )
 		{
 			copyValue<int>( nif, iTriData, iStripData, TA_NUMVERTICES );
@@ -307,8 +307,8 @@ class spTriangulate : public Spell
 			}
 			
 			nif->setData( idx.sibling( idx.row(), NifModel::NameCol ), "NiTriShape" );
-			int lnk = nif->getLink( idx, "Data" );
-			nif->setLink( idx, "Data", nif->getBlockNumber( iTriData ) );
+			int lnk = nif->getLink( idx, TA_DATA );
+			nif->setLink( idx, TA_DATA, nif->getBlockNumber( iTriData ) );
 			nif->removeNiBlock( lnk );
 		}
 		return idx;
@@ -327,9 +327,9 @@ public:
 	static QModelIndex getStripsData( const NifModel * nif, const QModelIndex & index )
 	{
 		if ( nif->isNiBlock( index, "NiTriStrips" ) )
-			return nif->getBlock( nif->getLink( index, "Data" ), "NiTriStripsData" );
+			return nif->getBlock( nif->getLink( index, TA_DATA ), T_NITRISTRIPSDATA );
 		else
-			return nif->getBlock( index, "NiTriStripsData" );
+			return nif->getBlock( index, T_NITRISTRIPSDATA );
 	}
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )

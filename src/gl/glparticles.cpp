@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "glscene.h"
 #include "glcontroller.h"
 #include "glparticles.h"
@@ -175,7 +177,7 @@ public:
 				}
 				else if ( name == "NiParticleColorModifier" )
 				{
-					iColorKeys = nif->getIndex( nif->getBlock( nif->getLink( iExtra, "Color Data" ), "NiColorData" ), "Data" );
+					iColorKeys = nif->getIndex( nif->getBlock( nif->getLink( iExtra, "Color Data" ), "NiColorData" ), TA_DATA );
 				}
 				else if ( name == "NiGravity" )
 				{

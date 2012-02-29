@@ -70,13 +70,13 @@ public:
 		if( ! nif->inherits( index, "NiTriBasedGeom" ) || ! nif->checkVersion( NF_V10000100, 0 ) )
 			return false;
 		
-		QModelIndex iData = nif->getBlock( nif->getLink( index, "Data" ) );
+		QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
 		return iData.isValid();
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex iData = nif->getBlock( nif->getLink( index, "Data" ) );
+		QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
 		if( !iData.isValid() )
 			return index;
 		
@@ -418,7 +418,7 @@ public:
 		
 		foreach ( qint32 lData, nif->getLinkArray( iShape, "Strips Data" ) )
 		{
-			QModelIndex iData = nif->getBlock( lData, "NiTriStripsData" );
+			QModelIndex iData = nif->getBlock( lData, T_NITRISTRIPSDATA );
 			
 			if ( iData.isValid() )
 			{
@@ -474,7 +474,7 @@ public:
 		nif->setArray<float>( iPackedShape, "Unknown Floats 2", QVector<float>() << 1.0f << 1.0f << 1.0f );
 		
 		QModelIndex iPackedData = nif->insertNiBlock( "hkPackedNiTriStripsData", nif->getBlockNumber( iPackedShape ) );
-		nif->setLink( iPackedShape, "Data", nif->getBlockNumber( iPackedData ) );
+		nif->setLink( iPackedShape, TA_DATA, nif->getBlockNumber( iPackedData ) );
 		
 		nif->set<int>( iPackedData, "Num Triangles", triangles.count() );
 		QModelIndex iTriangles = nif->getIndex( iPackedData, "Triangles" );

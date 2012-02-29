@@ -40,9 +40,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 bool spTangentSpace::isApplicable( const NifModel * nif, const QModelIndex & index )
 {
-	QModelIndex iData = nif->getBlock( nif->getLink( index, "Data" ) );
-	if ( !( nif->isNiBlock( index, "NiTriShape" ) && nif->isNiBlock( iData, "NiTriShapeData" ) )
-		&& !( nif->isNiBlock( index, "NiTriStrips" ) && nif->isNiBlock( iData, "NiTriStripsData" ) ) )
+	QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
+	if ( !( nif->isNiBlock( index, "NiTriShape" ) && nif->isNiBlock( iData, T_NITRISHAPEDATA ) )
+		&& !( nif->isNiBlock( index, "NiTriStrips" ) && nif->isNiBlock( iData, T_NITRISTRIPSDATA ) ) )
 		return false;
 
 	// early exit of normals are missing
@@ -67,7 +67,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 {
 	QPersistentModelIndex iShape = iBlock;
 	
-	QModelIndex iData = nif->getBlock( nif->getLink( iShape, "Data" ) );
+	QModelIndex iData = nif->getBlock( nif->getLink( iShape, TA_DATA ) );
 	
 	QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );
 	QVector<Vector3> norms = nif->getArray<Vector3>( iData, "Normals" );

@@ -104,17 +104,17 @@ public:
 			qDeleteAll( morph );
 			morph.clear();
 			
-			QModelIndex midx = nif->getIndex( iData, "Morphs" );
+			QModelIndex midx = nif->getIndex( iData, TA_MORPHS );
 			for ( int r = 0; r < nif->rowCount( midx ); r++ )
 			{
 				QModelIndex iInterpolators, iInterpolatorWeights;
 				if( nif->checkVersion( 0, NF_V20000005 ) )
 				{
-					iInterpolators = nif->getIndex( iBlock, "Interpolators" );
+					iInterpolators = nif->getIndex( iBlock, TA_INTERPOLATORS );
 				}
 				else if( nif->checkVersion( NF_V20010003, 0 ) )
 				{
-					iInterpolatorWeights = nif->getIndex( iBlock, "Interpolator Weights" );
+					iInterpolatorWeights = nif->getIndex( iBlock, TA_INTERPOLATORWEIGHTS );
 				}
 				
 				QModelIndex iKey = midx.child( r, 0 );
@@ -124,17 +124,17 @@ public:
 				// this is ugly...
 				if ( iInterpolators.isValid() )
 				{
-					key->iFrames = nif->getIndex( nif->getBlock( nif->getLink( nif->getBlock( nif->getLink( iInterpolators.child( r, 0 ) ), "NiFloatInterpolator" ), "Data" ), "NiFloatData" ), "Data" );
+					key->iFrames = nif->getIndex( nif->getBlock( nif->getLink( nif->getBlock( nif->getLink( iInterpolators.child( r, 0 ) ), T_NIFLOATINTERPOLATOR ), TA_DATA ), T_NIFLOATDATA ), TA_DATA );
 				}
 				else if( iInterpolatorWeights.isValid() )
 				{
-					key->iFrames = nif->getIndex( nif->getBlock( nif->getLink( nif->getBlock( nif->getLink( iInterpolatorWeights.child( r, 0 ), "Interpolator" ), "NiFloatInterpolator" ), "Data" ), "NiFloatData" ), "Data" );
+					key->iFrames = nif->getIndex( nif->getBlock( nif->getLink( nif->getBlock( nif->getLink( iInterpolatorWeights.child( r, 0 ), TA_INTERPOLATOR ), T_NIFLOATINTERPOLATOR ), TA_DATA ), T_NIFLOATDATA ), TA_DATA );
 				}
 				else
 				{
 					key->iFrames = iKey;
 				}
-				key->verts = nif->getArray<Vector3>( nif->getIndex( iKey, "Vectors" ) );
+				key->verts = nif->getArray<Vector3>( nif->getIndex( iKey, TA_VECTORS ) );
 				
 				morph.append( key );
 			}
@@ -160,7 +160,7 @@ public:
 	void update( float time )
 	{
 		const NifModel * nif = static_cast<const NifModel *>( iData.model() );
-		QModelIndex uvGroups = nif->getIndex( iData, "UV Groups" );
+		QModelIndex uvGroups = nif->getIndex( iData, TA_UVGROUPS );
 
 		// U trans, V trans, U scale, V scale
 		// see NiUVData compound in nif.xml
@@ -253,10 +253,10 @@ void Mesh::update( const NifModel * nif, const QModelIndex & index )
 		// NiMesh presents a problem because we are almost guaranteed to have multiple "data" blocks
 		// for eg. vertices, indices, normals, texture data etc.
 #ifndef QT_NO_DEBUG
-		if ( nif->checkVersion( 0x14050000, 0 ) && nif->inherits( iBlock, "NiMesh" ) )
+		if ( nif->checkVersion( NF_V20050000, 0 ) && nif->inherits( iBlock, "NiMesh" ) )
 		{
-			qWarning() << nif->get<ushort>( iBlock, "Num Submeshes" ) << " submeshes";
-			iData = nif->getIndex( iBlock, "Datas" );
+			qWarning() << nif->get<ushort>( iBlock, TA_NUMSUBMESHES ) << " submeshes";
+			iData = nif->getIndex( iBlock, TA_DATAS );
 			if ( iData.isValid() )
 			{
 				qWarning() << "Got " << nif->rowCount( iData ) << " rows of data";
@@ -275,7 +275,7 @@ void Mesh::update( const NifModel * nif, const QModelIndex & index )
 			QModelIndex iChild = nif->getBlock( link );
 			if ( ! iChild.isValid() ) continue;
 			QString name = nif->itemName( iChild );
-			if ( nif->inherits(iChild, "NiTriShapeData") || nif->inherits(iChild, "NiTriStripsData" ) )
+			if ( nif->inherits(iChild, T_NITRISHAPEDATA) || nif->inherits(iChild, T_NITRISTRIPSDATA ) )
 			{
 				if ( ! iData.isValid() )
 				{
@@ -287,7 +287,7 @@ void Mesh::update( const NifModel * nif, const QModelIndex & index )
 					qWarning() << "shape block" << id() << "has multiple data blocks";
 				}
 			}
-			else if ( nif->inherits(iChild, "NiSkinInstance" ) )
+			else if ( nif->inherits(iChild, T_NISKININSTANCE ) )
 			{
 				if ( ! iSkin.isValid() )
 				{
@@ -305,13 +305,13 @@ void Mesh::update( const NifModel * nif, const QModelIndex & index )
 
 void Mesh::setController( const NifModel * nif, const QModelIndex & iController )
 {
-	if ( nif->itemName( iController ) == "NiGeomMorpherController" )
+	if ( nif->itemName( iController ) == T_NIGEOMMORPHERCONTROLLER )
 	{
 		Controller * ctrl = new MorphController( this, iController );
 		ctrl->update( nif, iController );
 		controllers.append( ctrl );
 	}
-	else if ( nif->itemName( iController ) == "NiUVController" )
+	else if ( nif->itemName( iController ) == T_NIUVCONTROLLER )
 	{
 		Controller * ctrl = new UVController( this, iController );
 		ctrl->update( nif, iController );
@@ -350,13 +350,13 @@ void Mesh::transform()
 		upData = false;
 		
 		// update for NiMesh
-		if ( nif->checkVersion( 0x14050000, 0 ) && nif->inherits( iBlock, "NiMesh" ) )
+		if ( nif->checkVersion( NF_V20050000, 0 ) && nif->inherits( iBlock, "NiMesh" ) )
 		{
 #ifndef QT_NO_DEBUG
 			// do stuff
 			qWarning() << "Entering NiMesh decoding...";
 			// mesh primitive type
-			QString meshPrimitiveType = NifValue::enumOptionName( "MeshPrimitiveType", nif->get<uint>( iData, "Primitive Type" ) );
+			QString meshPrimitiveType = NifValue::enumOptionName( TN_MESHPRIMITIVETYPE, nif->get<uint>( iData, TA_PRIMITIVETYPE ) );
 			qWarning() << "Mesh uses" << meshPrimitiveType;
 			for ( int i = 0; i < nif->rowCount( iData ); i ++ )
 			{
@@ -364,7 +364,7 @@ void Mesh::transform()
 				quint32 stream = nif->getLink( iData.child( i, 0 ), "Stream" );
 				qWarning() << "Data stream: " << stream;
 				// can have multiple submeshes, unsure of exact meaning
-				ushort numSubmeshes = nif->get<ushort>( iData.child( i, 0 ), "Num Submeshes" );
+				ushort numSubmeshes = nif->get<ushort>( iData.child( i, 0 ), TA_NUMSUBMESHES );
 				qWarning() << "Submeshes: " << numSubmeshes;
 				QPersistentModelIndex submeshMap = nif->getIndex( iData.child( i, 0 ), "Submesh To Region Map" );
 				for ( int j = 0; j < numSubmeshes; j++ )
@@ -373,7 +373,7 @@ void Mesh::transform()
 				}
 				// each stream can have multiple components, and each has a starting index
 				QMap<uint, QString> componentIndexMap;
-				int numComponents = nif->get<int>( iData.child( i, 0 ), "Num Components" );
+				int numComponents = nif->get<int>( iData.child( i, 0 ), TA_NUMCOMPONENTS );
 				qWarning() << "Components: " << numComponents;
 				// semantics determine the usage
 				QPersistentModelIndex componentSemantics = nif->getIndex( iData.child( i, 0 ), "Component Semantics" );
@@ -387,7 +387,7 @@ void Mesh::transform()
 				
 				// now the data stream itself...
 				QPersistentModelIndex dataStream = nif->getBlock( stream );
-				QByteArray streamData = nif->get<QByteArray>( nif->getIndex( dataStream, "Data" ).child( 0, 0 ) );
+				QByteArray streamData = nif->get<QByteArray>( nif->getIndex( dataStream, TA_DATA ).child( 0, 0 ) );
 				QBuffer streamBuffer( &streamData );
 				streamBuffer.open( QIODevice::ReadOnly );
 				// probably won't use this
@@ -395,29 +395,29 @@ void Mesh::transform()
 				// we should probably check the header here, but we expect things to be little endian
 				streamReader.setByteOrder( QDataStream::LittleEndian );
 				// each region exists within the data stream at the specified index
-				quint32 numRegions = nif->get<quint32>( dataStream, "Num Regions");
-				QPersistentModelIndex regions = nif->getIndex( dataStream, "Regions" );
+				quint32 numRegions = nif->get<quint32>( dataStream, TA_NUMREGIONS);
+				QPersistentModelIndex regions = nif->getIndex( dataStream, TA_REGIONS );
 				quint32 totalIndices = 0;
 				if ( regions.isValid() )
 				{
 					qWarning() << numRegions << " regions in this stream";
 					for( quint32 j = 0; j < numRegions; j++ )
 					{
-						qWarning() << "Start index: " << nif->get<quint32>( regions.child( j, 0 ), "Start Index" );
-						qWarning() << "Num indices: " << nif->get<quint32>( regions.child( j, 0 ), "Num Indices" );
-						totalIndices += nif->get<quint32>( regions.child( j, 0 ), "Num Indices" );
+						qWarning() << "Start index: " << nif->get<quint32>( regions.child( j, 0 ), TA_STARTINDEX );
+						qWarning() << "Num indices: " << nif->get<quint32>( regions.child( j, 0 ), TA_NUMINDICES );
+						totalIndices += nif->get<quint32>( regions.child( j, 0 ), TA_NUMINDICES );
 					}
 					qWarning() << totalIndices << "total indices in" << numRegions << "regions";
 				}
-				uint numStreamComponents = nif->get<uint>( dataStream, "Num Components" );
+				uint numStreamComponents = nif->get<uint>( dataStream, TA_NUMCOMPONENTS );
 				qWarning() << "Stream has" << numStreamComponents << "components";
-				QPersistentModelIndex streamComponents = nif->getIndex( dataStream, "Component Formats" );
+				QPersistentModelIndex streamComponents = nif->getIndex( dataStream, TA_COMPONENTFORMATS );
 				// stream components are interleaved, so we need to know their type before we read them
 				QList<uint> typeList;
 				for( uint j = 0; j < numStreamComponents; j++ )
 				{
 					uint compFormat = nif->get<uint>( streamComponents.child( j, 0 ) );
-					QString compName = NifValue::enumOptionName( "ComponentFormat", compFormat );
+					QString compName = NifValue::enumOptionName( TN_COMPONENTFORMAT, compFormat );
 					qWarning() << "Component format is" << compName;
 					qWarning() << "Stored as a" << compName.split( "_" )[1];
 					typeList.append( compFormat - 1 );
@@ -480,7 +480,7 @@ void Mesh::transform()
 						QString compType = componentIndexMap.value( k ).split( " " )[0];
 						qWarning() << "Will store this value in" << compType;
 						// the mess begins...
-						if( NifValue::enumOptionName( "ComponentFormat", (typeList[k] + 1 ) ) == "F_FLOAT32_3" )
+						if( NifValue::enumOptionName( TN_COMPONENTFORMAT, (typeList[k] + 1 ) ) == "F_FLOAT32_3" )
 						{
 							Vector3 tempVect3( values[0].toFloat(), values[1].toFloat(), values[2].toFloat() );
 							if( compType == "POSITION" )
@@ -598,7 +598,7 @@ void Mesh::transform()
 				}
 			}
 			
-			if ( nif->itemName( iData ) == "NiTriShapeData" )
+			if ( nif->itemName( iData ) == T_NITRISHAPEDATA )
 			{
 				// check indexes
 				// TODO: check other indexes as well
@@ -626,7 +626,7 @@ void Mesh::transform()
 				}
 				tristrips.clear();
 			}
-			else if ( nif->itemName( iData ) == "NiTriStripsData" )
+			else if ( nif->itemName( iData ) == T_NITRISTRIPSDATA )
 			{
 				tristrips.clear();
 				QModelIndex points = nif->getIndex( iData, "Points" );
@@ -677,7 +677,7 @@ void Mesh::transform()
 		weights.clear();		
 		partitions.clear();
 		
-		iSkinData = nif->getBlock( nif->getLink( iSkin, "Data" ), "NiSkinData" );
+		iSkinData = nif->getBlock( nif->getLink( iSkin, TA_DATA ), "NiSkinData" );
 		
 		skelRoot = nif->getLink( iSkin, "Skeleton Root" );
 		skelTrans = Transform( nif, iSkinData );

@@ -218,7 +218,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 				{
 					iMaterial = temp;
 				}
-				else if ( type == "NiTriShapeData" )
+				else if ( type == T_NITRISHAPEDATA )
 				{
 					iData = temp;
 				}
@@ -716,9 +716,9 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			
 			if ( iData.isValid() == false || objIndex != 0 )
 			{
-				iData = nif->insertNiBlock( "NiTriShapeData" );
+				iData = nif->insertNiBlock( T_NITRISHAPEDATA );
 			}
-			nif->setLink( iShape, "Data", nif->getBlockNumber( iData ) );
+			nif->setLink( iShape, TA_DATA, nif->getBlockNumber( iData ) );
 			
 			QVector< Triangle > triangles;
 			QVector< objPoint > points;

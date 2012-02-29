@@ -844,7 +844,7 @@ bool UVWidget::setNifData( NifModel * nifModel, const QModelIndex & nifIndex )
 	
 	textures->setNifFolder( nif->getFolder() );
 	
-	iShapeData = nif->getBlock( nif->getLink( iShape, "Data" ) );
+	iShapeData = nif->getBlock( nif->getLink( iShape, TA_DATA ) );
 	if( nif->inherits( iShapeData, "NiTriBasedGeomData" ) )
 	{
 		iTexCoords = nif->getIndex( iShapeData, "UV Sets" ).child( 0, 0 );
@@ -933,11 +933,11 @@ bool UVWidget::setTexCoords()
 
 	QVector< Triangle > tris;
 
-	if( nif->isNiBlock( iShapeData, "NiTriShapeData" ) )
+	if( nif->isNiBlock( iShapeData, T_NITRISHAPEDATA ) )
 	{
 		tris = nif->getArray< Triangle >( iShapeData, "Triangles" );
 	}
-	else if( nif->isNiBlock( iShapeData, "NiTriStripsData" ) )
+	else if( nif->isNiBlock( iShapeData, T_NITRISTRIPSDATA ) )
 	{
 		QModelIndex iPoints = nif->getIndex( iShapeData, "Points" );
 		if( iPoints.isValid() )

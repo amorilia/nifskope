@@ -161,9 +161,9 @@ QModelIndex spApplyTransformation::cast( NifModel * nif, const QModelIndex & ind
 	{
 		QModelIndex iData;
 		if ( nif->itemName( index ) == "NiTriShape") 
-			iData = nif->getBlock( nif->getLink( index, "Data" ), "NiTriShapeData" );
+			iData = nif->getBlock( nif->getLink( index, TA_DATA ), T_NITRISHAPEDATA );
 		else if ( nif->itemName( index ) == "NiTriStrips" ) 
-			iData = nif->getBlock( nif->getLink( index, "Data" ), "NiTriStripsData" );
+			iData = nif->getBlock( nif->getLink( index, TA_DATA ), T_NITRISTRIPSDATA );
 		
 		if ( iData.isValid() )
 		{
@@ -396,7 +396,7 @@ public:
 
 		settings.setValue( "scale normals", chkNormals->isChecked() );
 		
-		QModelIndex iData = nif->getBlock( nif->getLink( nif->getBlock( index ), "Data" ), "NiGeometryData" );
+		QModelIndex iData = nif->getBlock( nif->getLink( nif->getBlock( index ), TA_DATA ), "NiGeometryData" );
 		
 		QVector<Vector3> vertices = nif->getArray<Vector3>( iData, "Vertices" );
 		QMutableVectorIterator<Vector3> it( vertices );

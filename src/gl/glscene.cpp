@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "glscene.h"
 
 #include "glcontroller.h"
@@ -154,7 +156,7 @@ Node * Scene::getNode( const NifModel * nif, const QModelIndex & iNode )
 	{
 		node = new Mesh( this, iNode );
 	}
-	else if ( nif->checkVersion( 0x14050000, 0 ) && nif->itemName( iNode ) == "NiMesh" )
+	else if ( nif->checkVersion( NF_V20050000, 0 ) && nif->itemName( iNode ) == "NiMesh" )
 	{
 		node = new Mesh( this, iNode );
 	}

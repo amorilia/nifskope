@@ -388,9 +388,9 @@ public:
 		{
 			if ( lPrpsA.contains( l ) ) continue;
 			QModelIndex iBlock = nif->getBlock( l );
-			if ( nif->isNiBlock( iBlock, "NiTriShapeData" ) )
+			if ( nif->isNiBlock( iBlock, T_NITRISHAPEDATA ) )
 				continue;
-			if ( nif->isNiBlock( iBlock, "NiTriStripsData" ) )
+			if ( nif->isNiBlock( iBlock, T_NITRISTRIPSDATA ) )
 				continue;
 			if ( nif->isNiBlock( iBlock, "NiBinaryExtraData" ) && nif->get<QString>( iBlock, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
 				continue;
@@ -403,9 +403,9 @@ public:
 			if ( lPrpsB.contains( l ) )
 				continue;
 			QModelIndex iBlock = nif->getBlock( l );
-			if ( nif->isNiBlock( iBlock, "NiTriShapeData" ) )
+			if ( nif->isNiBlock( iBlock, T_NITRISHAPEDATA ) )
 				continue;
-			if ( nif->isNiBlock( iBlock, "NiTriStripsData" ) )
+			if ( nif->isNiBlock( iBlock, T_NITRISTRIPSDATA ) )
 				continue;
 			if ( nif->isNiBlock( iBlock, "NiBinaryExtraData" ) && nif->get<QString>( iBlock, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
 				continue;
@@ -413,8 +413,8 @@ public:
 			return false;
 		}
 		
-		QModelIndex iDataA = nif->getBlock( nif->getLink( iTriA, "Data" ), "NiTriBasedGeomData" );
-		QModelIndex iDataB = nif->getBlock( nif->getLink( iTriB, "Data" ), "NiTriBasedGeomData" );
+		QModelIndex iDataA = nif->getBlock( nif->getLink( iTriA, TA_DATA ), "NiTriBasedGeomData" );
+		QModelIndex iDataB = nif->getBlock( nif->getLink( iTriB, TA_DATA ), "NiTriBasedGeomData" );
 		
 		return dataMatches( nif, iDataA, iDataB );
 	}
@@ -444,8 +444,8 @@ public:
 	{
 		nif->set<quint32>( iTriB, "Flags", nif->get<quint32>( iTriB, "Flags" ) | 1 );
 		
-		QModelIndex iDataA = nif->getBlock( nif->getLink( iTriA, "Data" ), "NiTriBasedGeomData" );
-		QModelIndex iDataB = nif->getBlock( nif->getLink( iTriB, "Data" ), "NiTriBasedGeomData" );
+		QModelIndex iDataA = nif->getBlock( nif->getLink( iTriA, TA_DATA ), "NiTriBasedGeomData" );
+		QModelIndex iDataB = nif->getBlock( nif->getLink( iTriB, TA_DATA ), "NiTriBasedGeomData" );
 		
 		int numA = nif->get<int>( iDataA, TA_NUMVERTICES );
 		int numB = nif->get<int>( iDataB, TA_NUMVERTICES );

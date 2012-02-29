@@ -469,7 +469,7 @@ public:
 		float r = 0;
 		
 		if ( iData.isValid() )
-			interpolate( r, iData, "Data", ctrlTime( time ), flipLast );
+			interpolate( r, iData, TA_DATA, ctrlTime( time ), flipLast );
 		else if ( flipDelta > 0 )
 			r = ctrlTime( time ) / flipDelta;
 		
@@ -531,7 +531,7 @@ public:
 		TexturingProperty::TexDesc * tex = & target->textures[ texSlot & 7 ];
 		
 		float val;
-		if ( interpolate( val, iData, "Data", ctrlTime( time ), lX ) )
+		if ( interpolate( val, iData, TA_DATA, ctrlTime( time ), lX ) )
 		{
 			// If desired, we could force display even if texture transform was disabled:
 			// tex->hasTransform = true;
@@ -753,7 +753,7 @@ public:
 		if ( ! ( active && target ) )
 			return;
 		
-		interpolate( target->alpha, iData, "Data", ctrlTime( time ), lAlpha );
+		interpolate( target->alpha, iData, TA_DATA, ctrlTime( time ), lAlpha );
 		
 		if ( target->alpha < 0 )
 			target->alpha = 0;
@@ -780,7 +780,7 @@ public:
 			return;
 		
 		Vector3 v3;
-		interpolate( v3, iData, "Data", ctrlTime( time ), lColor );
+		interpolate( v3, iData, TA_DATA, ctrlTime( time ), lColor );
 		
 		Color4 color( Color3( v3 ), 1.0 );
 		

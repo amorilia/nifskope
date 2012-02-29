@@ -167,8 +167,8 @@ QIcon * tex42_xpm_icon = 0;
 QModelIndex getData( const NifModel * nif, const QModelIndex & index )
 {
 	if ( nif->isNiBlock( index, "NiTriShape" ) || nif->isNiBlock( index, "NiTriStrips" ) )
-		return nif->getBlock( nif->getLink( index, "Data" ) );
-	else if ( nif->isNiBlock( index, "NiTriShapeData" ) || nif->isNiBlock( index, "NiTriStripsData" ) )
+		return nif->getBlock( nif->getLink( index, TA_DATA ) );
+	else if ( nif->isNiBlock( index, T_NITRISHAPEDATA ) || nif->isNiBlock( index, T_NITRISTRIPSDATA ) )
 		return index;
 	return QModelIndex();
 }

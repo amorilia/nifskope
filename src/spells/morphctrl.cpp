@@ -55,7 +55,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->isNiBlock( index, "NiGeomMorpherController" ) && nif->checkVersion( NF_V10010000, 0 )
+		return nif->isNiBlock( index, T_NIGEOMMORPHERCONTROLLER ) && nif->checkVersion( NF_V10010000, 0 )
 			&& getMeshData( nif, index ).isValid() && listFrames( nif, index ).count() > 0;
 	}
 	
@@ -83,23 +83,23 @@ public:
 				qWarning() << "overriding base key frame, all other frames will be cleared";
 				nif->set<int>( iMorphData, TA_NUMVERTICES, nif->get<int>( iMeshData, TA_NUMVERTICES ) );
 				QVector<Vector3> verts = nif->getArray<Vector3>( iMeshData, "Vertices" );
-				nif->updateArray( iFrames.child( 0, 0 ), "Vectors" );
-				nif->setArray( iFrames.child( 0, 0 ), "Vectors", verts );
+				nif->updateArray( iFrames.child( 0, 0 ), TA_VECTORS );
+				nif->setArray( iFrames.child( 0, 0 ), TA_VECTORS, verts );
 				verts.fill( Vector3() );
 				for ( int f = 1; f < nif->rowCount( iFrames ); f++ )
 				{
-					nif->updateArray( iFrames.child( f, 0 ), "Vectors" );
-					nif->setArray<Vector3>( iFrames.child( f, 0 ), "Vectors", verts );
+					nif->updateArray( iFrames.child( f, 0 ), TA_VECTORS );
+					nif->setArray<Vector3>( iFrames.child( f, 0 ), TA_VECTORS, verts );
 				}
 			}
 			else
 			{
 				QVector<Vector3> verts = nif->getArray<Vector3>( iMeshData, "Vertices" );
-				QVector<Vector3> base = nif->getArray<Vector3>( iFrames.child( 0, 0 ), "Vectors" );
+				QVector<Vector3> base = nif->getArray<Vector3>( iFrames.child( 0, 0 ), TA_VECTORS );
 				QVector<Vector3> frame( base.count(), Vector3() );
 				for ( int n = 0; n < base.count(); n++ )
 					frame[ n ] = verts.value( n ) - base[ n ];
-				nif->setArray<Vector3>( iFrames.child( selFrame, 0 ), "Vectors", frame );
+				nif->setArray<Vector3>( iFrames.child( selFrame, 0 ), TA_VECTORS, frame );
 			}
 		}
 		
@@ -112,7 +112,7 @@ public:
 		QModelIndex iMesh = nif->getBlock( nif->getParent( nif->getBlockNumber( iMorpher ) ) );
 		if ( nif->inherits( iMesh, "NiTriBasedGeom" ) )
 		{
-			QModelIndex iData = nif->getBlock( nif->getLink( iMesh, "Data" ) );
+			QModelIndex iData = nif->getBlock( nif->getLink( iMesh, TA_DATA ) );
 			if ( nif->inherits( iData, "NiTriBasedGeomData" ) )
 				return iData;
 			else
@@ -125,13 +125,13 @@ public:
 	//! Helper function to get the morph data
 	QModelIndex getMorphData( const NifModel * nif, const QModelIndex & iMorpher )
 	{
-		return nif->getBlock( nif->getLink( iMorpher, "Data" ), "NiMorphData" );
+		return nif->getBlock( nif->getLink( iMorpher, TA_DATA ), "NiMorphData" );
 	}
 	
 	//! Helper function to get the morph frame array
 	QModelIndex getFrameArray( const NifModel * nif, const QModelIndex & iMorpher )
 	{
-		return nif->getIndex( getMorphData( nif, iMorpher ), "Morphs" );
+		return nif->getIndex( getMorphData( nif, iMorpher ), TA_MORPHS );
 	}
 	
 	//! Helper function to get the list of morph frames

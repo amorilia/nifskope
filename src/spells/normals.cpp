@@ -30,6 +30,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+
 #include "spellbook.h"
 
 #include "NvTriStrip/qtwrapper.h"
@@ -58,8 +60,8 @@ public:
 	{
 		QModelIndex iData = nif->getBlock( index );
 		if ( nif->isNiBlock( index, "NiTriShape" ) || nif->isNiBlock( index, "NiTriStrips" ) )
-			iData = nif->getBlock( nif->getLink( index, "Data" ) );
-		if ( nif->isNiBlock( iData, "NiTriShapeData" ) || nif->isNiBlock( iData, "NiTriStripsData" ) )
+			iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
+		if ( nif->isNiBlock( iData, T_NITRISHAPEDATA ) || nif->isNiBlock( iData, T_NITRISTRIPSDATA ) )
 			return iData;
 		else return QModelIndex();
 	}
