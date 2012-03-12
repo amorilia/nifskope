@@ -111,18 +111,18 @@ void blockLink( NifModel * nif, const QModelIndex & index, const QModelIndex & i
 	}
 	else if ( nif->inherits( index, "NiAVObject" ) && nif->inherits( iBlock, "NiProperty" ) )
 	{
-		addLink( nif, index, "Properties", nif->getBlockNumber( iBlock ) );
+		addLink( nif, index, TA_PROPERTIES, nif->getBlockNumber( iBlock ) );
 	}
 	/*
 	*	Temporary workaround for non-NiProperty properties
 	*/
-	else if ( nif->getBlockName( iBlock ) == "BSLightingShaderProperty" )
+	else if ( nif->getBlockName( iBlock ) == T_BSLIGHTINGSHADERPROPERTY )
 	{
-		addLink( nif, index, "Properties", nif->getBlockNumber( iBlock ) );
+		addLink( nif, index, TA_PROPERTIES, nif->getBlockNumber( iBlock ) );
 	}
 	else if ( nif->inherits( iBlock, "BSShaderProperty") )
 	{
-		addLink( nif, index, "Properties", nif->getBlockNumber( iBlock ) );
+		addLink( nif, index, TA_PROPERTIES, nif->getBlockNumber( iBlock ) );
 	}
 
 	else if ( nif->inherits( index, "NiAVObject" ) && nif->inherits( iBlock, "NiExtraData" ) )
@@ -286,7 +286,7 @@ public:
 			QPersistentModelIndex iParent = index;
 			QModelIndex iProperty = nif->insertNiBlock( act->text(), nif->getBlockNumber( index ) + 1 );
 			
-			addLink( nif, iParent, "Properties", nif->getBlockNumber( iProperty ) );
+			addLink( nif, iParent, TA_PROPERTIES, nif->getBlockNumber( iProperty ) );
 			return iProperty;
 		}
 		else

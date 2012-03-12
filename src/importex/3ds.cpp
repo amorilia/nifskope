@@ -660,7 +660,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			nif->set<float>( iMaterial, "Alpha", mat->alpha );
 			nif->set<float>( iMaterial, "Glossiness", mat->glossiness );
 			
-			addLink( nif, iShape, "Properties", nif->getBlockNumber( iMaterial ) );
+			addLink( nif, iShape, TA_PROPERTIES, nif->getBlockNumber( iMaterial ) );
 			
 			if ( !mat->map_Kd.isEmpty() )
 			{
@@ -671,7 +671,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 					{
 						iTexProp = nif->insertNiBlock( "NiTexturingProperty" );
 					}
-					addLink( nif, iShape, "Properties", nif->getBlockNumber( iTexProp ) );
+					addLink( nif, iShape, TA_PROPERTIES, nif->getBlockNumber( iTexProp ) );
 					
 					nif->set<int>( iTexProp, "Has Base Texture", 1 );
 					QModelIndex iBaseMap = nif->getIndex( iTexProp, "Base Texture" );
@@ -700,7 +700,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 					{
 						iTexProp = nif->insertNiBlock( "NiTextureProperty" );
 					}
-					addLink( nif, iShape, "Properties", nif->getBlockNumber( iTexProp ) );
+					addLink( nif, iShape, TA_PROPERTIES, nif->getBlockNumber( iTexProp ) );
 					
 					if ( iTexSource.isValid() == false || objIndex != 0 || nif->itemType(iTexSource) != T_NIIMAGE )
 					{
@@ -736,17 +736,17 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			
 			nif->set<int>( iData, TA_NUMVERTICES, mesh->vertices.count() );
 			nif->set<int>( iData, "Has Vertices", 1 );
-			nif->updateArray( iData, "Vertices" );
-			nif->setArray<Vector3>( iData, "Vertices",  mesh->vertices );
+			nif->updateArray( iData, TA_VERTICES );
+			nif->setArray<Vector3>( iData, TA_VERTICES,  mesh->vertices );
 			nif->set<int>( iData, "Has Normals", 1 );
-			nif->updateArray( iData, "Normals" );
-			nif->setArray<Vector3>( iData, "Normals",  mesh->normals );
+			nif->updateArray( iData, TA_NORMALS );
+			nif->setArray<Vector3>( iData, TA_NORMALS,  mesh->normals );
 			nif->set<int>( iData, "Has UV", 1 );
 			nif->set<int>( iData, "Num UV Sets", 1 );
 			nif->set<int>( iData, "Num UV Sets 2", 1 );
-			QModelIndex iTexCo = nif->getIndex( iData, "UV Sets" );
+			QModelIndex iTexCo = nif->getIndex( iData, TA_UVSETS );
 			if ( !iTexCo.isValid() ) {
-				iTexCo = nif->getIndex( iData, "UV Sets 2" );
+				iTexCo = nif->getIndex( iData, TA_UVSETS2 );
 			}
 			nif->updateArray( iTexCo );
 			nif->updateArray( iTexCo.child( 0, 0 ) );

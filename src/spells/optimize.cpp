@@ -164,7 +164,7 @@ public:
 			QModelIndex iAVObj = nif->getBlock( b, "NiAVObject" );
 			if ( iAVObj.isValid() )
 			{
-				QVector<qint32> props = nif->getLinkArray( iAVObj, "Properties" );
+				QVector<qint32> props = nif->getLinkArray( iAVObj, TA_PROPERTIES );
 				QMutableVectorIterator<qint32> it( props );
 				while ( it.hasNext() )
 				{
@@ -202,7 +202,7 @@ public:
 						l = nif->getBlockNumber( iProp2 );
 					}
 				}
-				nif->setLinkArray( iAVObj, "Properties", props );
+				nif->setLinkArray( iAVObj, TA_PROPERTIES, props );
 			}
 		}
 		return index;
@@ -375,8 +375,8 @@ public:
 			|| nif->get<int>( iTriA, "Flags" ) != nif->get<int>( iTriB, "Flags" ) )
 			return false;
 		
-		QVector<qint32> lPrpsA = nif->getLinkArray( iTriA, "Properties" );
-		QVector<qint32> lPrpsB = nif->getLinkArray( iTriB, "Properties" );
+		QVector<qint32> lPrpsA = nif->getLinkArray( iTriA, TA_PROPERTIES );
+		QVector<qint32> lPrpsB = nif->getLinkArray( iTriB, TA_PROPERTIES );
 		
 		qSort( lPrpsA );
 		qSort( lPrpsB );
@@ -425,7 +425,7 @@ public:
 		if ( iDataA == iDataB )
 			return true;
 			
-		foreach ( QString id, QStringList() << "Vertices" << "Normals" << "Vertex Colors" << "UV Sets" )
+		foreach ( QString id, QStringList() << TA_VERTICES << TA_NORMALS << TA_VERTEXCOLORS << TA_UVSETS )
 		{
 			QModelIndex iA = nif->getIndex( iDataA, id );
 			QModelIndex iB = nif->getIndex( iDataB, id );
@@ -433,7 +433,7 @@ public:
 			if ( iA.isValid() != iB.isValid() )
 				return false;
 			
-			if ( id == "UV Sets" && nif->rowCount( iA ) != nif->rowCount( iB ) )
+			if ( id == TA_UVSETS && nif->rowCount( iA ) != nif->rowCount( iB ) )
 				return false;
 		}
 		return true;
@@ -451,17 +451,17 @@ public:
 		int numB = nif->get<int>( iDataB, TA_NUMVERTICES );
 		nif->set<int>( iDataA, TA_NUMVERTICES, numA + numB );
 		
-		nif->updateArray( iDataA, "Vertices" );
-		nif->setArray<Vector3>( iDataA, "Vertices", nif->getArray<Vector3>( iDataA, "Vertices" ).mid( 0, numA ) + nif->getArray<Vector3>( iDataB, "Vertices" ) );
+		nif->updateArray( iDataA, TA_VERTICES );
+		nif->setArray<Vector3>( iDataA, TA_VERTICES, nif->getArray<Vector3>( iDataA, TA_VERTICES ).mid( 0, numA ) + nif->getArray<Vector3>( iDataB, TA_VERTICES ) );
 		
-		nif->updateArray( iDataA, "Normals" );
-		nif->setArray<Vector3>( iDataA, "Normals", nif->getArray<Vector3>( iDataA, "Normals" ).mid( 0, numA ) + nif->getArray<Vector3>( iDataB, "Normals" ) );
+		nif->updateArray( iDataA, TA_NORMALS );
+		nif->setArray<Vector3>( iDataA, TA_NORMALS, nif->getArray<Vector3>( iDataA, TA_NORMALS ).mid( 0, numA ) + nif->getArray<Vector3>( iDataB, TA_NORMALS ) );
 		
-		nif->updateArray( iDataA, "Vertex Colors" );
-		nif->setArray<Color4>( iDataA, "Vertex Colors", nif->getArray<Color4>( iDataA, "Vertex Colors" ).mid( 0, numA ) + nif->getArray<Color4>( iDataB, "Vertex Colors" ) );
+		nif->updateArray( iDataA, TA_VERTEXCOLORS );
+		nif->setArray<Color4>( iDataA, TA_VERTEXCOLORS, nif->getArray<Color4>( iDataA, TA_VERTEXCOLORS ).mid( 0, numA ) + nif->getArray<Color4>( iDataB, TA_VERTEXCOLORS ) );
 		
-		QModelIndex iUVa = nif->getIndex( iDataA, "UV Sets" );
-		QModelIndex iUVb = nif->getIndex( iDataB, "UV Sets" );
+		QModelIndex iUVa = nif->getIndex( iDataA, TA_UVSETS );
+		QModelIndex iUVb = nif->getIndex( iDataB, TA_UVSETS );
 		
 		for ( int r = 0; r < nif->rowCount( iUVa ); r++ )
 		{

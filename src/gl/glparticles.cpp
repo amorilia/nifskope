@@ -386,8 +386,8 @@ void Particles::transform()
 	{
 		upData = false;
 		
-		verts = nif->getArray<Vector3>( nif->getIndex( iData, "Vertices" ) );
-		colors = nif->getArray<Color4>( nif->getIndex( iData, "Vertex Colors" ) );
+		verts = nif->getArray<Vector3>( nif->getIndex( iData, TA_VERTICES ) );
+		colors = nif->getArray<Color4>( nif->getIndex( iData, TA_VERTEXCOLORS ) );
 		sizes = nif->getArray<float>( nif->getIndex( iData, "Sizes" ) );
 		
 		active = nif->get<int>( iData, "Num Valid" );

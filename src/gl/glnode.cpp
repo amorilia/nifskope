@@ -579,7 +579,7 @@ void Node::update( const NifModel * nif, const QModelIndex & index )
 	if ( iBlock == index || ! index.isValid() )
 	{
 		PropertyList newProps;
-		foreach ( qint32 l, nif->getLinkArray( iBlock, "Properties" ) )
+		foreach ( qint32 l, nif->getLinkArray( iBlock, TA_PROPERTIES ) )
 			if ( Property * p = scene->getProperty( nif, nif->getBlock( l ) ) )
 				newProps.add( p );
 		properties = newProps;
@@ -1017,7 +1017,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 			QModelIndex iStripData = nif->getBlock( nif->getLink( iStrips.child( r, 0 ) ), T_NITRISTRIPSDATA );
 			if ( iStripData.isValid() )
 			{
-				QVector<Vector3> verts = nif->getArray<Vector3>( iStripData, "Vertices" );
+				QVector<Vector3> verts = nif->getArray<Vector3>( iStripData, TA_VERTICES );
 				
 				glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 				glBegin( GL_TRIANGLES );
@@ -1057,7 +1057,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 			int s_nodeId = ID2COLORKEY( nif->getBlockNumber( iShape ) );
 			glColor4ubv( (GLubyte *)&s_nodeId );
 		}
-		drawConvexHull( nif->getArray<Vector4>( iShape, "Vertices" ), nif->getArray<Vector4>( iShape, "Normals" ) );
+		drawConvexHull( nif->getArray<Vector4>( iShape, TA_VERTICES ), nif->getArray<Vector4>( iShape, TA_NORMALS ) );
 	}
 	else if ( name == "bhkMoppBvTreeShape" )
 	{
@@ -1083,7 +1083,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 		QModelIndex iData = nif->getBlock( nif->getLink( iShape, TA_DATA ) );
 		if ( iData.isValid() )
 		{
-			QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );
+			QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
 			QModelIndex iTris = nif->getIndex( iData, "Triangles" );
 			for ( int t = 0; t < nif->rowCount( iTris ); t++ )
 			{
@@ -1110,7 +1110,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 					n = iParent.data( NifSkopeDisplayRole ).toString();
 					i = scene->currentIndex.row();
 				}
-				if ( n == "Vertices" || n == "Normals" || n == "Vertex Colors" || n == "UV Sets" )
+				if ( n == TA_VERTICES || n == TA_NORMALS || n == TA_VERTEXCOLORS || n == TA_UVSETS )
 					DrawVertexSelection(verts, i);
 				else if ( ( n == "Faces" || n == "Triangles" ) )
 				{
@@ -1327,7 +1327,7 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 			Vector3 axleB1temp( axleB[1], axleB[2], axleB[0] );
 			Vector3 axleB2temp( Vector3::crossproduct( axleB, axleB1temp ) );
 		}
-		else if ( nif->checkVersion( 0x14020007, 0 ) )
+		else if ( nif->checkVersion( NF_V20020007, 0 ) )
 		{
 			Vector3 axleB1temp( nif->get<Vector4>( iHinge, "Perp2 Axle In B1" ) );
 			Vector3 axleB2temp( nif->get<Vector4>( iHinge, "Perp2 Axle In B2" ) );

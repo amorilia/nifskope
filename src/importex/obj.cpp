@@ -58,7 +58,7 @@ static void writeData( const NifModel * nif, const QModelIndex & iData, QTextStr
 {
 	// copy vertices
 	
-	QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );
+	QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
 	foreach ( Vector3 v, verts )
 	{
 		v = t * v;
@@ -67,9 +67,9 @@ static void writeData( const NifModel * nif, const QModelIndex & iData, QTextStr
 	
 	// copy texcoords
 	
-	QModelIndex iUV = nif->getIndex( iData, "UV Sets" );
+	QModelIndex iUV = nif->getIndex( iData, TA_UVSETS );
 	if ( ! iUV.isValid() )
-		iUV = nif->getIndex( iData, "UV Sets 2" );
+		iUV = nif->getIndex( iData, TA_UVSETS2 );
 	
 	QVector<Vector2> texco = nif->getArray<Vector2>( iUV.child( 0, 0 ) );
 	foreach( Vector2 t, texco )
@@ -77,7 +77,7 @@ static void writeData( const NifModel * nif, const QModelIndex & iData, QTextStr
 	
 	// copy normals
 	
-	QVector<Vector3> norms = nif->getArray<Vector3>( iData, "Normals" );
+	QVector<Vector3> norms = nif->getArray<Vector3>( iData, TA_NORMALS );
 	foreach ( Vector3 n, norms )
 	{
 		n = t.rotation * n;
@@ -245,7 +245,7 @@ static void writeParent( const NifModel * nif, const QModelIndex & iNode, QTextS
 						{
 							bt = t * bt;
 							obj << "\r\n# bhkPackedNiTriStripsShape\r\n\r\ng collision\r\n" << "usemtl collision\r\n\r\n";
-							QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );
+							QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
 							foreach ( Vector3 v, verts )
 							{
 								v = bt * v;
@@ -718,7 +718,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 			nif->set<float>( iMaterial, "Glossiness", mtl.Ns );
 
 			if (newiMaterial)// don't add property that is already there
-				addLink( nif, iShape, "Properties", nif->getBlockNumber( iMaterial ) );
+				addLink( nif, iShape, TA_PROPERTIES, nif->getBlockNumber( iMaterial ) );
 			
 			if ( ! mtl.map_Kd.isEmpty() )
 			{
@@ -733,7 +733,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 					QModelIndex iBaseMap;
 					if (!cBSShaderPPLightingProperty)
 					{// no need of NiTexturingProperty when BSShaderPPLightingProperty is present
-						addLink( nif, iShape, "Properties", nif->getBlockNumber( iTexProp ) );
+						addLink( nif, iShape, TA_PROPERTIES, nif->getBlockNumber( iTexProp ) );
 
 						nif->set<int>( iTexProp, "Has Base Texture", 1 );
 						iBaseMap = nif->getIndex( iTexProp, "Base Texture" );
@@ -766,7 +766,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 					{
 						iTexProp = nif->insertNiBlock( "NiTextureProperty" );
 					}
-					addLink( nif, iShape, "Properties", nif->getBlockNumber( iTexProp ) );
+					addLink( nif, iShape, TA_PROPERTIES, nif->getBlockNumber( iTexProp ) );
 					
 					if ( iTexSource.isValid() == false || first_tri_shape == false || nif->itemType(iTexSource) != T_NIIMAGE )
 					{
@@ -821,18 +821,18 @@ void importObj( NifModel * nif, const QModelIndex & index )
 			
 			nif->set<int>( iData, TA_NUMVERTICES, verts.count() );
 			nif->set<int>( iData, "Has Vertices", 1 );
-			nif->updateArray( iData, "Vertices" );
-			nif->setArray<Vector3>( iData, "Vertices", verts );
+			nif->updateArray( iData, TA_VERTICES );
+			nif->setArray<Vector3>( iData, TA_VERTICES, verts );
 			nif->set<int>( iData, "Has Normals", 1 );
-			nif->updateArray( iData, "Normals" );
-			nif->setArray<Vector3>( iData, "Normals", norms );
+			nif->updateArray( iData, TA_NORMALS );
+			nif->setArray<Vector3>( iData, TA_NORMALS, norms );
 			nif->set<int>( iData, "Has UV", 1 );
 			int cNumUVSets = nif->get<int>( iData, "Num UV Sets");// keep things the way they are
 			nif->set<int>( iData, "Num UV Sets", 1 | cNumUVSets );// keep things the way they are
 			nif->set<int>( iData, "Num UV Sets 2", 1 | cNumUVSets );// keep things the way they are
-			QModelIndex iTexCo = nif->getIndex( iData, "UV Sets" );
+			QModelIndex iTexCo = nif->getIndex( iData, TA_UVSETS );
 			if ( ! iTexCo.isValid() )
-				iTexCo = nif->getIndex( iData, "UV Sets 2" );
+				iTexCo = nif->getIndex( iData, TA_UVSETS2 );
 			nif->updateArray( iTexCo );
 			nif->updateArray( iTexCo.child( 0, 0 ) );
 			nif->setArray<Vector2>( iTexCo.child( 0, 0 ), texco );
@@ -917,11 +917,11 @@ void importObj( NifModel * nif, const QModelIndex & index )
 			
 			nif->set<int>( iData, TA_NUMVERTICES, verts.count() );
 			nif->set<int>( iData, "Has Vertices", 1 );
-			nif->updateArray( iData, "Vertices" );
-			nif->setArray<Vector3>( iData, "Vertices", verts );
+			nif->updateArray( iData, TA_VERTICES );
+			nif->setArray<Vector3>( iData, TA_VERTICES, verts );
 			nif->set<int>( iData, "Has Normals", 1 );
-			nif->updateArray( iData, "Normals" );
-			nif->setArray<Vector3>( iData, "Normals", norms );
+			nif->updateArray( iData, TA_NORMALS );
+			nif->setArray<Vector3>( iData, TA_NORMALS, norms );
 			
 			Vector3 center;
 			foreach ( Vector3 v, verts )

@@ -180,7 +180,7 @@ QModelIndex getUV( const NifModel * nif, const QModelIndex & index )
 
 	if ( iData.isValid() )
 	{
-		QModelIndex iUVs = nif->getIndex( iData, "UV Sets" );
+		QModelIndex iUVs = nif->getIndex( iData, TA_UVSETS );
 		return iUVs;
 	}
 	return QModelIndex();
@@ -768,7 +768,7 @@ public:
 			}
 		}
 		
-		QModelIndex iProperties = nif->getIndex( index, "Properties" );
+		QModelIndex iProperties = nif->getIndex( index, TA_PROPERTIES );
 		if ( iProperties.isValid() )
 		{
 			for ( int p = 0; p < nif->rowCount( iProperties ); p++ )

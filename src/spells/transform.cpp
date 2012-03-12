@@ -168,7 +168,7 @@ QModelIndex spApplyTransformation::cast( NifModel * nif, const QModelIndex & ind
 		if ( iData.isValid() )
 		{
 			Transform t( nif, index );
-			QModelIndex iVertices = nif->getIndex( iData, "Vertices" );
+			QModelIndex iVertices = nif->getIndex( iData, TA_VERTICES );
 			if ( iVertices.isValid() )
 			{
 				QVector<Vector3> a = nif->getArray<Vector3>( iVertices );
@@ -176,7 +176,7 @@ QModelIndex spApplyTransformation::cast( NifModel * nif, const QModelIndex & ind
 					a[v] = t * a[v];
 				nif->setArray<Vector3>( iVertices, a );
 				
-				QModelIndex iNormals = nif->getIndex( iData, "Normals" );
+				QModelIndex iNormals = nif->getIndex( iData, TA_NORMALS );
 				if ( iNormals.isValid() )
 				{
 					a = nif->getArray<Vector3>( iNormals );
@@ -398,7 +398,7 @@ public:
 		
 		QModelIndex iData = nif->getBlock( nif->getLink( nif->getBlock( index ), TA_DATA ), "NiGeometryData" );
 		
-		QVector<Vector3> vertices = nif->getArray<Vector3>( iData, "Vertices" );
+		QVector<Vector3> vertices = nif->getArray<Vector3>( iData, TA_VERTICES );
 		QMutableVectorIterator<Vector3> it( vertices );
 		while ( it.hasNext() )
 		{
@@ -407,11 +407,11 @@ public:
 			for ( int a = 0; a < 3; a++ )
 				v[a] *= scale[a]->value();
 		}
-		nif->setArray<Vector3>( iData, "Vertices", vertices );
+		nif->setArray<Vector3>( iData, TA_VERTICES, vertices );
 		
 		if( chkNormals->isChecked() )
 		{
-			QVector<Vector3> norms = nif->getArray<Vector3>( iData, "Normals" );
+			QVector<Vector3> norms = nif->getArray<Vector3>( iData, TA_NORMALS );
 			QMutableVectorIterator<Vector3> it( norms );
 			while ( it.hasNext() )
 			{
@@ -420,7 +420,7 @@ public:
 				for ( int a = 0; a < 3; a++ )
 					v[a] *= scale[a]->value();
 			}
-			nif->setArray<Vector3>( iData, "Normals", norms );
+			nif->setArray<Vector3>( iData, TA_NORMALS, norms );
 		}
 		
 		return QModelIndex();

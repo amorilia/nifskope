@@ -67,11 +67,11 @@ Property * Property::create( Scene * scene, const NifModel * nif, const QModelIn
 		property = new VertexColorProperty( scene, index );
 	else if ( nif->isNiBlock( index, "NiStencilProperty" ) )
 		property = new StencilProperty( scene, index );
-	else if ( nif->isNiBlock( index, "BSLightingShaderProperty" ) )
+	else if ( nif->isNiBlock( index, T_BSLIGHTINGSHADERPROPERTY ) )
 		property = new BSShaderLightingProperty( scene, index );
 	else if ( nif->isNiBlock( index, "BSShaderLightingProperty" ) )
 		property = new BSShaderLightingProperty( scene, index );
-	else if ( nif->isNiBlock( index, "BSEffectShaderProperty" ) )
+	else if ( nif->isNiBlock( index, T_BSEFFECTSHADERPROPERTY ) )
 		property = new BSShaderLightingProperty( scene, index );
 	else if ( nif->isNiBlock( index, "BSShaderNoLightingProperty" ) )
 		property = new BSShaderLightingProperty( scene, index );

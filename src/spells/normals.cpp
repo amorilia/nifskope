@@ -75,7 +75,7 @@ public:
 	{
 		QModelIndex iData = getShapeData( nif, index );
 		
-		QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );
+		QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
 		QVector<Triangle> triangles;
 		QModelIndex iPoints = nif->getIndex( iData, "Points" );
 		if ( iPoints.isValid() )
@@ -110,8 +110,8 @@ public:
 		}
 		
 		nif->set<int>( iData, "Has Normals", 1 );
-		nif->updateArray( iData, "Normals" );
-		nif->setArray<Vector3>( iData, "Normals", norms );
+		nif->updateArray( iData, TA_NORMALS );
+		nif->setArray<Vector3>( iData, TA_NORMALS, norms );
 		
 		return index;
 	}
@@ -136,10 +136,10 @@ public:
 	{
 		QModelIndex iData = spFaceNormals::getShapeData( nif, index );
 		
-		QVector<Vector3> norms = nif->getArray<Vector3>( iData, "Normals" );
+		QVector<Vector3> norms = nif->getArray<Vector3>( iData, TA_NORMALS );
 		for ( int n = 0; n < norms.count(); n++ )
 			norms[n] = -norms[n];
-		nif->setArray<Vector3>( iData, "Normals", norms );
+		nif->setArray<Vector3>( iData, TA_NORMALS, norms );
 		
 		return index;
 	}
@@ -163,8 +163,8 @@ public:
 	{
 		QModelIndex iData = spFaceNormals::getShapeData( nif, index );
 		
-		QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );
-		QVector<Vector3> norms = nif->getArray<Vector3>( iData, "Normals" );
+		QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
+		QVector<Vector3> norms = nif->getArray<Vector3>( iData, TA_NORMALS );
 		
 		if ( verts.isEmpty() || verts.count() != norms.count() )
 			return index;
@@ -234,7 +234,7 @@ public:
 		for ( int i = 0; i < verts.count(); i++ )
 			snorms[i].normalize();
 		
-		nif->setArray<Vector3>( iData, "Normals", snorms );
+		nif->setArray<Vector3>( iData, TA_NORMALS, snorms );
 		
 		return index;
 	}

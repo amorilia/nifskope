@@ -152,7 +152,7 @@ Node * Scene::getNode( const NifModel * nif, const QModelIndex & iNode )
 		else
 			node = new Node( this, iNode );
 	}
-	else if ( nif->itemName( iNode ) == "NiTriShape" || nif->itemName( iNode ) == "NiTriStrips" || nif->inherits( iNode, "NiTriBasedGeom") )
+	else if ( nif->itemName( iNode ) == "NiTriShape" || nif->itemName( iNode ) == "NiTriStrips" || nif->inherits( iNode, T_NITRIBASEDGEOM) )
 	{
 		node = new Mesh( this, iNode );
 	}

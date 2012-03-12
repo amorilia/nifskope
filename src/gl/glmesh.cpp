@@ -480,7 +480,7 @@ void Mesh::transform()
 						QString compType = componentIndexMap.value( k ).split( " " )[0];
 						qWarning() << "Will store this value in" << compType;
 						// the mess begins...
-						if( NifValue::enumOptionName( TN_COMPONENTFORMAT, (typeList[k] + 1 ) ) == "F_FLOAT32_3" )
+						if( NifValue::enumOptionName( TN_COMPONENTFORMAT, (typeList[k] + 1 ) ) == AV_FLOAT32_3 )
 						{
 							Vector3 tempVect3( values[0].toFloat(), values[1].toFloat(), values[2].toFloat() );
 							if( compType == "POSITION" )
@@ -509,7 +509,7 @@ void Mesh::transform()
 				}
 
 				// build triangles, strips etc.
-				if( meshPrimitiveType == "MESH_PRIMITIVE_TRIANGLES" )
+				if( meshPrimitiveType == AV_MESHPRMITIVETYPE_TRIANGLES )
 				{
 					for( int k = 0; k < indices.size(); )
 					{
@@ -528,66 +528,54 @@ void Mesh::transform()
 			// Handle some vertex color animation - the static part.
 			// The elegant way requires TODO: property system (glproperty.h,
 			// glproperty.cpp, renderer.cpp, etc.) complete refactoring.
-			// Refer to "nif.xml" for "SF_Vertex_Animation", "PROP_LightingShaderProperty" and "FLAG_ShaderFlags"
-#define SF_Vertex_Animation 29
-#define SF_Double_Sided 4
-#define PROP_LightingShaderProperty "BSLightingShaderProperty"
-#define PROP_BSEffectShaderProperty "BSEffectShaderProperty"
-#define FLAG_ShaderFlags "Shader Flags 2"
-#define FLAG_EffectShaderFlags1 "Effect Shader Flags 1"
+			// Refer to "nif.xml" for details
 			bool alphaisanim = false;
 			double_sided = false;
 			double_sided_es = false;
-			if ( nif->checkVersion( 0x14020007, 0 ) && nif->inherits( iBlock, "NiTriBasedGeom") )
+			if ( nif->checkVersion( NF_V20020007, 0 ) && nif->inherits( iBlock, T_NITRIBASEDGEOM) )
 			{
-				QVector<qint32> props = nif->getLinkArray( iBlock, "Properties" );
+				QVector<qint32> props = nif->getLinkArray( iBlock, TA_PROPERTIES );
 				for (int i = 0; i < props.count(); i++)
 				{
-					QModelIndex iProp = nif->getBlock( props[i], PROP_LightingShaderProperty );
+					QModelIndex iProp = nif->getBlock( props[i], T_BSLIGHTINGSHADERPROPERTY );
 					if (iProp.isValid())
 					{
 						// TODO: check that it exists at all
-						unsigned int sf2 = nif->get<unsigned int>(iProp, FLAG_ShaderFlags);
+						unsigned int sf2 = nif->get<unsigned int>(iProp, TA_SHADERFLAGS2);
 						// using nifvalue.cpp line ~211
-						double_sided = sf2 & (1 << SF_Double_Sided);
-						if (sf2 & (1 << SF_Vertex_Animation)) {
+						double_sided = sf2 & (1 << AV_DOUBLE_SIDED);
+						if (sf2 & (1 << AV_VERTEX_ANIMATION)) {
 							alphaisanim = true;
 							break;
 						}
 					} else
 					{
 						// enable double_sided for BSEffectShaderProperty
-						iProp = nif->getBlock( props[i], PROP_BSEffectShaderProperty );
+						iProp = nif->getBlock( props[i], T_BSEFFECTSHADERPROPERTY );
 						if (iProp.isValid())
 						{
-							unsigned int sf1 = nif->get<unsigned int>(iProp, FLAG_EffectShaderFlags1);
-							double_sided_es = sf1 & (1 << SF_Double_Sided);
+							unsigned int sf1 = nif->get<unsigned int>(iProp, TA_SHADERFLAGS2);
+							double_sided_es = sf1 & (1 << AV_DOUBLE_SIDED);
 						}
 					}
 				}
 			}
-#undef FLAG_EffectShaderFlags1
-#undef PROP_BSEffectShaderProperty
-#undef PROP_LightingShaderProperty
-#undef FLAG_ShaderFlags
-#undef SF_Double_Sided
-#undef SF_Vertex_Animation
 			
-			verts = nif->getArray<Vector3>( iData, "Vertices" );
-			norms = nif->getArray<Vector3>( iData, "Normals" );
-			colors = nif->getArray<Color4>( iData, "Vertex Colors" );
+			verts = nif->getArray<Vector3>( iData, TA_VERTICES );
+			norms = nif->getArray<Vector3>( iData, TA_NORMALS );
+			colors = nif->getArray<Color4>( iData, TA_VERTEXCOLORS );
 			if (alphaisanim)
 				for (int i = 0; i < colors.count(); i++)
 					colors[i].setRGBA(colors[i].red(), colors[i].green(), colors[i].blue(), 1);
-			tangents = nif->getArray<Vector3>( iData, "Tangents" );
-			binormals = nif->getArray<Vector3>( iData, "Binormals" );
+			tangents = nif->getArray<Vector3>( iData, TA_TANGENTS );
+			binormals = nif->getArray<Vector3>( iData, TA_BINORMALS );
 			
 			if ( norms.count() < verts.count() ) norms.clear();
 			if ( colors.count() < verts.count() ) colors.clear();
 			
 			coords.clear();
-			QModelIndex uvcoord = nif->getIndex( iData, "UV Sets" );
-			if ( ! uvcoord.isValid() ) uvcoord = nif->getIndex( iData, "UV Sets 2" );
+			QModelIndex uvcoord = nif->getIndex( iData, TA_UVSETS );
+			if ( ! uvcoord.isValid() ) uvcoord = nif->getIndex( iData, TA_UVSETS2 );
 			if ( uvcoord.isValid() )
 			{
 				for ( int r = 0; r < nif->rowCount( uvcoord ); r++ )
@@ -1027,8 +1015,8 @@ void Mesh::drawSelection() const
 		n = "TSpace";
 	}
 	
-	if ( n == "Vertices" || n == "Normals" || n == "Vertex Colors" 
-	  || n == "UV Sets" || n == "Tangents" || n == "Binormals" )
+	if ( n == TA_VERTICES || n == TA_NORMALS || n == TA_VERTEXCOLORS 
+	  || n == TA_UVSETS || n == TA_TANGENTS || n == TA_BINORMALS )
 	{
 		glDepthFunc( GL_LEQUAL );
 		glNormalColor();
@@ -1086,7 +1074,7 @@ void Mesh::drawSelection() const
 			glEnd();
 		}
 	}
-	if ( n == "Normals" || n == "TSpace" )
+	if ( n == TA_NORMALS || n == "TSpace" )
 	{
 		glDepthFunc( GL_LEQUAL );
 		glNormalColor();
@@ -1125,7 +1113,7 @@ void Mesh::drawSelection() const
 			glEnd();
 		}
 	}
-	if ( n == "Tangents" )
+	if ( n == TA_TANGENTS )
 	{
 		glDepthFunc( GL_LEQUAL );
 		glNormalColor();
@@ -1156,7 +1144,7 @@ void Mesh::drawSelection() const
 			glEnd();
 		}
 	}
-	if ( n == "Binormals" )
+	if ( n == TA_BINORMALS )
 	{
 		glDepthFunc( GL_LEQUAL );
 		glNormalColor();

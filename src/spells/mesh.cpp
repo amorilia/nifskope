@@ -92,14 +92,14 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 	{
 		// read the data
 		
-		QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );
+		QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
 		if ( ! verts.count() ) {
 			throw QString( Spell::tr("no vertices?") );
 		}
-		QVector<Vector3> norms = nif->getArray<Vector3>( iData, "Normals" );
-		QVector<Color4> colors = nif->getArray<Color4>( iData, "Vertex Colors" );
+		QVector<Vector3> norms = nif->getArray<Vector3>( iData, TA_NORMALS );
+		QVector<Color4> colors = nif->getArray<Color4>( iData, TA_VERTEXCOLORS );
 		QList< QVector<Vector2> > texco;
-		QModelIndex iUVSets = nif->getIndex( iData, "UV Sets" );
+		QModelIndex iUVSets = nif->getIndex( iData, TA_UVSETS );
 		for ( int r = 0; r < nif->rowCount( iUVSets ); r++ )
 		{
 			texco << nif->getArray<Vector2>( iUVSets.child( r, 0 ) );
@@ -185,12 +185,12 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 		for ( int r = 0; r < nif->rowCount( iPoints ); r++ )
 			nif->setArray<quint16>( iPoints.child( r, 0 ), strips[r] );
 		nif->set<int>( iData, TA_NUMVERTICES, verts.count() );
-		nif->updateArray( iData, "Vertices" );
-		nif->setArray<Vector3>( iData, "Vertices", verts );
-		nif->updateArray( iData, "Normals" );
-		nif->setArray<Vector3>( iData, "Normals", norms );
-		nif->updateArray( iData, "Vertex Colors" );
-		nif->setArray<Color4>( iData, "Vertex Colors", colors );
+		nif->updateArray( iData, TA_VERTICES );
+		nif->setArray<Vector3>( iData, TA_VERTICES, verts );
+		nif->updateArray( iData, TA_NORMALS );
+		nif->setArray<Vector3>( iData, TA_NORMALS, norms );
+		nif->updateArray( iData, TA_VERTEXCOLORS );
+		nif->setArray<Color4>( iData, TA_VERTEXCOLORS, colors );
 		for ( int r = 0; r < nif->rowCount( iUVSets ); r++ )
 		{
 			nif->updateArray( iUVSets.child( r, 0 ) );
@@ -269,7 +269,7 @@ public:
 		QModelIndex idx = index;
 		if ( nif->itemType( index ).toLower() != "texcoord" )
 		{
-			idx = nif->getIndex( nif->getBlock( index ), "UV Sets" );
+			idx = nif->getIndex( nif->getBlock( index ), TA_UVSETS );
 		}
 		QMenu menu;
 		static const char * const flipCmds[3] = { "S = 1.0 - S", "T = 1.0 - T", "S <=> T" };
@@ -486,13 +486,13 @@ public:
 			
 			// read the data
 			
-			QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );
+			QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
 			if ( ! verts.count() )
 				throw QString( "no vertices?" );
-			QVector<Vector3> norms = nif->getArray<Vector3>( iData, "Normals" );
-			QVector<Color4> colors = nif->getArray<Color4>( iData, "Vertex Colors" );
+			QVector<Vector3> norms = nif->getArray<Vector3>( iData, TA_NORMALS );
+			QVector<Color4> colors = nif->getArray<Color4>( iData, TA_VERTEXCOLORS );
 			QList< QVector<Vector2> > texco;
-			QModelIndex iUVSets = nif->getIndex( iData, "UV Sets" );
+			QModelIndex iUVSets = nif->getIndex( iData, TA_UVSETS );
 			for ( int r = 0; r < nif->rowCount( iUVSets ); r++ )
 			{
 				texco << nif->getArray<Vector2>( iUVSets.child( r, 0 ) );
@@ -618,7 +618,7 @@ QModelIndex spUpdateCenterRadius::cast( NifModel * nif, const QModelIndex & inde
 {
 	QModelIndex iData = nif->getBlock( index );
 	
-	QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );
+	QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
 	if ( ! verts.count() )
 		return index;
 	

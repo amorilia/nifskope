@@ -67,7 +67,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		if( ! nif->inherits( index, "NiTriBasedGeom" ) || ! nif->checkVersion( NF_V10000100, 0 ) )
+		if( ! nif->inherits( index, T_NITRIBASEDGEOM ) || ! nif->checkVersion( NF_V10000100, 0 ) )
 			return false;
 		
 		QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
@@ -84,7 +84,7 @@ public:
 		QVector<Vector4> convex_verts, convex_norms;
 		
 		/* get the verts of our mesh */
-		QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );
+		QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
 		
 		// to store results
 		QVector<Vector4> hullVerts, hullNorms;
@@ -167,13 +167,13 @@ public:
 		
 		/* set CVS verts */
 		nif->set<uint>( iCVS, TA_NUMVERTICES, convex_verts.count() );
-		nif->updateArray( iCVS, "Vertices" );
-		nif->setArray<Vector4>( iCVS, "Vertices", convex_verts );
+		nif->updateArray( iCVS, TA_VERTICES );
+		nif->setArray<Vector4>( iCVS, TA_VERTICES, convex_verts );
 		
 		/* set CVS norms */
 		nif->set<uint>( iCVS, "Num Normals", convex_norms.count() );
-		nif->updateArray( iCVS, "Normals" );
-		nif->setArray<Vector4>( iCVS, "Normals", convex_norms );
+		nif->updateArray( iCVS, TA_NORMALS );
+		nif->setArray<Vector4>( iCVS, TA_NORMALS, convex_norms );
 		
 		// radius is always 0.1?
 		nif->set<float>( iCVS, "Radius", 0.1 );
@@ -422,7 +422,7 @@ public:
 			
 			if ( iData.isValid() )
 			{
-				QVector<Vector3> vrts = nif->getArray<Vector3>( iData, "Vertices" );
+				QVector<Vector3> vrts = nif->getArray<Vector3>( iData, TA_VERTICES );
 				QVector<Triangle> tris;
 				QVector<Vector3> nrms;
 				
@@ -486,7 +486,7 @@ public:
 		}
 		
 		nif->set<int>( iPackedData, TA_NUMVERTICES, vertices.count() );
-		QModelIndex iVertices = nif->getIndex( iPackedData, "Vertices" );
+		QModelIndex iVertices = nif->getIndex( iPackedData, TA_VERTICES );
 		nif->updateArray( iVertices );
 		nif->setArray<Vector3>( iVertices, vertices );
 		

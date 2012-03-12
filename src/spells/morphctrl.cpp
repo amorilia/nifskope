@@ -82,7 +82,7 @@ public:
 			{
 				qWarning() << "overriding base key frame, all other frames will be cleared";
 				nif->set<int>( iMorphData, TA_NUMVERTICES, nif->get<int>( iMeshData, TA_NUMVERTICES ) );
-				QVector<Vector3> verts = nif->getArray<Vector3>( iMeshData, "Vertices" );
+				QVector<Vector3> verts = nif->getArray<Vector3>( iMeshData, TA_VERTICES );
 				nif->updateArray( iFrames.child( 0, 0 ), TA_VECTORS );
 				nif->setArray( iFrames.child( 0, 0 ), TA_VECTORS, verts );
 				verts.fill( Vector3() );
@@ -94,7 +94,7 @@ public:
 			}
 			else
 			{
-				QVector<Vector3> verts = nif->getArray<Vector3>( iMeshData, "Vertices" );
+				QVector<Vector3> verts = nif->getArray<Vector3>( iMeshData, TA_VERTICES );
 				QVector<Vector3> base = nif->getArray<Vector3>( iFrames.child( 0, 0 ), TA_VECTORS );
 				QVector<Vector3> frame( base.count(), Vector3() );
 				for ( int n = 0; n < base.count(); n++ )
@@ -110,7 +110,7 @@ public:
 	QModelIndex getMeshData( const NifModel * nif, const QModelIndex & iMorpher )
 	{
 		QModelIndex iMesh = nif->getBlock( nif->getParent( nif->getBlockNumber( iMorpher ) ) );
-		if ( nif->inherits( iMesh, "NiTriBasedGeom" ) )
+		if ( nif->inherits( iMesh, T_NITRIBASEDGEOM ) )
 		{
 			QModelIndex iData = nif->getBlock( nif->getLink( iMesh, TA_DATA ) );
 			if ( nif->inherits( iData, "NiTriBasedGeomData" ) )

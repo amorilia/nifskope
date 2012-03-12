@@ -86,7 +86,7 @@ public:
 					qint32 l = nif->getLink( iChildren.child( r, 0 ) );
 					if ( l >= 0 )
 					{
-						links.append( QPair<qint32, bool>( l, nif->inherits( nif->getBlock( l ), "NiTriBasedGeom" ) ) );
+						links.append( QPair<qint32, bool>( l, nif->inherits( nif->getBlock( l ), T_NITRIBASEDGEOM ) ) );
 					}
 				}
 				
@@ -138,7 +138,7 @@ public:
 			
 			// remove empty property links
 			QModelIndex iNumProperties = nif->getIndex( iBlock, "Num Properties" );
-			QModelIndex iProperties = nif->getIndex( iBlock, "Properties" );
+			QModelIndex iProperties = nif->getIndex( iBlock, TA_PROPERTIES );
 			arrayCollapser.numCollapser( nif, iNumProperties, iProperties );
 			
 			// remove empty extra data links

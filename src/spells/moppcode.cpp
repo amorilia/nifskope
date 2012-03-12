@@ -173,7 +173,7 @@ public:
 			if ( nif->isNiBlock( index, "bhkMoppBvTreeShape" ) )
 			{
 				return ( nif->checkVersion( NF_V20000004, NF_V20000005 ) 
-						|| nif->checkVersion( 0x14020007, 0x14020007 ) );
+						|| nif->checkVersion( NF_V20020007, NF_V20020007 ) );
 			}			
 		}
 		return false;
@@ -207,7 +207,7 @@ public:
 			for ( int t = 0; t < nSubShapes; t++ ) {
 				subshapeVerts[t] = nif->get<int>( ihkSubShapes.child( t, 0 ), TA_NUMVERTICES );
 			}
-		} else if ( nif->checkVersion( 0x14020007, 0x14020007 ) ) {
+		} else if ( nif->checkVersion( NF_V20020007, NF_V20020007 ) ) {
 			int nSubShapes = nif->get<int>( ihkPackedNiTriStripsData, "Num Sub Shapes" );
 			QModelIndex ihkSubShapes = nif->getIndex( ihkPackedNiTriStripsData, "Sub Shapes" );
 			subshapeVerts.resize(nSubShapes);
@@ -216,7 +216,7 @@ public:
 			}
 		}
 		
-		QVector<Vector3> verts = nif->getArray<Vector3>( ihkPackedNiTriStripsData, "Vertices" );
+		QVector<Vector3> verts = nif->getArray<Vector3>( ihkPackedNiTriStripsData, TA_VERTICES );
 		QVector<Triangle> triangles;
 		
 		int nTriangles = nif->get<int>( ihkPackedNiTriStripsData, "Num Triangles" );
@@ -285,7 +285,7 @@ public:
 			if ( nif && ! idx.isValid() )
 				{
 					return ( nif->checkVersion( NF_V20000004, NF_V20000005 ) 
-							|| nif->checkVersion( 0x14020007, 0x14020007 ) );
+							|| nif->checkVersion( NF_V20020007, NF_V20020007 ) );
 				}
 		}
 		return false;

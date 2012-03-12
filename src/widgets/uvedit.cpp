@@ -847,7 +847,7 @@ bool UVWidget::setNifData( NifModel * nifModel, const QModelIndex & nifIndex )
 	iShapeData = nif->getBlock( nif->getLink( iShape, TA_DATA ) );
 	if( nif->inherits( iShapeData, "NiTriBasedGeomData" ) )
 	{
-		iTexCoords = nif->getIndex( iShapeData, "UV Sets" ).child( 0, 0 );
+		iTexCoords = nif->getIndex( iShapeData, TA_UVSETS ).child( 0, 0 );
 		if( ! iTexCoords.isValid() || ! nif->rowCount( iTexCoords ) )
 		{
 			return false;
@@ -860,7 +860,7 @@ bool UVWidget::setNifData( NifModel * nifModel, const QModelIndex & nifIndex )
 		
 	}
 		
-	foreach( qint32 l, nif->getLinkArray( iShape, "Properties" ) )
+	foreach( qint32 l, nif->getLinkArray( iShape, TA_PROPERTIES ) )
 	{
 		QModelIndex iTexProp = nif->getBlock( l, "NiTexturingProperty" );
 		if( iTexProp.isValid() )
@@ -874,7 +874,7 @@ bool UVWidget::setNifData( NifModel * nifModel, const QModelIndex & nifIndex )
 					if( iTexSource.isValid() )
 					{
 						currentCoordSet = nif->get<int>( iTex, "UV Set" );
-						iTexCoords = nif->getIndex( iShapeData, "UV Sets" ).child( currentCoordSet, 0 );
+						iTexCoords = nif->getIndex( iShapeData, TA_UVSETS ).child( currentCoordSet, 0 );
 						texsource = iTexSource;
 						if( setTexCoords() ) return true;
 					}
@@ -903,7 +903,7 @@ bool UVWidget::setNifData( NifModel * nifModel, const QModelIndex & nifIndex )
 				// TODO: use the BSShaderTextureSet
 				iTexProp = nif->getBlock( l, "BSShaderPPLightingProperty" );
 				if( !iTexProp.isValid() )
-					iTexProp = nif->getBlock( l, "BSLightingShaderProperty" );
+					iTexProp = nif->getBlock( l, T_BSLIGHTINGSHADERPROPERTY );
 				if( iTexProp.isValid() )
 				{
 					QModelIndex iTexSource = nif->getBlock( nif->getLink( iTexProp, "Texture Set" ) );
@@ -1490,7 +1490,7 @@ void UVWidget::getTexSlots()
 {
 	menuTexSelect->clear();
 	validTexs.clear();
-	foreach( qint32 l, nif->getLinkArray( iShape, "Properties" ) )
+	foreach( qint32 l, nif->getLinkArray( iShape, TA_PROPERTIES ) )
 	{
 		QModelIndex iTexProp = nif->getBlock( l, "NiTexturingProperty" );
 		if( iTexProp.isValid() )
@@ -1521,7 +1521,7 @@ void UVWidget::selectTexSlot()
 {
 	QString selected = texSlotGroup->checkedAction()->text();
 	currentTexSlot = texnames.indexOf( selected );
-	foreach( qint32 l, nif->getLinkArray( iShape, "Properties" ) )
+	foreach( qint32 l, nif->getLinkArray( iShape, TA_PROPERTIES ) )
 	{
 		QModelIndex iTexProp = nif->getBlock( l, "NiTexturingProperty" );
 		if( iTexProp.isValid() )
@@ -1533,7 +1533,7 @@ void UVWidget::selectTexSlot()
 				if( iTexSource.isValid() )
 				{
 					currentCoordSet = nif->get<int>( iTex, "UV Set" );
-					iTexCoords = nif->getIndex( iShapeData, "UV Sets" ).child( currentCoordSet, 0 );
+					iTexCoords = nif->getIndex( iShapeData, TA_UVSETS ).child( currentCoordSet, 0 );
 					texsource = iTexSource;
 					setTexCoords();
 					updateGL();
@@ -1587,7 +1587,7 @@ void UVWidget::changeCoordSet( int setToUse )
 	currentCoordSet = setToUse;
 	nif->set<quint8>( iTex, "UV Set", currentCoordSet );
 	// read new coordinate set
-	iTexCoords = nif->getIndex( iShapeData, "UV Sets" ).child( currentCoordSet, 0 );
+	iTexCoords = nif->getIndex( iShapeData, TA_UVSETS ).child( currentCoordSet, 0 );
 	setTexCoords();
 }
 
@@ -1599,7 +1599,7 @@ void UVWidget::duplicateCoordSet()
 	// expand the UV Sets array and duplicate the current coordinates
 	quint8 numUvSets = nif->get<quint8>( iShapeData, "Num UV Sets" );
 	nif->set<quint8>( iShapeData, "Num UV Sets", numUvSets + 1 );
-	QModelIndex uvSets = nif->getIndex( iShapeData, "UV Sets" );
+	QModelIndex uvSets = nif->getIndex( iShapeData, TA_UVSETS );
 	nif->updateArray( uvSets );
 	nif->setArray<Vector2>( uvSets.child( numUvSets, 0), nif->getArray<Vector2>( uvSets.child( currentCoordSet, 0 ) ) );
 	// switch to that coordinate set

@@ -104,24 +104,24 @@ class spStrippify : public Spell
 			copyValue<int>( nif, iStripData, iData, TA_NUMVERTICES );
 			
 			nif->set<int>( iStripData, "Has Vertices", 1 );
-			copyArray<Vector3>( nif, iStripData, iData, "Vertices" );
+			copyArray<Vector3>( nif, iStripData, iData, TA_VERTICES );
 			
 			copyValue<int>( nif, iStripData, iData, "Has Normals" );
-			copyArray<Vector3>( nif, iStripData, iData, "Normals" );
+			copyArray<Vector3>( nif, iStripData, iData, TA_NORMALS );
 			
 			copyValue<int>( nif, iStripData, iData, "TSpace Flag" );
-			copyArray<Vector3>( nif, iStripData, iData, "Binormals" );
-			copyArray<Vector3>( nif, iStripData, iData, "Tangents" );
+			copyArray<Vector3>( nif, iStripData, iData, TA_BINORMALS );
+			copyArray<Vector3>( nif, iStripData, iData, TA_TANGENTS );
 			
 			copyValue<int>( nif, iStripData, iData, "Has Vertex Colors" );
-			copyArray<Color4>( nif, iStripData, iData, "Vertex Colors" );
+			copyArray<Color4>( nif, iStripData, iData, TA_VERTEXCOLORS );
 			
 			copyValue<int>( nif, iStripData, iData, "Has UV" );
 			copyValue<int>( nif, iStripData, iData, "Num UV Sets" );
 			copyValue<int>( nif, iStripData, iData, "BS Num UV Sets" );
 			copyValue<int>( nif, iStripData, iData, "Num UV Sets 2" );
-			QModelIndex iDstUV = nif->getIndex( iStripData, "UV Sets" );
-			QModelIndex iSrcUV = nif->getIndex( iData, "UV Sets" );
+			QModelIndex iDstUV = nif->getIndex( iStripData, TA_UVSETS );
+			QModelIndex iSrcUV = nif->getIndex( iData, TA_UVSETS );
 			if ( iDstUV.isValid() && iSrcUV.isValid() )
 			{
 				nif->updateArray( iDstUV );
@@ -130,8 +130,8 @@ class spStrippify : public Spell
 					copyArray<Vector2>( nif, iDstUV.child( r, 0 ), iSrcUV.child( r, 0 ) );
 				}
 			}
-			iDstUV = nif->getIndex( iStripData, "UV Sets 2" );
-			iSrcUV = nif->getIndex( iData, "UV Sets 2" );
+			iDstUV = nif->getIndex( iStripData, TA_UVSETS2 );
+			iSrcUV = nif->getIndex( iData, TA_UVSETS2 );
 			if ( iDstUV.isValid() && iSrcUV.isValid() )
 			{
 				nif->updateArray( iDstUV );
@@ -255,24 +255,24 @@ class spTriangulate : public Spell
 			copyValue<int>( nif, iTriData, iStripData, TA_NUMVERTICES );
 			
 			nif->set<int>( iTriData, "Has Vertices", 1 );
-			copyArray<Vector3>( nif, iTriData, iStripData, "Vertices" );
+			copyArray<Vector3>( nif, iTriData, iStripData, TA_VERTICES );
 			
 			copyValue<int>( nif, iTriData, iStripData, "Has Normals" );
-			copyArray<Vector3>( nif, iTriData, iStripData, "Normals" );
+			copyArray<Vector3>( nif, iTriData, iStripData, TA_NORMALS );
 			
 			copyValue<int>( nif, iTriData, iStripData, "TSpace Flag" );
-			copyArray<Vector3>( nif, iTriData, iStripData, "Binormals" );
-			copyArray<Vector3>( nif, iTriData, iStripData, "Tangents" );
+			copyArray<Vector3>( nif, iTriData, iStripData, TA_BINORMALS );
+			copyArray<Vector3>( nif, iTriData, iStripData, TA_TANGENTS );
 			
 			copyValue<int>( nif, iTriData, iStripData, "Has Vertex Colors" );
-			copyArray<Color4>( nif, iTriData, iStripData, "Vertex Colors" );
+			copyArray<Color4>( nif, iTriData, iStripData, TA_VERTEXCOLORS );
 			
 			copyValue<int>( nif, iTriData, iStripData, "Has UV" );
 			copyValue<int>( nif, iTriData, iStripData, "Num UV Sets" );
 			copyValue<int>( nif, iTriData, iStripData, "BS Num UV Sets" );
 			copyValue<int>( nif, iTriData, iStripData, "Num UV Sets 2" );
-			QModelIndex iDstUV = nif->getIndex( iTriData, "UV Sets" );
-			QModelIndex iSrcUV = nif->getIndex( iStripData, "UV Sets" );
+			QModelIndex iDstUV = nif->getIndex( iTriData, TA_UVSETS );
+			QModelIndex iSrcUV = nif->getIndex( iStripData, TA_UVSETS );
 			if ( iDstUV.isValid() && iSrcUV.isValid() )
 			{
 				nif->updateArray( iDstUV );
@@ -281,8 +281,8 @@ class spTriangulate : public Spell
 					copyArray<Vector2>( nif, iDstUV.child( r, 0 ), iSrcUV.child( r, 0 ) );
 				}
 			}
-			iDstUV = nif->getIndex( iTriData, "UV Sets 2" );
-			iSrcUV = nif->getIndex( iStripData, "UV Sets 2" );
+			iDstUV = nif->getIndex( iTriData, TA_UVSETS2 );
+			iSrcUV = nif->getIndex( iStripData, TA_UVSETS2 );
 			if ( iDstUV.isValid() && iSrcUV.isValid() )
 			{
 				nif->updateArray( iDstUV );

@@ -56,7 +56,7 @@ public:
 		//if ( !index.isValid() )
 		//	return false;
 		
-		if ( !nif->checkVersion( 0x14020007, 0x14020007 ) || (nif->getUserVersion() != 11) )
+		if ( !nif->checkVersion( NF_V20020007, NF_V20020007 ) || (nif->getUserVersion() != 11) )
 			return false;
 		
 		return !index.isValid() || nif->getBlock( index, "NiGeometryData" ).isValid();

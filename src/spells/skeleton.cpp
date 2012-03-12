@@ -108,7 +108,7 @@ public:
 					{
 						doNodes( nif, iChild, Transform(), world, bones );
 					}
-					else if ( nif->inherits( iChild, "NiTriBasedGeom" ) )
+					else if ( nif->inherits( iChild, T_NITRIBASEDGEOM ) )
 					{
 						doShape( nif, iChild, Transform(), world, bones );
 					}
@@ -158,7 +158,7 @@ public:
 					{
 						hasSkinnedChildren |= doNodes( nif, iChild, tparent * tlocal, world, bones );
 					}
-					else if ( nif->inherits( iChild, "NiTriBasedGeom" ) )
+					else if ( nif->inherits( iChild, T_NITRIBASEDGEOM ) )
 					{
 						hasSkinnedChildren |= doShape( nif, iChild, tparent * tlocal, world, bones );
 					}
@@ -592,7 +592,7 @@ public:
 						
 						if ( doMatch )
 						{
-							QVector<Vector3> verts = nif->getArray<Vector3>( iData, "Vertices" );
+							QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
 							for ( int a = 0; a < verts.count(); a++ )
 							{
 								match.insertMulti( a, a );
@@ -1198,7 +1198,7 @@ public:
 			boneTrans.append( Transform( nif, iBone ) );
 		}
 		
-		QVector<Vector3> verts = nif->getArray<Vector3>( iMeshData, "Vertices" );
+		QVector<Vector3> verts = nif->getArray<Vector3>( iMeshData, TA_VERTICES );
 		
 		QModelIndex iBoneDataList = nif->getIndex( iSkinData, "Bone List" );
 		for ( int b = 0; b < nif->rowCount( iBoneDataList ); b++ )
@@ -1342,7 +1342,7 @@ public:
 					// repeat
 					doBones( nif, iChild );
 				}
-				else if ( nif->inherits( iChild, "NiTriBasedGeom" ) )
+				else if ( nif->inherits( iChild, T_NITRIBASEDGEOM ) )
 				{
 					// Scale NiTriShape vertices, flip normals
 					// Change SkinInstance bones
@@ -1365,7 +1365,7 @@ public:
 		if ( iData.isValid() && iSkinInstance.isValid() )
 		{
 			// from spScaleVertices
-			QVector<Vector3> vertices = nif->getArray<Vector3>( iData, "Vertices" );
+			QVector<Vector3> vertices = nif->getArray<Vector3>( iData, TA_VERTICES );
 			QMutableVectorIterator<Vector3> it( vertices );
 			while ( it.hasNext() )
 			{
@@ -1373,7 +1373,7 @@ public:
 				for ( int a = 0; a < 3; a++ )
 					v[a] = -v[a];
 			}
-			nif->setArray<Vector3>( iData, "Vertices", vertices );
+			nif->setArray<Vector3>( iData, TA_VERTICES, vertices );
 			
 			// fix centre Z - don't recalculate
 			Vector3 shapeCentre = nif->get<Vector3>( iData, "Center" );
@@ -1389,12 +1389,12 @@ public:
 			nif->setArray<Triangle>( iData, "Triangles", tris );
 			
 			// from spFlipNormals
-			QVector<Vector3> norms = nif->getArray<Vector3>( iData, "Normals" );
+			QVector<Vector3> norms = nif->getArray<Vector3>( iData, TA_NORMALS );
 			for ( int n = 0; n < norms.count(); n++ )
 			{
 				norms[n] = -norms[n];
 			}
-			nif->setArray<Vector3>( iData, "Normals", norms );
+			nif->setArray<Vector3>( iData, TA_NORMALS, norms );
 			
 			// from spFixSkeleton - get the bones from the skin data
 			// weirdness with rounding, sometimes...? probably "good enough" for 99% of cases
