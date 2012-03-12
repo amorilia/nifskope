@@ -220,7 +220,7 @@ public:
 		QVector<Triangle> triangles;
 		
 		int nTriangles = nif->get<int>( ihkPackedNiTriStripsData, "Num Triangles" );
-		QModelIndex iTriangles = nif->getIndex( ihkPackedNiTriStripsData, "Triangles" );
+		QModelIndex iTriangles = nif->getIndex( ihkPackedNiTriStripsData, TA_TRIANGLES );
 		triangles.resize(nTriangles);
 		for ( int t = 0; t < nTriangles; t++ ) {
 			triangles[t] = nif->get<Triangle>( iTriangles.child( t, 0 ), "Triangle" );

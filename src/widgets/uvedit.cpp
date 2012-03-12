@@ -935,11 +935,11 @@ bool UVWidget::setTexCoords()
 
 	if( nif->isNiBlock( iShapeData, T_NITRISHAPEDATA ) )
 	{
-		tris = nif->getArray< Triangle >( iShapeData, "Triangles" );
+		tris = nif->getArray< Triangle >( iShapeData, TA_TRIANGLES );
 	}
 	else if( nif->isNiBlock( iShapeData, T_NITRISTRIPSDATA ) )
 	{
-		QModelIndex iPoints = nif->getIndex( iShapeData, "Points" );
+		QModelIndex iPoints = nif->getIndex( iShapeData, TA_POINTS );
 		if( iPoints.isValid() )
 		{
 			for( int r = 0; r < nif->rowCount( iPoints ); r++ )

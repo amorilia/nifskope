@@ -127,7 +127,7 @@ void blockLink( NifModel * nif, const QModelIndex & index, const QModelIndex & i
 
 	else if ( nif->inherits( index, "NiAVObject" ) && nif->inherits( iBlock, "NiExtraData" ) )
 	{
-		addLink( nif, index, "Extra Data List", nif->getBlockNumber( iBlock ) );
+		addLink( nif, index, TA_EXTRADATALIST, nif->getBlockNumber( iBlock ) );
 	}
 	else if ( nif->inherits( index, "NiObjectNET") && nif->inherits( iBlock, "NiTimeController" ) )
 	{
@@ -415,7 +415,7 @@ public:
 				nif->set<QString>( nif->getIndex( iExtra, TA_NAME ), "BBX" );
 			}
 			
-			addLink( nif, iParent, "Extra Data List", nif->getBlockNumber( iExtra ) );
+			addLink( nif, iParent, TA_EXTRADATALIST, nif->getBlockNumber( iExtra ) );
 			return iExtra;
 		}
 		else

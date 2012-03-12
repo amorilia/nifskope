@@ -755,8 +755,8 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			nif->set<int>( iData, "Has Triangles", 1 );
 			nif->set<int>( iData, "Num Triangles", triangles.count() );
 			nif->set<int>( iData, "Num Triangle Points", triangles.count() * 3 );
-			nif->updateArray( iData, "Triangles" );
-			nif->setArray<Triangle>( iData, "Triangles", triangles );
+			nif->updateArray( iData, TA_TRIANGLES );
+			nif->setArray<Triangle>( iData, TA_TRIANGLES, triangles );
 			
 			Vector3 center;
 			foreach ( Vector3 v,  mesh->vertices )

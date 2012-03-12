@@ -613,7 +613,7 @@ class spTextureTemplate : public Spell
 
 		// get the triangles
 		QModelIndex iData = getData( nif, index );
-		QModelIndex iPoints = nif->getIndex( iData, "Points" );
+		QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
 		if ( iPoints.isValid() )
 		{
 			QList< QVector< quint16 > > strips;
@@ -623,7 +623,7 @@ class spTextureTemplate : public Spell
 		}
 		else
 		{
-			tri = nif->getArray<Triangle>( nif->getIndex( getData( nif, index ), "Triangles" ) );
+			tri = nif->getArray<Triangle>( nif->getIndex( getData( nif, index ), TA_TRIANGLES ) );
 		}
 
 		// render the template image

@@ -126,6 +126,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define T_NITRIBASEDGEOM "NiTriBasedGeom"
 #define T_BSLIGHTINGSHADERPROPERTY "BSLightingShaderProperty"
 #define T_BSEFFECTSHADERPROPERTY "BSEffectShaderProperty"
+#define T_NIBINARYEXTRADATA "NiBinaryExtraData"
+#define T_NISKINDATA "NiSkinData"
+#define T_NISKINPARTITION "NiSkinPartition"
 
 #define TA_FILENAME "File Name"
 #define TA_STRINGDATA "String Data"
@@ -164,6 +167,18 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TA_BINORMALS "Binormals"
 #define TA_UVSETS "UV Sets"
 #define TA_UVSETS2 "UV Sets 2"
+#define TA_TRIANGLES "Triangles"
+#define TA_POINTS "Points"
+#define TA_EXTRADATALIST "Extra Data List"
+#define TA_BINARYDATA "Binary Data"
+#define TA_SKELETONROOT "Skeleton Root"
+#define TA_BONES "Bones"
+#define TA_BONELIST "Bone List"
+#define TA_HASVERTEXWEIGHTS "Has Vertex Weights"
+#define TA_SKINPARTITION "Skin Partition"
+#define TA_SKINPARTITIONBLOCKS "Skin Partition Blocks"
+#define TA_STRIPS "Strips"
+#define TA_STRIPLENGTHS "Strip Lengths"
 
 // NiBlocks - artificial blocks
 #define B_NIHEADER "NiHeader"

@@ -293,7 +293,7 @@ public:
 		
 		QStringList collideModes = QStringList()
 			<< Spell::tr(STR_NOTHING)
-			<< Spell::tr("Triangles")
+			<< Spell::tr(TA_TRIANGLES)
 			<< Spell::tr("Bounding Box")
 			<< Spell::tr("Continue");
 		
@@ -389,7 +389,7 @@ public:
 		
 		QStringList collideModes = QStringList()
 			<< Spell::tr(STR_NOTHING)
-			<< Spell::tr("Triangles")
+			<< Spell::tr(TA_TRIANGLES)
 			<< Spell::tr("Bounding Box")
 			<< Spell::tr("Continue");
 		
@@ -532,7 +532,7 @@ public:
 		
 		QStringList collideModes = QStringList()
 			<< Spell::tr(STR_NOTHING) // 0
-			<< Spell::tr("Triangles") // 2
+			<< Spell::tr(TA_TRIANGLES) // 2
 			<< Spell::tr("Bounding Box") // 4
 			<< Spell::tr("Continue"); // 6
 		QStringList billboardModes = QStringList()

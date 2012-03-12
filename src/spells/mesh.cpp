@@ -120,7 +120,7 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 		
 		QMap<quint16, bool> used;
 		
-		QVector<Triangle> tris = nif->getArray<Triangle>( iData, "Triangles" );
+		QVector<Triangle> tris = nif->getArray<Triangle>( iData, TA_TRIANGLES );
 		foreach ( Triangle tri, tris )
 		{
 			for ( int t = 0; t < 3; t++ )
@@ -128,7 +128,7 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 		}
 		
 		QList< QVector< quint16 > > strips;
-		QModelIndex iPoints = nif->getIndex( iData, "Points" );
+		QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
 		for ( int r = 0; r < nif->rowCount( iPoints ); r++ )
 		{
 			strips << nif->getArray<quint16>( iPoints.child( r, 0 ) );
@@ -181,7 +181,7 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 		
 		// write back the data
 		
-		nif->setArray<Triangle>( iData, "Triangles", tris );
+		nif->setArray<Triangle>( iData, TA_TRIANGLES, tris );
 		for ( int r = 0; r < nif->rowCount( iPoints ); r++ )
 			nif->setArray<quint16>( iPoints.child( r, 0 ), strips[r] );
 		nif->set<int>( iData, TA_NUMVERTICES, verts.count() );
@@ -201,8 +201,8 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 		
 		QModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), T_NISKININSTANCE );
 		
-		QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), "NiSkinData" );
-		QModelIndex iBones = nif->getIndex( iSkinData, "Bone List" );
+		QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), T_NISKINDATA );
+		QModelIndex iBones = nif->getIndex( iSkinData, TA_BONELIST );
 		for ( int b = 0; b < nif->rowCount( iBones ); b++ )
 		{
 			QVector< QPair<int,float> > weights;
@@ -237,9 +237,9 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 		
 		// process NiSkinPartition
 		
-		QModelIndex iSkinPart = nif->getBlock( nif->getLink( iSkinInst, "Skin Partition" ), "NiSkinPartition" );
+		QModelIndex iSkinPart = nif->getBlock( nif->getLink( iSkinInst, TA_SKINPARTITION ), T_NISKINPARTITION );
 		if ( ! iSkinPart.isValid() )
-			iSkinPart = nif->getBlock( nif->getLink( iSkinData, "Skin Partition" ), "NiSkinPartition" );
+			iSkinPart = nif->getBlock( nif->getLink( iSkinData, TA_SKINPARTITION ), T_NISKINPARTITION );
 		if ( iSkinPart.isValid() )
 		{
 			nif->removeNiBlock( nif->getBlockNumber( iSkinPart ) );
@@ -385,10 +385,10 @@ public:
 	{
 		QModelIndex iData = getTriShapeData( nif, index );
 
-		QVector<Triangle> tris = nif->getArray<Triangle>( iData, "Triangles" );
+		QVector<Triangle> tris = nif->getArray<Triangle>( iData, TA_TRIANGLES );
 		for ( int t = 0; t < tris.count(); t++ )
 			tris[t].flip();
-		nif->setArray<Triangle>( iData, "Triangles", tris );
+		nif->setArray<Triangle>( iData, TA_TRIANGLES, tris );
 
 		return index;
 	}
@@ -412,7 +412,7 @@ public:
 	{
 		QModelIndex iData = getTriShapeData( nif, index );
 		
-		QList<Triangle> tris = nif->getArray<Triangle>( iData, "Triangles" ).toList();
+		QList<Triangle> tris = nif->getArray<Triangle>( iData, TA_TRIANGLES ).toList();
 		int cnt = 0;
 		
 		int i = 0;
@@ -456,8 +456,8 @@ public:
 			qWarning() << QString( Spell::tr("%1 triangles removed") ).arg( cnt );
 			nif->set<int>( iData, "Num Triangles", tris.count() );
 			nif->set<int>( iData, "Num Triangle Points", tris.count() * 3 );
-			nif->updateArray( iData, "Triangles" );
-			nif->setArray<Triangle>( iData, "Triangles", tris.toVector() );
+			nif->updateArray( iData, TA_TRIANGLES );
+			nif->setArray<Triangle>( iData, TA_TRIANGLES, tris.toVector() );
 		}
 		return index;
 	}
@@ -541,7 +541,7 @@ public:
 			
 			// adjust the faces
 			
-			QVector< Triangle > tris = nif->getArray< Triangle >( iData, "Triangles" );
+			QVector< Triangle > tris = nif->getArray< Triangle >( iData, TA_TRIANGLES );
 			QMutableVectorIterator<Triangle> itri( tris );
 			while ( itri.hasNext() )
 			{
@@ -550,9 +550,9 @@ public:
 					if ( map.contains( t[p] ) )
 						t[p] = map.value( t[p] );
 			}
-			nif->setArray<Triangle>( iData, "Triangles", tris );
+			nif->setArray<Triangle>( iData, TA_TRIANGLES, tris );
 			
-			QModelIndex iPoints = nif->getIndex( iData, "Points" );
+			QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
 			for ( int r = 0; r < nif->rowCount( iPoints ); r++ )
 			{
 				QVector<quint16> strip = nif->getArray<quint16>( iPoints.child( r, 0 ) );

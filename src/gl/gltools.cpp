@@ -75,7 +75,7 @@ SkinPartition::SkinPartition( const NifModel * nif, const QModelIndex & index )
 			vertexMap[x] = x;
 	}
 	
-	boneMap = nif->getArray<int>( index, "Bones" );
+	boneMap = nif->getArray<int>( index, TA_BONES );
 	
 	QModelIndex iWeights = nif->getIndex( index, "Vertex Weights" );
 	QModelIndex iBoneIndices = nif->getIndex( index, "Bone Indices" );
@@ -94,13 +94,13 @@ SkinPartition::SkinPartition( const NifModel * nif, const QModelIndex & index )
 		}
 	}
 	
-	QModelIndex iStrips = nif->getIndex( index, "Strips" );
+	QModelIndex iStrips = nif->getIndex( index, TA_STRIPS );
 	for ( int s = 0; s < nif->rowCount( iStrips ); s++ )
 	{
 		tristrips << nif->getArray<quint16>( iStrips.child( s, 0 ) );
 	}
 	
-	triangles = nif->getArray<Triangle>( index, "Triangles" );
+	triangles = nif->getArray<Triangle>( index, TA_TRIANGLES );
 }
 
 /*

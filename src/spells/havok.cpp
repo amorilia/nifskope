@@ -426,7 +426,7 @@ public:
 				QVector<Triangle> tris;
 				QVector<Vector3> nrms;
 				
-				QModelIndex iPoints = nif->getIndex( iData, "Points" );
+				QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
 				for ( int x = 0; x < nif->rowCount( iPoints ); x++ )
 				{
 					tris += triangulate( nif->getArray<quint16>( iPoints.child( x, 0 ) ) );
@@ -477,7 +477,7 @@ public:
 		nif->setLink( iPackedShape, TA_DATA, nif->getBlockNumber( iPackedData ) );
 		
 		nif->set<int>( iPackedData, "Num Triangles", triangles.count() );
-		QModelIndex iTriangles = nif->getIndex( iPackedData, "Triangles" );
+		QModelIndex iTriangles = nif->getIndex( iPackedData, TA_TRIANGLES );
 		nif->updateArray( iTriangles );
 		for ( int t = 0; t < triangles.size(); t++ )
 		{

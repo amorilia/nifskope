@@ -590,7 +590,7 @@ void Mesh::transform()
 			{
 				// check indexes
 				// TODO: check other indexes as well
-				QVector<Triangle> ftriangles = nif->getArray<Triangle>( iData, "Triangles" );
+				QVector<Triangle> ftriangles = nif->getArray<Triangle>( iData, TA_TRIANGLES );
 				triangles.clear ();
 				int inv_idx = 0;
 				int inv_cnt = 0;
@@ -608,16 +608,16 @@ void Mesh::transform()
 				inv_cnt = ftriangles.count () - triangles.count ();
 				ftriangles.clear ();
 				if (inv_cnt > 0) {
-					int block_idx = nif->getBlockNumber (nif->getIndex( iData, "Triangles"));
+					int block_idx = nif->getBlockNumber (nif->getIndex( iData, TA_TRIANGLES));
 					qWarning() << "Error: " << inv_cnt << " invalid index(es) in block #"
-						<< block_idx << " NiTriShapeData.Triangles";
+						<< block_idx << " "T_NITRISHAPEDATA"."TA_TRIANGLES;
 				}
 				tristrips.clear();
 			}
 			else if ( nif->itemName( iData ) == T_NITRISTRIPSDATA )
 			{
 				tristrips.clear();
-				QModelIndex points = nif->getIndex( iData, "Points" );
+				QModelIndex points = nif->getIndex( iData, TA_POINTS );
 				if ( points.isValid() )
 				{
 					for ( int r = 0; r < nif->rowCount( points ); r++ )
@@ -633,16 +633,16 @@ void Mesh::transform()
 				tristrips.clear();
 			}
 			
-			QModelIndex iExtraData = nif->getIndex( iBlock, "Extra Data List" );
+			QModelIndex iExtraData = nif->getIndex( iBlock, TA_EXTRADATALIST );
 			if ( iExtraData.isValid() )
 			{
 				for ( int e = 0; e < nif->rowCount( iExtraData ); e++ )
 				{
-					QModelIndex iExtra = nif->getBlock( nif->getLink( iExtraData.child( e, 0 ) ), "NiBinaryExtraData" );
+					QModelIndex iExtra = nif->getBlock( nif->getLink( iExtraData.child( e, 0 ) ), T_NIBINARYEXTRADATA );
 					if ( nif->get<QString>( iExtra, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
 					{
 						iTangentData = iExtra;
-						QByteArray data = nif->get<QByteArray>( iExtra, "Binary Data" );
+						QByteArray data = nif->get<QByteArray>( iExtra, TA_BINARYDATA );
 						if ( data.count() == verts.count() * 4 * 3 * 2 )
 						{
 							tangents.resize( verts.count() );
@@ -665,15 +665,15 @@ void Mesh::transform()
 		weights.clear();		
 		partitions.clear();
 		
-		iSkinData = nif->getBlock( nif->getLink( iSkin, TA_DATA ), "NiSkinData" );
+		iSkinData = nif->getBlock( nif->getLink( iSkin, TA_DATA ), T_NISKINDATA );
 		
-		skelRoot = nif->getLink( iSkin, "Skeleton Root" );
+		skelRoot = nif->getLink( iSkin, TA_SKELETONROOT );
 		skelTrans = Transform( nif, iSkinData );
 		
-		bones = nif->getLinkArray( iSkin, "Bones" );
+		bones = nif->getLinkArray( iSkin, TA_BONES );
 		
-		QModelIndex idxBones = nif->getIndex( iSkinData, "Bone List" );
-		unsigned char hvw = nif->get<unsigned char> (iSkinData, "Has Vertex Weights");
+		QModelIndex idxBones = nif->getIndex( iSkinData, TA_BONELIST );
+		unsigned char hvw = nif->get<unsigned char> (iSkinData, TA_HASVERTEXWEIGHTS);
 		int vcnt = hvw ? 0 : verts.count();
 		if ( idxBones.isValid() /*&& hvw*/ )
 		{
@@ -683,13 +683,13 @@ void Mesh::transform()
 			}
 		}
 		
-		iSkinPart = nif->getBlock( nif->getLink( iSkin, "Skin Partition" ), "NiSkinPartition" );
+		iSkinPart = nif->getBlock( nif->getLink( iSkin, TA_SKINPARTITION ), T_NISKINPARTITION );
 		if ( ! iSkinPart.isValid() )
 			// nif versions < 10.2.0.0 have skin partition linked in the skin data block
-			iSkinPart = nif->getBlock( nif->getLink( iSkinData, "Skin Partition" ), "NiSkinPartition" );
+			iSkinPart = nif->getBlock( nif->getLink( iSkinData, TA_SKINPARTITION ), T_NISKINPARTITION );
 		if ( iSkinPart.isValid() )
 		{
-			QModelIndex idx = nif->getIndex( iSkinPart, "Skin Partition Blocks" );
+			QModelIndex idx = nif->getIndex( iSkinPart, TA_SKINPARTITIONBLOCKS );
 			for ( int i = 0; i < nif->rowCount( idx ) && idx.isValid(); i++ )
 			{
 				partitions.append( SkinPartition( nif, idx.child( i, 0 ) ) );
@@ -1033,13 +1033,13 @@ void Mesh::drawSelection() const
 			glEnd();
 		}
 	}
-	if ( n == "Points" )
+	if ( n == TA_POINTS )
 	{
 		glDepthFunc( GL_LEQUAL );
 		glNormalColor();
 		glBegin( GL_POINTS);
 		const NifModel * nif = static_cast<const NifModel *>( iData.model() );
-		QModelIndex points = nif->getIndex( iData, "Points" );
+		QModelIndex points = nif->getIndex( iData, TA_POINTS );
 		if ( points.isValid() )
 		{
 			for ( int j = 0; j < nif->rowCount( points ); j++ )
@@ -1175,7 +1175,7 @@ void Mesh::drawSelection() const
 			glEnd();
 		}
 	}
-	if ( n == "Faces" || n == "Triangles" )
+	if ( n == "Faces" || n == TA_TRIANGLES )
 	{
 		glDepthFunc( GL_LEQUAL );
 		glLineWidth( 1.5f );
@@ -1202,7 +1202,7 @@ void Mesh::drawSelection() const
 			glEnd();
 		}
 	}
-	if ( n == "Faces" || n == "Strips" || n == "Strip Lengths" )
+	if ( n == "Faces" || n == TA_STRIPS || n == TA_STRIPLENGTHS )
 	{
 		glDepthFunc( GL_LEQUAL );
 		glLineWidth( 1.5f );
@@ -1258,7 +1258,7 @@ void Mesh::drawSelection() const
 			}
 		}
 	}
-	if ( n == "Skin Partition Blocks" )
+	if ( n == TA_SKINPARTITIONBLOCKS )
 	{
 		glDepthFunc( GL_LEQUAL );
 		for ( int c = 0; c < partitions.count(); c++ )

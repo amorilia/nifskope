@@ -1022,7 +1022,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 				glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 				glBegin( GL_TRIANGLES );
 				
-				QModelIndex iPoints = nif->getIndex( iStripData, "Points" );
+				QModelIndex iPoints = nif->getIndex( iStripData, TA_POINTS );
 				for ( int r = 0; r < nif->rowCount( iPoints ); r++ )
 				{	// draw the strips like they appear in the tescs
 					// (use the unstich strips spell to avoid the spider web effect)
@@ -1084,7 +1084,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 		if ( iData.isValid() )
 		{
 			QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
-			QModelIndex iTris = nif->getIndex( iData, "Triangles" );
+			QModelIndex iTris = nif->getIndex( iData, TA_TRIANGLES );
 			for ( int t = 0; t < nif->rowCount( iTris ); t++ )
 			{
 				Triangle tri = nif->get<Triangle>( iTris.child( t, 0 ), "Triangle" );
@@ -1112,7 +1112,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 				}
 				if ( n == TA_VERTICES || n == TA_NORMALS || n == TA_VERTEXCOLORS || n == TA_UVSETS )
 					DrawVertexSelection(verts, i);
-				else if ( ( n == "Faces" || n == "Triangles" ) )
+				else if ( ( n == "Faces" || n == TA_TRIANGLES ) )
 				{
 					if ( i == -1 )
 					{
@@ -1530,7 +1530,7 @@ void Node::drawHavok()
 	}
 	
 	// Draw BSBound dimensions
-	QModelIndex iExtraDataList = nif->getIndex( iBlock, "Extra Data List" );
+	QModelIndex iExtraDataList = nif->getIndex( iBlock, TA_EXTRADATALIST );
 	
 	if ( iExtraDataList.isValid() )
 	{
@@ -1733,7 +1733,7 @@ void Node::drawFurn()
 	if ( ! ( iBlock.isValid() && nif ) )
 		return;
 
-	QModelIndex iExtraDataList = nif->getIndex( iBlock, "Extra Data List" );
+	QModelIndex iExtraDataList = nif->getIndex( iBlock, TA_EXTRADATALIST );
 
 	if ( !iExtraDataList.isValid() )
 		return;
@@ -1836,7 +1836,7 @@ BoundSphere Node::bounds() const
 	}
 	
 	// BSBound collision bounding box
-	QModelIndex iExtraDataList = nif->getIndex( iBlock, "Extra Data List" );
+	QModelIndex iExtraDataList = nif->getIndex( iBlock, TA_EXTRADATALIST );
 	
 	if ( iExtraDataList.isValid() )
 	{

@@ -81,7 +81,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 	QVector<Vector2> texco = nif->getArray<Vector2>( iTexCo );
 	
 	QVector<Triangle> triangles;
-	QModelIndex iPoints = nif->getIndex( iData, "Points" );
+	QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
 	if ( iPoints.isValid() )
 	{
 		QList< QVector< quint16 > > strips;
@@ -91,7 +91,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 	}
 	else
 	{
-		triangles = nif->getArray<Triangle>( iData, "Triangles" );
+		triangles = nif->getArray<Triangle>( iData, TA_TRIANGLES );
 	}
 	
 	if ( verts.isEmpty() || norms.count() != verts.count() || texco.count() != verts.count() || triangles.isEmpty() )
@@ -221,7 +221,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 		QModelIndex iTSpace;
 		foreach ( qint32 link, nif->getChildLinks( nif->getBlockNumber( iShape ) ) )
 		{
-			iTSpace = nif->getBlock( link, "NiBinaryExtraData" );
+			iTSpace = nif->getBlock( link, T_NIBINARYEXTRADATA );
 			if ( iTSpace.isValid() && nif->get<QString>( iTSpace, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
 				break;
 			else
@@ -230,10 +230,10 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 		
 		if ( ! iTSpace.isValid() )
 		{
-			iTSpace = nif->insertNiBlock( "NiBinaryExtraData", nif->getBlockNumber( iShape ) + 1 );
+			iTSpace = nif->insertNiBlock( T_NIBINARYEXTRADATA, nif->getBlockNumber( iShape ) + 1 );
 			nif->set<QString>( iTSpace, TA_NAME, "Tangent space (binormal & tangent vectors)" );
 			QModelIndex iNumExtras = nif->getIndex( iShape, "Num Extra Data List" );
-			QModelIndex iExtras = nif->getIndex( iShape, "Extra Data List" );
+			QModelIndex iExtras = nif->getIndex( iShape, TA_EXTRADATALIST );
 			if ( iNumExtras.isValid() && iExtras.isValid() )
 			{
 				int numlinks = nif->get<int>( iNumExtras );
@@ -243,7 +243,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 			}
 		}
 	
-		nif->set<QByteArray>( iTSpace, "Binary Data", QByteArray( (const char *) tan.data(), tan.count() * sizeof( Vector3 ) ) + QByteArray( (const char *) bin.data(), bin.count() * sizeof( Vector3 ) ) );
+		nif->set<QByteArray>( iTSpace, TA_BINARYDATA, QByteArray( (const char *) tan.data(), tan.count() * sizeof( Vector3 ) ) + QByteArray( (const char *) bin.data(), bin.count() * sizeof( Vector3 ) ) );
 	}
 	else
 	{

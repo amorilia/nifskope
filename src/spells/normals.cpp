@@ -77,7 +77,7 @@ public:
 		
 		QVector<Vector3> verts = nif->getArray<Vector3>( iData, TA_VERTICES );
 		QVector<Triangle> triangles;
-		QModelIndex iPoints = nif->getIndex( iData, "Points" );
+		QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
 		if ( iPoints.isValid() )
 		{
 			QList< QVector< quint16 > > strips;
@@ -87,7 +87,7 @@ public:
 		}
 		else
 		{
-			triangles = nif->getArray<Triangle>( iData, "Triangles" );
+			triangles = nif->getArray<Triangle>( iData, TA_TRIANGLES );
 		}
 		
 		

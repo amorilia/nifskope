@@ -392,7 +392,7 @@ public:
 				continue;
 			if ( nif->isNiBlock( iBlock, T_NITRISTRIPSDATA ) )
 				continue;
-			if ( nif->isNiBlock( iBlock, "NiBinaryExtraData" ) && nif->get<QString>( iBlock, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
+			if ( nif->isNiBlock( iBlock, T_NIBINARYEXTRADATA ) && nif->get<QString>( iBlock, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
 				continue;
 			qWarning() << "Attached " << nif->itemName( iBlock ) << " prevents " << nif->get<QString>( iTriA, TA_NAME ) << " and " << nif->get<QString>( iTriB, TA_NAME ) << " from matching.";
 			return false;
@@ -407,7 +407,7 @@ public:
 				continue;
 			if ( nif->isNiBlock( iBlock, T_NITRISTRIPSDATA ) )
 				continue;
-			if ( nif->isNiBlock( iBlock, "NiBinaryExtraData" ) && nif->get<QString>( iBlock, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
+			if ( nif->isNiBlock( iBlock, T_NIBINARYEXTRADATA ) && nif->get<QString>( iBlock, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
 				continue;
 			qWarning() << "Attached " << nif->itemName( iBlock ) << " prevents " << nif->get<QString>( iTriA, TA_NAME ) << " and " << nif->get<QString>( iTriB, TA_NAME ) << " from matching.";
 			return false;
@@ -474,7 +474,7 @@ public:
 		nif->set<int>( iDataA, "Num Triangles", triCntA + triCntB );
 		nif->set<int>( iDataA, "Num Triangle Points", ( triCntA + triCntB ) * 3 );
 		
-		QVector<Triangle> triangles = nif->getArray<Triangle>( iDataB, "Triangles" );
+		QVector<Triangle> triangles = nif->getArray<Triangle>( iDataB, TA_TRIANGLES );
 		QMutableVectorIterator<Triangle> itTri( triangles );
 		while ( itTri.hasNext() )
 		{
@@ -483,24 +483,24 @@ public:
 			tri[1] += numA;
 			tri[2] += numA;
 		}
-		nif->updateArray( iDataA, "Triangles" );
-		nif->setArray<Triangle>( iDataA, "Triangles", triangles + nif->getArray<Triangle>( iDataA, "Triangles" ) );
+		nif->updateArray( iDataA, TA_TRIANGLES );
+		nif->setArray<Triangle>( iDataA, TA_TRIANGLES, triangles + nif->getArray<Triangle>( iDataA, TA_TRIANGLES ) );
 		
 		int stripCntA = nif->get<int>( iDataA, "Num Strips" );
 		int stripCntB = nif->get<int>( iDataB, "Num Strips" );
 		nif->set<int>( iDataA, "Num Strips", stripCntA + stripCntB );
 		
-		nif->updateArray( iDataA, "Strip Lengths" );
-		nif->updateArray( iDataA, "Points" );
+		nif->updateArray( iDataA, TA_STRIPLENGTHS );
+		nif->updateArray( iDataA, TA_POINTS );
 		for ( int r = 0; r < stripCntB; r++ )
 		{
-			QVector<quint16> strip = nif->getArray<quint16>( nif->getIndex( iDataB, "Points" ).child( r, 0 ) );
+			QVector<quint16> strip = nif->getArray<quint16>( nif->getIndex( iDataB, TA_POINTS ).child( r, 0 ) );
 			QMutableVectorIterator<quint16> it( strip );
 			while ( it.hasNext() )
 				it.next() += numA;
-			nif->set<int>( nif->getIndex( iDataA, "Strip Lengths" ).child( r + stripCntA, 0 ), strip.size() );
-			nif->updateArray( nif->getIndex( iDataA, "Points" ).child( r + stripCntA, 0 ) );
-			nif->setArray<quint16>( nif->getIndex( iDataA, "Points" ).child( r + stripCntA, 0 ), strip );
+			nif->set<int>( nif->getIndex( iDataA, TA_STRIPLENGTHS ).child( r + stripCntA, 0 ), strip.size() );
+			nif->updateArray( nif->getIndex( iDataA, TA_POINTS ).child( r + stripCntA, 0 ) );
+			nif->setArray<quint16>( nif->getIndex( iDataA, TA_POINTS ).child( r + stripCntA, 0 ), strip );
 		}
 		
 		spUpdateCenterRadius CenterRadius;

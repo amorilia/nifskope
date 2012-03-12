@@ -75,7 +75,7 @@ class spStrippify : public Spell
 		if ( ! iData.isValid() )	return idx;
 		
 		QVector<Triangle> triangles;
-		QModelIndex iTriangles = nif->getIndex( iData, "Triangles" );
+		QModelIndex iTriangles = nif->getIndex( iData, TA_TRIANGLES );
 		if ( iTriangles.isValid() )
 		{
 			int skip = 0;
@@ -147,8 +147,8 @@ class spStrippify : public Spell
 			nif->set<int>( iStripData, "Num Strips", strips.count() );
 			nif->set<int>( iStripData, "Has Points", 1 );
 			
-			QModelIndex iLengths = nif->getIndex( iStripData, "Strip Lengths" );
-			QModelIndex iPoints = nif->getIndex( iStripData, "Points" );
+			QModelIndex iLengths = nif->getIndex( iStripData, TA_STRIPLENGTHS );
+			QModelIndex iPoints = nif->getIndex( iStripData, TA_POINTS );
 			
 			if ( iLengths.isValid() && iPoints.isValid() )
 			{
@@ -233,7 +233,7 @@ class spTriangulate : public Spell
 		
 		QList< QVector<quint16> > strips;
 
-		QModelIndex iPoints = nif->getIndex( iStripData, "Points" );
+		QModelIndex iPoints = nif->getIndex( iStripData, TA_POINTS );
 		
 		if ( ! iPoints.isValid() ) return idx;
 		
@@ -299,7 +299,7 @@ class spTriangulate : public Spell
 			nif->set<int>( iTriData, "Num Triangle Points", triangles.count() * 3 );
 			nif->set<int>( iTriData, "Has Triangles", 1 );
 			
-			QModelIndex iTriangles = nif->getIndex( iTriData, "Triangles" );
+			QModelIndex iTriangles = nif->getIndex( iTriData, TA_TRIANGLES );
 			if ( iTriangles.isValid() )
 			{
 				nif->updateArray( iTriangles );
@@ -341,8 +341,8 @@ public:
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iData = getStripsData( nif, index );
-		QModelIndex iLength = nif->getIndex( iData, "Strip Lengths" );
-		QModelIndex iPoints = nif->getIndex( iData, "Points" );
+		QModelIndex iLength = nif->getIndex( iData, TA_STRIPLENGTHS );
+		QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
 		if ( ! ( iLength.isValid() && iPoints.isValid() ) )
 			return index;
 		
@@ -393,8 +393,8 @@ public:
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iData = spStichStrips::getStripsData( nif, index );
-		QModelIndex iLength = nif->getIndex( iData, "Strip Lengths" );
-		QModelIndex iPoints = nif->getIndex( iData, "Points" );
+		QModelIndex iLength = nif->getIndex( iData, TA_STRIPLENGTHS );
+		QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
 		if ( ! ( iLength.isValid() && iPoints.isValid() ) )
 			return index;
 		

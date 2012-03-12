@@ -1332,7 +1332,7 @@ QVariant NifModel::data( const QModelIndex & idx, int role ) const
 		}	return QVariant();
 		case Qt::BackgroundColorRole:
 		{
-			// "notify" about an invalid index in "Triangles"
+			// "notify" about an invalid index in TA_TRIANGLES
 			// TODO: checkbox, "show invalid only"
 			if ( column == ValueCol && item->value().type() == NifValue::tTriangle ) {
 				NifItem *nv = getItemX( item, TA_NUMVERTICES );

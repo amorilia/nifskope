@@ -143,7 +143,7 @@ public:
 			
 			// remove empty extra data links
 			QModelIndex iNumExtraData = nif->getIndex( iBlock, "Num Extra Data List" );
-			QModelIndex iExtraData = nif->getIndex( iBlock, "Extra Data List" );
+			QModelIndex iExtraData = nif->getIndex( iBlock, TA_EXTRADATALIST );
 			arrayCollapser.numCollapser( nif, iNumExtraData, iExtraData );
 			
 			// remove empty modifier links (NiParticleSystem crashes Oblivion for those)

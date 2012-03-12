@@ -88,7 +88,7 @@ static void writeData( const NifModel * nif, const QModelIndex & iData, QTextStr
 	
 	QVector<Triangle> tris;
 	
-	QModelIndex iPoints = nif->getIndex( iData, "Points" );
+	QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
 	if ( iPoints.isValid() )
 	{
 		QList< QVector<quint16> > strips;
@@ -98,7 +98,7 @@ static void writeData( const NifModel * nif, const QModelIndex & iData, QTextStr
 	}
 	else
 	{
-		tris = nif->getArray<Triangle>( iData, "Triangles" );
+		tris = nif->getArray<Triangle>( iData, TA_TRIANGLES );
 	}
 	
 	// write the triangles
@@ -252,7 +252,7 @@ static void writeParent( const NifModel * nif, const QModelIndex & iNode, QTextS
 								obj << "v " << v[0] << " " << v[1] << " " << v[2] << "\r\n";
 							}
 							
-							QModelIndex iTris = nif->getIndex( iData, "Triangles" );
+							QModelIndex iTris = nif->getIndex( iData, TA_TRIANGLES );
 							for ( int t = 0; t < nif->rowCount( iTris ); t++ )
 							{
 								Triangle tri = nif->get<Triangle>( iTris.child( t, 0 ), "Triangle" );
@@ -840,8 +840,8 @@ void importObj( NifModel * nif, const QModelIndex & index )
 			nif->set<int>( iData, "Has Triangles", 1 );
 			nif->set<int>( iData, "Num Triangles", triangles.count() );
 			nif->set<int>( iData, "Num Triangle Points", triangles.count() * 3 );
-			nif->updateArray( iData, "Triangles" );
-			nif->setArray<Triangle>( iData, "Triangles", triangles );
+			nif->updateArray( iData, TA_TRIANGLES );
+			nif->setArray<Triangle>( iData, TA_TRIANGLES, triangles );
 			
 			// "find me a center": see nif.xml for details
 			// TODO: extract to a method somewhere...
@@ -942,8 +942,8 @@ void importObj( NifModel * nif, const QModelIndex & index )
 			nif->set<int>( iData, "Num Strips", strips.count() );
 			nif->set<int>( iData, "Has Points", 1 );
 			
-			QModelIndex iLengths = nif->getIndex( iData, "Strip Lengths" );
-			QModelIndex iPoints = nif->getIndex( iData, "Points" );
+			QModelIndex iLengths = nif->getIndex( iData, TA_STRIPLENGTHS );
+			QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
 			
 			if ( iLengths.isValid() && iPoints.isValid() )
 			{

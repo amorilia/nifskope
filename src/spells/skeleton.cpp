@@ -180,9 +180,9 @@ public:
 		if ( ! iSkinInstance.isValid() || ! iShapeData.isValid() )
 			return false;
 		QStringList names;
-		QModelIndex iNames = nif->getIndex( iSkinInstance, "Bones" );
+		QModelIndex iNames = nif->getIndex( iSkinInstance, TA_BONES );
 		if ( iNames.isValid() )
-			iNames = nif->getIndex( iNames, "Bones" );
+			iNames = nif->getIndex( iNames, TA_BONES );
 		if ( iNames.isValid() )
 			for ( int n = 0; n < nif->rowCount( iNames ); n++ )
 			{
@@ -192,10 +192,10 @@ public:
 				else
 					names.append("");
 			}
-		QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInstance, TA_DATA ), "NiSkinData" );
+		QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInstance, TA_DATA ), T_NISKINDATA );
 		if ( !iSkinData.isValid() )
 			return false;
-		QModelIndex iBones = nif->getIndex( iSkinData, "Bone List" );
+		QModelIndex iBones = nif->getIndex( iSkinData, TA_BONELIST );
 		if ( ! iBones.isValid() )
 			return false;
 		
@@ -301,7 +301,7 @@ public:
 			QModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), T_NISKININSTANCE );
 			if ( iSkinInst.isValid() )
 			{
-				return nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), "NiSkinData" ).isValid();
+				return nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), T_NISKINDATA ).isValid();
 			}
 		}
 		return false;
@@ -359,17 +359,17 @@ public:
 				iData = nif->getBlock( nif->getLink( iShape, TA_DATA ), T_NITRISTRIPSDATA );
 			}
 			QPersistentModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), T_NISKININSTANCE );
-			QPersistentModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), "NiSkinData" );
-			QModelIndex iSkinPart = nif->getBlock( nif->getLink( iSkinInst, "Skin Partition" ), "NiSkinPartition" );
+			QPersistentModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), T_NISKINDATA );
+			QModelIndex iSkinPart = nif->getBlock( nif->getLink( iSkinInst, TA_SKINPARTITION ), T_NISKINPARTITION );
 			if ( ! iSkinPart.isValid() )
-				iSkinPart = nif->getBlock( nif->getLink( iSkinData, "Skin Partition" ), "NiSkinPartition" );
+				iSkinPart = nif->getBlock( nif->getLink( iSkinData, TA_SKINPARTITION ), T_NISKINPARTITION );
 			
 			// read in the weights from NiSkinData
 			
 			int numVerts = nif->get<int>( iData, TA_NUMVERTICES );
 			QVector< QList< boneweight > > weights( numVerts );
 			
-			QModelIndex iBoneList = nif->getIndex( iSkinData, "Bone List" );
+			QModelIndex iBoneList = nif->getIndex( iSkinData, TA_BONELIST );
 			int numBones = nif->rowCount( iBoneList );
 			for ( int bone = 0; bone < numBones; bone++ )
 			{
@@ -453,11 +453,11 @@ public:
 
 			QList<Triangle> triangles;
 			if ( iShapeType == "NiTriShape" ) {
-				triangles = nif->getArray<Triangle>( iData, "Triangles" ).toList();
+				triangles = nif->getArray<Triangle>( iData, TA_TRIANGLES ).toList();
 			} else if ( iShapeType == "NiTriStrips" ) {
 				// triangulate first (code copied from strippify.cpp)
 				QList< QVector<quint16> > strips;
-				QModelIndex iPoints = nif->getIndex( iData, "Points" );
+				QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
 				for ( int s = 0; s < nif->rowCount( iPoints ); s++ )
 				{
 					QVector<quint16> strip;
@@ -489,7 +489,7 @@ public:
 
 				// enumerate existing partitions and select faces into same partition
 				quint32 nskinparts = nif->get<int>( iSkinPart, "Num Skin Partition Blocks" );
-				iPartData = nif->getIndex( iSkinPart, "Skin Partition Blocks" );
+				iPartData = nif->getIndex( iSkinPart, TA_SKINPARTITIONBLOCKS );
 				for (quint32 i=0; i<nskinparts; ++i) {
 					QModelIndex iPart = iPartData.child(i,0);
 					if (!iPart.isValid()) continue;
@@ -502,11 +502,11 @@ public:
 					quint8 numStrips = nif->get<quint8>(iPart, "Num Strips");				  
 					QVector<Triangle> partTriangles;
 					if ( hasFaces && numStrips == 0 ) {
-						partTriangles = nif->getArray<Triangle>( iPart, "Triangles" );
+						partTriangles = nif->getArray<Triangle>( iPart, TA_TRIANGLES );
 					} else if ( numStrips != 0 ) {
 						// triangulate first (code copied from strippify.cpp)
 						QList< QVector<quint16> > strips;
-						QModelIndex iPoints = nif->getIndex( iPart, "Strips" );
+						QModelIndex iPoints = nif->getIndex( iPart, TA_STRIPS );
 						for ( int s = 0; s < nif->rowCount( iPoints ); s++ )
 						{
 							QVector<quint16> strip;
@@ -801,15 +801,15 @@ public:
 			
 			if ( ! iSkinPart.isValid() )
 			{
-				iSkinPart = nif->insertNiBlock( "NiSkinPartition", nif->getBlockNumber( iSkinData ) + 1 );
-				nif->setLink( iSkinInst, "Skin Partition", nif->getBlockNumber( iSkinPart ) );
-				nif->setLink( iSkinData, "Skin Partition", nif->getBlockNumber( iSkinPart ) );
+				iSkinPart = nif->insertNiBlock( T_NISKINPARTITION, nif->getBlockNumber( iSkinData ) + 1 );
+				nif->setLink( iSkinInst, TA_SKINPARTITION, nif->getBlockNumber( iSkinPart ) );
+				nif->setLink( iSkinData, TA_SKINPARTITION, nif->getBlockNumber( iSkinPart ) );
 			}
 			
 			// start writing NiSkinPartition
 			
 			nif->set<int>( iSkinPart, "Num Skin Partition Blocks", parts.count() );
-			nif->updateArray( iSkinPart, "Skin Partition Blocks" );
+			nif->updateArray( iSkinPart, TA_SKINPARTITIONBLOCKS );
 			
 			QModelIndex iBSSkinInstPartData;
 			if (nif->inherits(iSkinInst, "BSDismemberSkinInstance"))
@@ -829,7 +829,7 @@ public:
 
 			for ( int p = 0; p < parts.count(); p++ )
 			{
-				QModelIndex iPart = nif->getIndex( iSkinPart, "Skin Partition Blocks" ).child( p, 0 );
+				QModelIndex iPart = nif->getIndex( iSkinPart, TA_SKINPARTITIONBLOCKS ).child( p, 0 );
 				
 				QList<int> bones = parts[p].bones;
 				qSort( bones );
@@ -913,7 +913,7 @@ public:
 				
 				// fill in bone map
 				
-				QModelIndex iBoneMap = nif->getIndex( iPart, "Bones" );
+				QModelIndex iBoneMap = nif->getIndex( iPart, TA_BONES );
 				nif->updateArray( iBoneMap );
 				nif->setArray<int>( iBoneMap, bones.toVector() );
 				
@@ -926,7 +926,7 @@ public:
 				
 				// fill in vertex weights
 				
-				nif->set<int>( iPart, "Has Vertex Weights", 1 );
+				nif->set<int>( iPart, TA_HASVERTEXWEIGHTS, 1 );
 				QModelIndex iVWeights = nif->getIndex( iPart, "Vertex Weights" );
 				nif->updateArray( iVWeights );
 				for ( int v = 0; v < nif->rowCount( iVWeights ); v++ )
@@ -943,16 +943,16 @@ public:
 				if ( make_strips == true )
 				{
 					//Clear out any existing triangle data that might be left over from an existing Skin Partition
-					QModelIndex iTriangles = nif->getIndex( iPart, "Triangles" );
+					QModelIndex iTriangles = nif->getIndex( iPart, TA_TRIANGLES );
 					nif->updateArray( iTriangles );
 
 					// write the strips
-					QModelIndex iStripLengths = nif->getIndex( iPart, "Strip Lengths" );
+					QModelIndex iStripLengths = nif->getIndex( iPart, TA_STRIPLENGTHS );
 					nif->updateArray( iStripLengths );
 					for ( int s = 0; s < nif->rowCount( iStripLengths ); s++ )
 						nif->set<int>( iStripLengths.child( s, 0 ), strips.value( s ).count() );
 					
-					QModelIndex iStrips = nif->getIndex( iPart, "Strips" );
+					QModelIndex iStrips = nif->getIndex( iPart, TA_STRIPS );
 					nif->updateArray( iStrips );
 					for ( int s = 0; s < nif->rowCount( iStrips ); s++ )
 					{
@@ -963,12 +963,12 @@ public:
 				else
 				{
 					//Clear out any existing strip data that might be left over from an existing Skin Partition
-					QModelIndex iStripLengths = nif->getIndex( iPart, "Strip Lengths" );
+					QModelIndex iStripLengths = nif->getIndex( iPart, TA_STRIPLENGTHS );
 					nif->updateArray( iStripLengths );
-					QModelIndex iStrips = nif->getIndex( iPart, "Strips" );
+					QModelIndex iStrips = nif->getIndex( iPart, TA_STRIPS );
 					nif->updateArray( iStrips );
 
-					QModelIndex iTriangles = nif->getIndex( iPart, "Triangles" );
+					QModelIndex iTriangles = nif->getIndex( iPart, TA_TRIANGLES );
 					nif->updateArray( iTriangles );
 					nif->setArray<Triangle>( iTriangles, triangles );
 				}
@@ -1174,7 +1174,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->isNiBlock( index, "NiSkinData" );
+		return nif->isNiBlock( index, T_NISKINDATA );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & iSkinData )
@@ -1182,14 +1182,14 @@ public:
 		QModelIndex iSkinInstance = nif->getBlock( nif->getParent( nif->getBlockNumber( iSkinData ) ), T_NISKININSTANCE );
 		QModelIndex iMesh = nif->getBlock( nif->getParent( nif->getBlockNumber( iSkinInstance ) ) );
 		QModelIndex iMeshData = nif->getBlock( nif->getLink( iMesh, TA_DATA ) );
-		int skelRoot = nif->getLink( iSkinInstance, "Skeleton Root" );
+		int skelRoot = nif->getLink( iSkinInstance, TA_SKELETONROOT );
 		if ( ! nif->inherits( iMeshData, "NiTriBasedGeomData" ) || skelRoot < 0 || skelRoot != nif->getParent( nif->getBlockNumber( iMesh ) ) )
 			return iSkinData;
 		
 		Transform meshTrans( nif, iMesh );
 		
 		QVector<Transform> boneTrans;
-		QModelIndex iBoneMap = nif->getIndex( iSkinInstance, "Bones" );
+		QModelIndex iBoneMap = nif->getIndex( iSkinInstance, TA_BONES );
 		for ( int n = 0; n < nif->rowCount( iBoneMap ); n++ )
 		{
 			QModelIndex iBone = nif->getBlock( nif->getLink( iBoneMap.child( n, 0 ) ), "NiNode" );
@@ -1200,7 +1200,7 @@ public:
 		
 		QVector<Vector3> verts = nif->getArray<Vector3>( iMeshData, TA_VERTICES );
 		
-		QModelIndex iBoneDataList = nif->getIndex( iSkinData, "Bone List" );
+		QModelIndex iBoneDataList = nif->getIndex( iSkinData, TA_BONELIST );
 		for ( int b = 0; b < nif->rowCount( iBoneDataList ); b++ )
 		{
 			Vector3 mn;
@@ -1381,12 +1381,12 @@ public:
 			nif->set<Vector3>( iData, "Center", shapeCentre );
 			
 			// from spFlipFace
-			QVector<Triangle> tris = nif->getArray<Triangle>( iData, "Triangles" );
+			QVector<Triangle> tris = nif->getArray<Triangle>( iData, TA_TRIANGLES );
 			for ( int t = 0; t < tris.count(); t++ )
 			{
 				tris[t].flip();
 			}
-			nif->setArray<Triangle>( iData, "Triangles", tris );
+			nif->setArray<Triangle>( iData, TA_TRIANGLES, tris );
 			
 			// from spFlipNormals
 			QVector<Vector3> norms = nif->getArray<Vector3>( iData, TA_NORMALS );
@@ -1398,9 +1398,9 @@ public:
 			
 			// from spFixSkeleton - get the bones from the skin data
 			// weirdness with rounding, sometimes...? probably "good enough" for 99% of cases
-			QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInstance, TA_DATA ), "NiSkinData" );
+			QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInstance, TA_DATA ), T_NISKINDATA );
 			if ( ! iSkinData.isValid() ) return;
-			QModelIndex iBones = nif->getIndex( iSkinData, "Bone List" );
+			QModelIndex iBones = nif->getIndex( iSkinData, TA_BONELIST );
 			if ( ! iBones.isValid() ) return;
 			
 			for ( int b = 0; b < nif->rowCount( iBones ); b++ )
