@@ -126,8 +126,8 @@ static char const * transform_xpm[] = {
 
 bool spApplyTransformation::isApplicable( const NifModel * nif, const QModelIndex & index )
 {
-	return nif->itemType( index ) == B_NIBLOCK && ( nif->inherits( nif->itemName( index ), "NiNode" )
-			|| nif->itemName( index ) == "NiTriShape" || nif->itemName( index ) == "NiTriStrips" );
+	return nif->itemType( index ) == B_NIBLOCK && ( nif->inherits( nif->itemName( index ), T_NINODE )
+			|| nif->itemName( index ) == T_NITRISHAPE || nif->itemName( index ) == T_NITRISTRIPS );
 }
 
 QModelIndex spApplyTransformation::cast( NifModel * nif, const QModelIndex & index )
@@ -136,7 +136,7 @@ QModelIndex spApplyTransformation::cast( NifModel * nif, const QModelIndex & ind
 		if ( QMessageBox::question( 0, Spell::tr("Apply Transformation"), Spell::tr("On animated and or skinned nodes Apply Transformation most likely won't work the way you expected it."), Spell::tr("Try anyway"), Spell::tr("Cancel") ) != 0 )
 			return index;
 	
-	if ( nif->inherits( nif->itemName( index ), "NiNode" ) )
+	if ( nif->inherits( nif->itemName( index ), T_NINODE ) )
 	{
 		Transform tp( nif, index );
 		bool ok = false;
@@ -160,9 +160,9 @@ QModelIndex spApplyTransformation::cast( NifModel * nif, const QModelIndex & ind
 	else
 	{
 		QModelIndex iData;
-		if ( nif->itemName( index ) == "NiTriShape") 
+		if ( nif->itemName( index ) == T_NITRISHAPE) 
 			iData = nif->getBlock( nif->getLink( index, TA_DATA ), T_NITRISHAPEDATA );
-		else if ( nif->itemName( index ) == "NiTriStrips" ) 
+		else if ( nif->itemName( index ) == T_NITRISTRIPS ) 
 			iData = nif->getBlock( nif->getLink( index, TA_DATA ), T_NITRISTRIPSDATA );
 		
 		if ( iData.isValid() )
@@ -185,10 +185,10 @@ QModelIndex spApplyTransformation::cast( NifModel * nif, const QModelIndex & ind
 					nif->setArray<Vector3>( iNormals, a );
 				}
 			}
-			QModelIndex iCenter = nif->getIndex( iData, "Center" );
+			QModelIndex iCenter = nif->getIndex( iData, TA_CENTER );
 			if ( iCenter.isValid() )
 				nif->set<Vector3>( iCenter, t * nif->get<Vector3>( iCenter ) );
-			QModelIndex iRadius = nif->getIndex( iData, "Radius" );
+			QModelIndex iRadius = nif->getIndex( iData, TA_RADIUS );
 			if ( iRadius.isValid() )
 				nif->set<float>( iRadius, t.scale * nif->get<float>( iRadius ) );
 			t = Transform();
@@ -329,8 +329,8 @@ public:
 		if ( Transform::canConstruct( nif, index ) )
 		{
 			edit->add( new NifVectorEdit( nif, nif->getIndex( index, TA_TRANSLATION ) ) );
-			edit->add( new NifRotationEdit( nif, nif->getIndex( index, "Rotation" ) ) );
-			edit->add( new NifFloatEdit( nif, nif->getIndex( index, "Scale" ) ) );
+			edit->add( new NifRotationEdit( nif, nif->getIndex( index, TA_ROTATION ) ) );
+			edit->add( new NifFloatEdit( nif, nif->getIndex( index, TA_SCALE ) ) );
 		}
 		else
 		{
@@ -387,7 +387,7 @@ public:
 		chkNormals->setChecked( settings.value( "scale normals", true ).toBool() );
 		grid->addWidget( chkNormals, 3, 1 );
 		
-		QPushButton * btScale = new QPushButton( Spell::tr( "Scale" ) );
+		QPushButton * btScale = new QPushButton( Spell::tr( TA_SCALE ) );
 		grid->addWidget( btScale, 4, 0, 1, 2 );
 		QObject::connect( btScale, SIGNAL( clicked() ), &dlg, SLOT( accept() ) );
 		

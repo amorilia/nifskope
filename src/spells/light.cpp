@@ -110,7 +110,7 @@ public:
 		NifBlockEditor * le = new NifBlockEditor( nif, iLight );
 		le->pushLayout( new QHBoxLayout() );
 		le->add( new NifVectorEdit( nif, nif->getIndex( iLight, TA_TRANSLATION ) ) );
-		le->add( new NifRotationEdit( nif, nif->getIndex( iLight, "Rotation" ) ) );
+		le->add( new NifRotationEdit( nif, nif->getIndex( iLight, TA_ROTATION ) ) );
 		le->popLayout();
 		le->add( new NifFloatSlider( nif, nif->getIndex( iLight, "Dimmer" ), 0, 1.0 ) );
 		le->pushLayout( new QHBoxLayout() );

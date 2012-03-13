@@ -104,7 +104,7 @@ public:
 				QModelIndex iChild = nif->getBlock( link );
 				if ( iChild.isValid() )
 				{
-					if ( nif->itemName( iChild ) == "NiNode" )
+					if ( nif->itemName( iChild ) == T_NINODE )
 					{
 						doNodes( nif, iChild, Transform(), world, bones );
 					}
@@ -133,7 +133,7 @@ public:
 			
 			foreach ( int link, nif->getChildLinks( nif->getBlockNumber( index ) ) )
 			{
-				QModelIndex iChild = nif->getBlock( link, "NiNode" );
+				QModelIndex iChild = nif->getBlock( link, T_NINODE );
 				if ( iChild.isValid() )
 					doBones( nif, iChild, tparent * tlocal, local, bones );
 			}
@@ -154,7 +154,7 @@ public:
 				QModelIndex iChild = nif->getBlock( link );
 				if ( iChild.isValid() )
 				{
-					if ( nif->itemName( iChild ) == "NiNode" )
+					if ( nif->itemName( iChild ) == T_NINODE )
 					{
 						hasSkinnedChildren |= doNodes( nif, iChild, tparent * tlocal, world, bones );
 					}
@@ -186,7 +186,7 @@ public:
 		if ( iNames.isValid() )
 			for ( int n = 0; n < nif->rowCount( iNames ); n++ )
 			{
-				QModelIndex iBone = nif->getBlock( nif->getLink( iNames.child( n, 0 ) ), "NiNode" );
+				QModelIndex iBone = nif->getBlock( nif->getLink( iNames.child( n, 0 ) ), T_NINODE );
 				if ( iBone.isValid() )
 					names.append( nif->get<QString>( iBone, TA_NAME ) );
 				else
@@ -215,8 +215,8 @@ public:
 			t.writeBack( nif, iBone );
 		}
 		
-		Vector3 center = nif->get<Vector3>( iShapeData, "Center" );
-		nif->set<Vector3>( iShapeData, "Center", tparent * center );
+		Vector3 center = nif->get<Vector3>( iShapeData, TA_CENTER );
+		nif->set<Vector3>( iShapeData, TA_CENTER, tparent * center );
 		return true;
 	}
 };
@@ -257,7 +257,7 @@ public:
 			qWarning() << name;
 			foreach ( int link, nif->getChildLinks( nif->getBlockNumber( index ) ) )
 			{
-				QModelIndex iChild = nif->getBlock( link, "NiNode" );
+				QModelIndex iChild = nif->getBlock( link, T_NINODE );
 				if ( iChild.isValid() )
 					scan( nif, iChild, tparent * local, stream );
 			}
@@ -296,7 +296,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & iShape )
 	{
-		if ( nif->isNiBlock( iShape, "NiTriShape" ) || nif->isNiBlock( iShape, "NiTriStrips" ) )
+		if ( nif->isNiBlock( iShape, T_NITRISHAPE ) || nif->isNiBlock( iShape, T_NITRISTRIPS ) )
 		{
 			QModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), T_NISKININSTANCE );
 			if ( iSkinInst.isValid() )
@@ -345,17 +345,17 @@ public:
 	{
 		QPersistentModelIndex iShape = iBlock;
 		QString iShapeType = "";
-		if ( nif->isNiBlock( iShape, "NiTriShape" ) ) {
-			iShapeType = "NiTriShape";
-		} else if ( nif->isNiBlock( iShape, "NiTriStrips" ) ) {
-			iShapeType = "NiTriStrips";
+		if ( nif->isNiBlock( iShape, T_NITRISHAPE ) ) {
+			iShapeType = T_NITRISHAPE;
+		} else if ( nif->isNiBlock( iShape, T_NITRISTRIPS ) ) {
+			iShapeType = T_NITRISTRIPS;
 		}
 		try
 		{
 			QPersistentModelIndex iData;
-			if ( iShapeType == "NiTriShape" ) {
+			if ( iShapeType == T_NITRISHAPE ) {
 				iData = nif->getBlock( nif->getLink( iShape, TA_DATA ), T_NITRISHAPEDATA );
-			} else if ( iShapeType == "NiTriStrips" ) {
+			} else if ( iShapeType == T_NITRISTRIPS ) {
 				iData = nif->getBlock( nif->getLink( iShape, TA_DATA ), T_NITRISTRIPSDATA );
 			}
 			QPersistentModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), T_NISKININSTANCE );
@@ -452,9 +452,9 @@ public:
 			// reduces bone weights so that the triangles fit into the partitions
 
 			QList<Triangle> triangles;
-			if ( iShapeType == "NiTriShape" ) {
+			if ( iShapeType == T_NITRISHAPE ) {
 				triangles = nif->getArray<Triangle>( iData, TA_TRIANGLES ).toList();
-			} else if ( iShapeType == "NiTriStrips" ) {
+			} else if ( iShapeType == T_NITRISTRIPS ) {
 				// triangulate first (code copied from strippify.cpp)
 				QList< QVector<quint16> > strips;
 				QModelIndex iPoints = nif->getIndex( iData, TA_POINTS );
@@ -499,7 +499,7 @@ public:
 					QVector<int> vertmap = nif->getArray<int>( iPart, "Vertex Map" );
 
 					quint8 hasFaces = nif->get<quint8>(iPart, "Has Faces");
-					quint8 numStrips = nif->get<quint8>(iPart, "Num Strips");				  
+					quint8 numStrips = nif->get<quint8>(iPart, TA_NUMSTRIPS);				  
 					QVector<Triangle> partTriangles;
 					if ( hasFaces && numStrips == 0 ) {
 						partTriangles = nif->getArray<Triangle>( iPart, TA_TRIANGLES );
@@ -906,9 +906,9 @@ public:
 				}
 
 				nif->set<int>( iPart, TA_NUMVERTICES, vertices.count() );
-				nif->set<int>( iPart, "Num Triangles", numTriangles );
+				nif->set<int>( iPart, TA_NUMTRIANGLES, numTriangles );
 				nif->set<int>( iPart, "Num Bones", bones.count() );
-				nif->set<int>( iPart, "Num Strips", strips.count() );
+				nif->set<int>( iPart, TA_NUMSTRIPS, strips.count() );
 				nif->set<int>( iPart, "Num Weights Per Vertex", maxBones );
 				
 				// fill in bone map
@@ -1192,7 +1192,7 @@ public:
 		QModelIndex iBoneMap = nif->getIndex( iSkinInstance, TA_BONES );
 		for ( int n = 0; n < nif->rowCount( iBoneMap ); n++ )
 		{
-			QModelIndex iBone = nif->getBlock( nif->getLink( iBoneMap.child( n, 0 ) ), "NiNode" );
+			QModelIndex iBone = nif->getBlock( nif->getLink( iBoneMap.child( n, 0 ) ), T_NINODE );
 			if ( skelRoot != nif->getParent( nif->getBlockNumber( iBone ) ) )
 				return iSkinData;
 			boneTrans.append( Transform( nif, iBone ) );
@@ -1337,7 +1337,7 @@ public:
 			//qWarning() << "Checking child: " << iChild;
 			if ( iChild.isValid() )
 			{
-				if ( nif->itemName( iChild ) == "NiNode" )
+				if ( nif->itemName( iChild ) == T_NINODE )
 				{
 					// repeat
 					doBones( nif, iChild );
@@ -1376,9 +1376,9 @@ public:
 			nif->setArray<Vector3>( iData, TA_VERTICES, vertices );
 			
 			// fix centre Z - don't recalculate
-			Vector3 shapeCentre = nif->get<Vector3>( iData, "Center" );
+			Vector3 shapeCentre = nif->get<Vector3>( iData, TA_CENTER );
 			shapeCentre = Vector3( shapeCentre[0], shapeCentre[1], -shapeCentre[2] );
-			nif->set<Vector3>( iData, "Center", shapeCentre );
+			nif->set<Vector3>( iData, TA_CENTER, shapeCentre );
 			
 			// from spFlipFace
 			QVector<Triangle> tris = nif->getArray<Triangle>( iData, TA_TRIANGLES );

@@ -78,8 +78,8 @@ public:
 			}
 			
 			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, TA_TRANSLATION ) ) );
-			edit->add( new NifRotationEdit( nif, nif->getIndex( iBound, "Rotation" ) ) );
-			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, "Radius" ) ) );
+			edit->add( new NifRotationEdit( nif, nif->getIndex( iBound, TA_ROTATION ) ) );
+			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, TA_RADIUS ) ) );
 		}
 		else if ( nif->itemName( index ) == "BSBound" || nif->itemName( index.parent() ) == "BSBound" )
 		{
@@ -93,7 +93,7 @@ public:
 				iBound = index.parent();
 			}
 
-			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, "Center" ) ) );
+			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, TA_CENTER ) ) );
 			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, "Dimensions" ) ) );
 		}
 		edit->show();

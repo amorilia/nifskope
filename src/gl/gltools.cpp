@@ -43,8 +43,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 BoneWeights::BoneWeights( const NifModel * nif, const QModelIndex & index, int b, int vcnt )
 {
 	trans = Transform( nif, index );
-	center = nif->get<Vector3>( index, "Center" );
-	radius = nif->get<float>( index, "Radius" );
+	center = nif->get<Vector3>( index, TA_CENTER );
+	radius = nif->get<float>( index, TA_RADIUS );
 	bone = b;
 	
 	QModelIndex idxWeights = nif->getIndex( index, "Vertex Weights" );

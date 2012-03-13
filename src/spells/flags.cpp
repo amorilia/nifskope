@@ -82,7 +82,7 @@ public:
 			return index;
 		if ( nif->isNiBlock( index ) )
 			return nif->getIndex( index, TA_FLAGS );
-		if ( nif->inherits( nif->getBlock( index ), "bhkRigidBody" ) )
+		if ( nif->inherits( nif->getBlock( index ), T_BHKRIGIDBODY ) )
 		{
 			QModelIndex iFlags = nif->getIndex( nif->getBlock( index ), "Col Filter" );
 			iFlags = iFlags.sibling( iFlags.row(), NifModel::ValueCol );
@@ -121,11 +121,11 @@ public:
 				}
 				return Controller;
 			}
-			else if ( name == "NiNode" )
+			else if ( name == T_NINODE )
 				return Node;
-			else if ( name == "bhkRigidBody" || name == "bhkRigidBodyT" )
+			else if ( name == T_BHKRIGIDBODY || name == T_BHKRIGIDBODYT )
 				return RigidBody;
-			else if ( name == "NiTriShape" || name == "NiTriStrips" )
+			else if ( name == T_NITRISHAPE || name == T_NITRISTRIPS )
 				return Shape;
 			else if ( name == T_NISTENCILPROPERTY )
 				return Stencil;

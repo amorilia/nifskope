@@ -176,37 +176,37 @@ public:
 		nif->setArray<Vector4>( iCVS, TA_NORMALS, convex_norms );
 		
 		// radius is always 0.1?
-		nif->set<float>( iCVS, "Radius", 0.1 );
+		nif->set<float>( iCVS, TA_RADIUS, 0.1 );
 		
 		// for arrow detection: [0, 0, -0, 0, 0, -0]
 		nif->set<float>( nif->getIndex( iCVS, "Unknown 6 Floats" ).child( 2, 0 ), -0.0 );
 		nif->set<float>( nif->getIndex( iCVS, "Unknown 6 Floats" ).child( 5, 0 ), -0.0 );
 		
 		QModelIndex iParent = nif->getBlock( nif->getParent( nif->getBlockNumber( index ) ) );
-		QModelIndex collisionLink = nif->getIndex( iParent, "Collision Object" );
+		QModelIndex collisionLink = nif->getIndex( iParent, TA_COLLISIONOBJECT );
 		QModelIndex collisionObject = nif->getBlock( nif->getLink( collisionLink ) );
 		
 		// create bhkCollisionObject
 		if( ! collisionObject.isValid() )
 		{
-			collisionObject = nif->insertNiBlock( "bhkCollisionObject" );
+			collisionObject = nif->insertNiBlock( T_BHKCOLLISIONOBJECT );
 			
 			nif->setLink( collisionLink, nif->getBlockNumber( collisionObject ) );
 			nif->setLink( collisionObject, "Target", nif->getBlockNumber( iParent ) );
 		}
 		
-		QModelIndex rigidBodyLink = nif->getIndex( collisionObject, "Body" );
+		QModelIndex rigidBodyLink = nif->getIndex( collisionObject, TA_BODY );
 		QModelIndex rigidBody = nif->getBlock( nif->getLink( rigidBodyLink ) );
 		
 		// create bhkRigidBody
 		if( ! rigidBody.isValid() )
 		{
-			rigidBody = nif->insertNiBlock( "bhkRigidBody" );
+			rigidBody = nif->insertNiBlock( T_BHKRIGIDBODY );
 			
 			nif->setLink( rigidBodyLink, nif->getBlockNumber( rigidBody ) );
 		}
 		
-		QModelIndex shapeLink = nif->getIndex( rigidBody, "Shape" );
+		QModelIndex shapeLink = nif->getIndex( rigidBody, TA_SHAPE );
 		QModelIndex shape = nif->getBlock( nif->getLink( shapeLink ) );
 		
 		// set link and delete old one
@@ -264,8 +264,8 @@ public:
 			}
 		}
 		
-		QModelIndex iBodyA = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 0, 0 ) ), "bhkRigidBody" );
-		QModelIndex iBodyB = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 1, 0 ) ), "bhkRigidBody" );
+		QModelIndex iBodyA = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 0, 0 ) ), T_BHKRIGIDBODY );
+		QModelIndex iBodyB = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 1, 0 ) ), T_BHKRIGIDBODY );
 		
 		if ( ! iBodyA.isValid() || ! iBodyB.isValid() )
 		{
@@ -334,10 +334,10 @@ public:
 	static Transform bodyTrans( const NifModel * nif, const QModelIndex & index )
 	{
 		Transform t;
-		if ( nif->isNiBlock( index, "bhkRigidBodyT" ) )
+		if ( nif->isNiBlock( index, T_BHKRIGIDBODYT ) )
 		{
 			t.translation = Vector3( nif->get<Vector4>( index, TA_TRANSLATION ) * 7 );
-			t.rotation.fromQuat( nif->get<Quat>( index, "Rotation" ) );
+			t.rotation.fromQuat( nif->get<Quat>( index, TA_ROTATION ) );
 		}
 		
 		qint32 l = nif->getBlockNumber( index );
@@ -371,8 +371,8 @@ public:
 	{
 		QModelIndex iConstraint = nif->getBlock( idx );
 		
-		QModelIndex iBodyA = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 0, 0 ) ), "bhkRigidBody" );
-		QModelIndex iBodyB = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 1, 0 ) ), "bhkRigidBody" );
+		QModelIndex iBodyA = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 0, 0 ) ), T_BHKRIGIDBODY );
+		QModelIndex iBodyB = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 1, 0 ) ), T_BHKRIGIDBODY );
 		
 		if ( ! iBodyA.isValid() || ! iBodyB.isValid() )
 		{
@@ -405,7 +405,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & idx )
 	{
-		return nif->isNiBlock( idx, "bhkNiTriStripsShape" );
+		return nif->isNiBlock( idx, T_BHKNITRISTRIPSSHAPE );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & iBlock )
@@ -416,7 +416,7 @@ public:
 		QVector<Triangle> triangles;
 		QVector<Vector3> normals;
 		
-		foreach ( qint32 lData, nif->getLinkArray( iShape, "Strips Data" ) )
+		foreach ( qint32 lData, nif->getLinkArray( iShape, TA_STRIPSDATA ) )
 		{
 			QModelIndex iData = nif->getBlock( lData, T_NITRISTRIPSDATA );
 			
@@ -461,7 +461,7 @@ public:
 			return iShape;
 		}
 		
-		QPersistentModelIndex iPackedShape = nif->insertNiBlock( "bhkPackedNiTriStripsShape", nif->getBlockNumber( iShape ) );
+		QPersistentModelIndex iPackedShape = nif->insertNiBlock( T_BHKPACKEDNITRISTRIPSSHAPE, nif->getBlockNumber( iShape ) );
 		
 		nif->set<int>( iPackedShape, "Num Sub Shapes", 1 );
 		QModelIndex iSubShapes = nif->getIndex( iPackedShape, "Sub Shapes" );
@@ -470,19 +470,19 @@ public:
 		nif->set<int>( iSubShapes.child( 0, 0 ), TA_NUMVERTICES, vertices.count() );
 		nif->set<int>( iSubShapes.child( 0, 0 ), "Material", nif->get<int>( iShape, "Material" ) );
 		nif->setArray<float>( iPackedShape, "Unknown Floats", QVector<float>() << 0.0f << 0.0f << 0.1f << 0.0f << 1.0f << 1.0f << 1.0f << 1.0f << 0.1f );
-		nif->set<float>( iPackedShape, "Scale", 1.0f );
+		nif->set<float>( iPackedShape, TA_SCALE, 1.0f );
 		nif->setArray<float>( iPackedShape, "Unknown Floats 2", QVector<float>() << 1.0f << 1.0f << 1.0f );
 		
-		QModelIndex iPackedData = nif->insertNiBlock( "hkPackedNiTriStripsData", nif->getBlockNumber( iPackedShape ) );
+		QModelIndex iPackedData = nif->insertNiBlock( T_HKPACKEDNITRISTRIPSDATA, nif->getBlockNumber( iPackedShape ) );
 		nif->setLink( iPackedShape, TA_DATA, nif->getBlockNumber( iPackedData ) );
 		
-		nif->set<int>( iPackedData, "Num Triangles", triangles.count() );
+		nif->set<int>( iPackedData, TA_NUMTRIANGLES, triangles.count() );
 		QModelIndex iTriangles = nif->getIndex( iPackedData, TA_TRIANGLES );
 		nif->updateArray( iTriangles );
 		for ( int t = 0; t < triangles.size(); t++ )
 		{
-			nif->set<Triangle>( iTriangles.child( t, 0 ), "Triangle", triangles[ t ] );
-			nif->set<Vector3>( iTriangles.child( t, 0 ), "Normal", normals.value( t ) );
+			nif->set<Triangle>( iTriangles.child( t, 0 ), TA_TRIANGLE, triangles[ t ] );
+			nif->set<Vector3>( iTriangles.child( t, 0 ), TA_NORMAL, normals.value( t ) );
 		}
 		
 		nif->set<int>( iPackedData, TA_NUMVERTICES, vertices.count() );

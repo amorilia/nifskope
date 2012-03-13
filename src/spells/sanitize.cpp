@@ -77,7 +77,7 @@ public:
 			QModelIndex iBlock = nif->getBlock( n );
 			
 			QModelIndex iNumChildren = nif->getIndex( iBlock, "Num Children" );
-			QModelIndex iChildren = nif->getIndex( iBlock, "Children" );
+			QModelIndex iChildren = nif->getIndex( iBlock, TA_CHILDREN );
 			if ( iNumChildren.isValid() && iChildren.isValid() )
 			{
 				QList< QPair<qint32, bool> > links;
@@ -133,7 +133,7 @@ public:
 
 			// remove empty children links
 			QModelIndex iNumChildren = nif->getIndex( iBlock, "Num Children" );
-			QModelIndex iChildren = nif->getIndex( iBlock, "Children" );
+			QModelIndex iChildren = nif->getIndex( iBlock, TA_CHILDREN );
 			arrayCollapser.numCollapser( nif, iNumChildren, iChildren );
 			
 			// remove empty property links
@@ -184,11 +184,11 @@ public:
 				
 				if ( nif->checkVersion( NF_V20000005, NF_V20000005 ) )
 				{	// adjust format options (oblivion only)
-					nif->set<int>( iTexSrc, "Pixel Layout", 6 );
-					nif->set<int>( iTexSrc, "Use Mipmaps", 1 );
-					nif->set<int>( iTexSrc, "Alpha Format", 3 );
-					nif->set<int>( iTexSrc, "Unknown Byte", 1 );
-					nif->set<int>( iTexSrc, "Unknown Byte 2", 1 );
+					nif->set<int>( iTexSrc, TA_PIXELLAYOUT, 6 );
+					nif->set<int>( iTexSrc, TA_USEMIPMAPS, 1 );
+					nif->set<int>( iTexSrc, TA_ALPHAFORMAT, 3 );
+					nif->set<int>( iTexSrc, TA_UNKNOWNBYTE, 1 );
+					nif->set<int>( iTexSrc, TA_UNKNOWNBYTE2, 1 );
 				}
 			}
 		}

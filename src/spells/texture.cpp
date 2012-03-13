@@ -166,7 +166,7 @@ QIcon * tex42_xpm_icon = 0;
 //! Find the reference to shape data from a model and index
 QModelIndex getData( const NifModel * nif, const QModelIndex & index )
 {
-	if ( nif->isNiBlock( index, "NiTriShape" ) || nif->isNiBlock( index, "NiTriStrips" ) )
+	if ( nif->isNiBlock( index, T_NITRISHAPE ) || nif->isNiBlock( index, T_NITRISTRIPS ) )
 		return nif->getBlock( nif->getLink( index, TA_DATA ) );
 	else if ( nif->isNiBlock( index, T_NITRISHAPEDATA ) || nif->isNiBlock( index, T_NITRISTRIPSDATA ) )
 		return index;
@@ -209,9 +209,9 @@ public:
 			return true;
 		else if ( nif->isNiBlock( iBlock, T_BSSHADERTEXTURESET ) && nif->itemName( idx ) == TA_TEXTURES )
 			return true;
-		else if ( nif->isNiBlock( iBlock, "SkyShaderProperty" ) && nif->itemName( idx ) == TA_FILENAME )
+		else if ( nif->isNiBlock( iBlock, T_SKYSHADERPROPERTY ) && nif->itemName( idx ) == TA_FILENAME )
 			return true;
-		else if ( nif->isNiBlock( iBlock, "TileShaderProperty" ) && nif->itemName( idx ) == TA_FILENAME )
+		else if ( nif->isNiBlock( iBlock, T_TILESHADERPROPERTY ) && nif->itemName( idx ) == TA_FILENAME )
 			return true;
 		return false;
 	}
@@ -232,9 +232,9 @@ public:
 			iFile = idx;
 		else if ( nif->isNiBlock( iBlock, T_BSSHADERNOLIGHTINGPROPERTY ) && nif->itemName( idx ) == TA_FILENAME )
 			iFile = idx;
-		else if ( nif->isNiBlock( iBlock, "SkyShaderProperty" ) && nif->itemName( idx ) == TA_FILENAME )
+		else if ( nif->isNiBlock( iBlock, T_SKYSHADERPROPERTY ) && nif->itemName( idx ) == TA_FILENAME )
 			iFile = idx;
-		else if ( nif->isNiBlock( iBlock, "TileShaderProperty" ) && nif->itemName( idx ) == TA_FILENAME )
+		else if ( nif->isNiBlock( iBlock, T_TILESHADERPROPERTY ) && nif->itemName( idx ) == TA_FILENAME )
 			iFile = idx;
 
 		if (!iFile.isValid())
@@ -264,7 +264,7 @@ public:
 			file = TexCache::stripPath( file, nif->getFolder() );
 			if (setExternal)
 			{
-				nif->set<int>( iBlock, "Use External", 1 );
+				nif->set<int>( iBlock, TA_USEEXTERNAL, 1 );
 				// update the TA_FILENAME block reference, since it changes when we set Use External
 				if ( nif->checkVersion( NF_V10010000, 0 ) && nif->isNiBlock( iBlock, T_NISOURCETEXTURE )  )
 				{
@@ -288,7 +288,7 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( nif->itemName(index) == "NiTriShape" || nif->itemName(index) == "NiTriStrips" );
+		return ( nif->itemName(index) == T_NITRISHAPE || nif->itemName(index) == T_NITRISTRIPS );
 
 		//QModelIndex iUVs = getUV( nif, index );
 		//return iUVs.isValid() && nif->rowCount( iUVs ) >= 1;
@@ -328,12 +328,12 @@ QModelIndex addTexture( NifModel * nif, const QModelIndex & index, const QString
 	QModelIndex iSrcTex = nif->insertNiBlock( T_NISOURCETEXTURE, nif->getBlockNumber( iTexProp ) + 1 );
 	nif->setLink( iTex, TA_SOURCE, nif->getBlockNumber( iSrcTex ) );
 
-	nif->set<int>( iSrcTex, "Pixel Layout", ( nif->getVersion() == "20.0.0.5" && name == TA_BASETEXTURE ? 6 : 5 ) );
-	nif->set<int>( iSrcTex, "Use Mipmaps", 2 );
-	nif->set<int>( iSrcTex, "Alpha Format", 3 );
-	nif->set<int>( iSrcTex, "Unknown Byte", 1 );
-	nif->set<int>( iSrcTex, "Unknown Byte 2", 1 );
-	nif->set<int>( iSrcTex, "Use External", 1 );
+	nif->set<int>( iSrcTex, TA_PIXELLAYOUT, ( nif->getVersion() == "20.0.0.5" && name == TA_BASETEXTURE ? 6 : 5 ) );
+	nif->set<int>( iSrcTex, TA_USEMIPMAPS, 2 );
+	nif->set<int>( iSrcTex, TA_ALPHAFORMAT, 3 );
+	nif->set<int>( iSrcTex, TA_UNKNOWNBYTE, 1 );
+	nif->set<int>( iSrcTex, TA_UNKNOWNBYTE2, 1 );
+	nif->set<int>( iSrcTex, TA_USEEXTERNAL, 1 );
 
 	spChooseTexture * chooser = new spChooseTexture();
 	return chooser->cast( nif, iSrcTex );
@@ -349,7 +349,7 @@ public:
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
-		return ( block.isValid() && nif->get<int>( block, "Has Base Texture" ) == 0 ); 
+		return ( block.isValid() && nif->get<int>( block, TA_HASBASETEXTURE ) == 0 ); 
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -753,7 +753,7 @@ public:
 			nif->get<int>( index, "Apply Mode" ) == rep )
 			nif->set<int>( index, "Apply Mode", by );
 		
-		QModelIndex iChildren = nif->getIndex( index, "Children" );
+		QModelIndex iChildren = nif->getIndex( index, TA_CHILDREN );
 		QList<qint32> lChildren = nif->getChildLinks( nif->getBlockNumber( index ) );
 		if ( iChildren.isValid() )
 		{
@@ -801,7 +801,7 @@ public:
 	{
 		TexCache * tex = new TexCache();
 		tex->setNifFolder( nif->getFolder() );
-		int isExternal = nif->get<int>( index, "Use External" );
+		int isExternal = nif->get<int>( index, TA_USEEXTERNAL );
 		if ( isExternal ) {
 			QString filename = nif->get<QString>(index, TA_FILENAME);
 			tex->bind( filename );
@@ -827,7 +827,7 @@ public:
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iBlock = nif->getBlock( index );
-		if ( nif->isNiBlock( iBlock, T_NISOURCETEXTURE ) && nif->get<int>( iBlock, "Use External" ) == 0 )
+		if ( nif->isNiBlock( iBlock, T_NISOURCETEXTURE ) && nif->get<int>( iBlock, TA_USEEXTERNAL ) == 0 )
 		{
 			QModelIndex iData = nif->getBlock( nif->getLink( index, "Pixel Data" ) );
 			if ( iData.isValid() )
@@ -867,7 +867,7 @@ public:
 			{
 				if ( tex->exportFile( iData, filename ) )
 				{
-					nif->set<int>( index, "Use External", 1 );
+					nif->set<int>( index, TA_USEEXTERNAL, 1 );
 					filename = TexCache::stripPath( filename, nif->getFolder() );
 					nif->set<QString>( index, TA_FILENAME, filename );
 					tex->bind( filename );
@@ -906,7 +906,7 @@ public:
 			return false;
 		}
 		QModelIndex iBlock = nif->getBlock( index );
-		if ( !( nif->isNiBlock( iBlock, T_NISOURCETEXTURE ) && nif->get<int>( iBlock, "Use External" ) == 1 ))
+		if ( !( nif->isNiBlock( iBlock, T_NISOURCETEXTURE ) && nif->get<int>( iBlock, TA_USEEXTERNAL ) == 1 ))
 		{
 			return false;
 		}
@@ -939,8 +939,8 @@ public:
 			{
 				QString tempFileName = nif->get<QString>( iSourceTexture, TA_FILENAME );
 				tempFileName = TexCache::stripPath( tempFileName, nif->getFolder() );
-				nif->set<int>( iSourceTexture, "Use External", 0 );
-				nif->set<int>( iSourceTexture, "Unknown Byte", 1 );
+				nif->set<int>( iSourceTexture, TA_USEEXTERNAL, 0 );
+				nif->set<int>( iSourceTexture, TA_UNKNOWNBYTE, 1 );
 				nif->setLink( iSourceTexture, "Pixel Data", blockNum+1 );
 				if( nif->checkVersion( NF_V10010000, 0 ) )
 				{
@@ -957,7 +957,7 @@ public:
 				// delete block?
 				/*
 				nif->removeNiBlock( blockNum+1 );
-				nif->set<int>( iSourceTexture, "Use External", 1 );
+				nif->set<int>( iSourceTexture, TA_USEEXTERNAL, 1 );
 				*/
 			}
 		}

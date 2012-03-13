@@ -655,8 +655,8 @@ bool BSplineTransformInterpolator::update( const NifModel * nif, const QModelInd
           nCtrl = nif->get<uint>( iBasis, "Num Control Points" );
 
       lTrans = nif->getIndex( index, TA_TRANSLATION);
-      lRotate = nif->getIndex( index, "Rotation");
-      lScale = nif->getIndex( index, "Scale");
+      lRotate = nif->getIndex( index, TA_ROTATION);
+      lScale = nif->getIndex( index, TA_SCALE);
 
       lTransOff = nif->get<uint>( index, "Translation Offset");
       lRotateOff = nif->get<uint>( index, "Rotation Offset");

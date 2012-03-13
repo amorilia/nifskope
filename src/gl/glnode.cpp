@@ -585,7 +585,7 @@ void Node::update( const NifModel * nif, const QModelIndex & index )
 		properties = newProps;
 		
 		children.clear();
-		QModelIndex iChildren = nif->getIndex( iBlock, "Children" );
+		QModelIndex iChildren = nif->getIndex( iBlock, TA_CHILDREN );
 		QList<qint32> lChildren = nif->getChildLinks( nif->getBlockNumber( iBlock ) );
 		if ( iChildren.isValid() )
 		{
@@ -759,17 +759,17 @@ void Node::transform()
 	{
 		QModelIndex iObject = nif->getBlock( nif->getLink( iBlock, "Collision Data" ) );
 		if ( ! iObject.isValid() )
-			iObject = nif->getBlock( nif->getLink( iBlock, "Collision Object" ) );
+			iObject = nif->getBlock( nif->getLink( iBlock, TA_COLLISIONOBJECT ) );
 		if ( iObject.isValid() )
 		{
-			QModelIndex iBody = nif->getBlock( nif->getLink( iObject, "Body" ) );
+			QModelIndex iBody = nif->getBlock( nif->getLink( iObject, TA_BODY ) );
 			if ( iBody.isValid() )
 			{
 				Transform t;
 				t.scale = 7;
-				if ( nif->isNiBlock( iBody, "bhkRigidBodyT" ) )
+				if ( nif->isNiBlock( iBody, T_BHKRIGIDBODYT ) )
 				{
-					t.rotation.fromQuat( nif->get<Quat>( iBody, "Rotation" ) );
+					t.rotation.fromQuat( nif->get<Quat>( iBody, TA_ROTATION ) );
 					t.translation = Vector3( nif->get<Vector4>( iBody, TA_TRANSLATION ) * 7 );
 				}
 				scene->bhkBodyTrans.insert( nif->getBlockNumber( iBody ), worldTrans() * t );
@@ -955,7 +955,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 		glPushMatrix();
 		Matrix4 tm = nif->get<Matrix4>( iShape, "Transform" );
 		glMultMatrix( tm );
-		drawHvkShape( nif, nif->getBlock( nif->getLink( iShape, "Shape" ) ), stack, scene, origin_color3fv );
+		drawHvkShape( nif, nif->getBlock( nif->getLink( iShape, TA_SHAPE ) ), stack, scene, origin_color3fv );
 		glPopMatrix();
 	}
 	else if ( name == "bhkSphereShape" )
@@ -965,7 +965,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 			int s_nodeId = ID2COLORKEY( nif->getBlockNumber( iShape ) );
 			glColor4ubv( (GLubyte *)&s_nodeId );
 		}
-		drawSphere( Vector3(), nif->get<float>( iShape, "Radius" ) );
+		drawSphere( Vector3(), nif->get<float>( iShape, TA_RADIUS ) );
 	}
 	else if ( name == "bhkMultiSphereShape" )
 	{
@@ -977,7 +977,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 		QModelIndex iSpheres = nif->getIndex( iShape, "Spheres" );
 		for ( int r = 0; r < nif->rowCount( iSpheres ); r++ )
 		{
-			drawSphere( nif->get<Vector3>( iSpheres.child( r, 0 ), "Center" ), nif->get<float>( iSpheres.child( r, 0 ), "Radius" ) );
+			drawSphere( nif->get<Vector3>( iSpheres.child( r, 0 ), TA_CENTER ), nif->get<float>( iSpheres.child( r, 0 ), TA_RADIUS ) );
 		}
 	}
 	else if ( name == "bhkBoxShape" )
@@ -997,9 +997,9 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 			int s_nodeId = ID2COLORKEY( nif->getBlockNumber( iShape ) );
 			glColor4ubv( (GLubyte *)&s_nodeId );
 		}
-		drawCapsule( nif->get<Vector3>( iShape, "First Point" ), nif->get<Vector3>( iShape, "Second Point" ), nif->get<float>( iShape, "Radius" ) );
+		drawCapsule( nif->get<Vector3>( iShape, "First Point" ), nif->get<Vector3>( iShape, "Second Point" ), nif->get<float>( iShape, TA_RADIUS ) );
 	}
-	else if ( name == "bhkNiTriStripsShape" )
+	else if ( name == T_BHKNITRISTRIPSSHAPE )
 	{
 		glPushMatrix();
 		float s = 1.0f / 7.0f;
@@ -1011,7 +1011,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 			glColor4ubv( (GLubyte *)&s_nodeId );
 		}
 		
-		QModelIndex iStrips = nif->getIndex( iShape, "Strips Data" );
+		QModelIndex iStrips = nif->getIndex( iShape, TA_STRIPSDATA );
 		for ( int r = 0; r < nif->rowCount( iStrips ); r++ )
 		{
 			QModelIndex iStripData = nif->getBlock( nif->getLink( iStrips.child( r, 0 ) ), T_NITRISTRIPSDATA );
@@ -1059,10 +1059,10 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 		}
 		drawConvexHull( nif->getArray<Vector4>( iShape, TA_VERTICES ), nif->getArray<Vector4>( iShape, TA_NORMALS ) );
 	}
-	else if ( name == "bhkMoppBvTreeShape" )
+	else if ( name == T_BHKMOPPBVTREESHAPE )
 	{
 		if ( !Node::SELECTING ) {
-			if ( scene->currentBlock == nif->getBlock( nif->getLink( iShape, "Shape" ) ) ) {// fix: add selected visual to havok meshes
+			if ( scene->currentBlock == nif->getBlock( nif->getLink( iShape, TA_SHAPE ) ) ) {// fix: add selected visual to havok meshes
 				glHighlightColor();
 				glLineWidth( 1.5f );// taken from "DrawTriangleSelection"
 			}
@@ -1071,9 +1071,9 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 				glColor3fv( origin_color3fv );
 			}
 		}
-		drawHvkShape( nif, nif->getBlock( nif->getLink( iShape, "Shape" ) ), stack, scene, origin_color3fv );
+		drawHvkShape( nif, nif->getBlock( nif->getLink( iShape, TA_SHAPE ) ), stack, scene, origin_color3fv );
 	}
-	else if ( name == "bhkPackedNiTriStripsShape" )
+	else if ( name == T_BHKPACKEDNITRISTRIPSSHAPE )
 	{
 		//glLoadName( nif->getBlockNumber( iShape ) );
 		if (Node::SELECTING) {
@@ -1087,7 +1087,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 			QModelIndex iTris = nif->getIndex( iData, TA_TRIANGLES );
 			for ( int t = 0; t < nif->rowCount( iTris ); t++ )
 			{
-				Triangle tri = nif->get<Triangle>( iTris.child( t, 0 ), "Triangle" );
+				Triangle tri = nif->get<Triangle>( iTris.child( t, 0 ), TA_TRIANGLE );
 				if ( tri[0] != tri[1] || tri[1] != tri[2] || tri[2] != tri[0] )
 				{
 					glBegin( GL_LINE_STRIP );
@@ -1119,17 +1119,17 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 						glDepthFunc( GL_ALWAYS );
 						glHighlightColor();
 						for ( int t = 0; t < nif->rowCount( iTris ); t++ )
-							DrawTriangleIndex(verts, nif->get<Triangle>( iTris.child( t, 0 ), "Triangle" ), t);
+							DrawTriangleIndex(verts, nif->get<Triangle>( iTris.child( t, 0 ), TA_TRIANGLE ), t);
 					}
 					else if ( nif->isCompound( nif->getBlockType( scene->currentIndex ) ) )
 					{
-						Triangle tri = nif->get<Triangle>( iTris.child( i, 0 ), "Triangle" );
+						Triangle tri = nif->get<Triangle>( iTris.child( i, 0 ), TA_TRIANGLE );
 						DrawTriangleSelection(verts, tri );
 						DrawTriangleIndex(verts, tri, i);
 					}
-					else if ( nif->getBlockName( scene->currentIndex ) == "Normal" )
+					else if ( nif->getBlockName( scene->currentIndex ) == TA_NORMAL )
 					{
-						Triangle tri = nif->get<Triangle>( scene->currentIndex.parent(), "Triangle" );
+						Triangle tri = nif->get<Triangle>( scene->currentIndex.parent(), TA_TRIANGLE );
 						Vector3 triCentre = ( verts.value( tri.v1() ) + verts.value( tri.v2() ) + verts.value( tri.v3() ) ) /  3.0;
 						glLineWidth( 1.5f );
 						glDepthFunc( GL_ALWAYS );
@@ -1174,7 +1174,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 					}
 					// highlight the triangles of the subshape
 					for ( int t = 0; t < nif->rowCount( iTris ); t++ ) {
-						Triangle tri = nif->get<Triangle>( iTris.child( t, 0 ), "Triangle" );
+						Triangle tri = nif->get<Triangle>( iTris.child( t, 0 ), TA_TRIANGLE );
 						if ((start_vertex <= tri[0]) && (tri[0] < end_vertex)) {
 							if ((start_vertex <= tri[1]) && (tri[1] < end_vertex) && (start_vertex <= tri[2]) && (tri[2] < end_vertex)) {
 								DrawTriangleSelection(verts, tri );
@@ -1503,10 +1503,10 @@ void Node::drawHavok()
 		Transform bt;
 		
 		bt.translation = nif->get<Vector3>( iBox, TA_TRANSLATION );
-		bt.rotation = nif->get<Matrix>( iBox, "Rotation" );
+		bt.rotation = nif->get<Matrix>( iBox, TA_ROTATION );
 		bt.scale = 1.0f;
 		
-		Vector3 rad = nif->get<Vector3>( iBox, "Radius" );
+		Vector3 rad = nif->get<Vector3>( iBox, TA_RADIUS );
 		
 		glPushMatrix();
 		glLoadMatrix( scene->view );
@@ -1540,7 +1540,7 @@ void Node::drawHavok()
 			if ( ! iBound.isValid() )
 				continue;
 			
-			Vector3 center = nif->get<Vector3>( iBound, "Center" );
+			Vector3 center = nif->get<Vector3>( iBound, TA_CENTER );
 			Vector3 dim = nif->get<Vector3>( iBound, "Dimensions" );
 			
 			glPushMatrix();
@@ -1567,11 +1567,11 @@ void Node::drawHavok()
 	
 	QModelIndex iObject = nif->getBlock( nif->getLink( iBlock, "Collision Data" ) );
 	if ( ! iObject.isValid() )
-		iObject = nif->getBlock( nif->getLink( iBlock, "Collision Object" ) );
+		iObject = nif->getBlock( nif->getLink( iBlock, TA_COLLISIONOBJECT ) );
 	if ( ! iObject.isValid() )
 		return;
 	
-	QModelIndex iBody = nif->getBlock( nif->getLink( iObject, "Body" ) );
+	QModelIndex iBody = nif->getBlock( nif->getLink( iObject, TA_BODY ) );
 	
 	glPushMatrix();
 	glLoadMatrix( scene->view );
@@ -1609,7 +1609,7 @@ void Node::drawHavok()
 	int color_index = nif->get<int>( iBody, "Layer" ) & 7;
 	glColor3fv( colors[ color_index ] );
 	if ( !Node::SELECTING )
-		if ( scene->currentBlock == nif->getBlock( nif->getLink( iBody, "Shape" ) ) ) {// fix: add selected visual to havok meshes
+		if ( scene->currentBlock == nif->getBlock( nif->getLink( iBody, TA_SHAPE ) ) ) {// fix: add selected visual to havok meshes
 			glHighlightColor(); // TODO: idea: I do not recommend mimicking the Open GL API
 								// It confuses the one who reads the code. And the Open GL API is
 								// in constant development.
@@ -1620,18 +1620,18 @@ void Node::drawHavok()
 	QStack<QModelIndex> shapeStack;
 	if (Node::SELECTING)
 		glLineWidth( 5 );// make selection click a little more easy
-	drawHvkShape( nif, nif->getBlock( nif->getLink( iBody, "Shape" ) ), shapeStack, scene, colors[ color_index ] );
+	drawHvkShape( nif, nif->getBlock( nif->getLink( iBody, TA_SHAPE ) ), shapeStack, scene, colors[ color_index ] );
 
 	//glLoadName( nif->getBlockNumber( iBody ) );
 	if (Node::SELECTING) {
 		int s_nodeId = ID2COLORKEY (nif->getBlockNumber( iBody ) );
 		glColor4ubv( (GLubyte *)&s_nodeId );
 		glDepthFunc( GL_ALWAYS );
-		drawAxes( Vector3( nif->get<Vector4>( iBody, "Center" ) ), 0.2f );
+		drawAxes( Vector3( nif->get<Vector4>( iBody, TA_CENTER ) ), 0.2f );
 		glDepthFunc( GL_LEQUAL );
 	}
 	else {
-		drawAxes( Vector3( nif->get<Vector4>( iBody, "Center" ) ), 0.2f );
+		drawAxes( Vector3( nif->get<Vector4>( iBody, TA_CENTER ) ), 0.2f );
 	}
 	
 	glPopMatrix();
@@ -1831,7 +1831,7 @@ BoundSphere Node::bounds() const
 	{
 		QModelIndex iBox = nif->getIndex( iBlock, "Bounding Box" );
 		Vector3 trans = nif->get<Vector3>( iBox, TA_TRANSLATION );
-		Vector3 rad = nif->get<Vector3>( iBox, "Radius" );
+		Vector3 rad = nif->get<Vector3>( iBox, TA_RADIUS );
 		boundsphere |= BoundSphere(trans, rad.length());
 	}
 	
@@ -1846,7 +1846,7 @@ BoundSphere Node::bounds() const
 			if ( ! iBound.isValid() )
 				continue;
 			
-			Vector3 center = nif->get<Vector3>( iBound, "Center" );
+			Vector3 center = nif->get<Vector3>( iBound, TA_CENTER );
 			Vector3 dim = nif->get<Vector3>( iBound, "Dimensions" );
 			boundsphere |= BoundSphere(center, dim.length());
 		}

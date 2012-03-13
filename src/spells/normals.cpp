@@ -59,7 +59,7 @@ public:
 	static QModelIndex getShapeData( const NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iData = nif->getBlock( index );
-		if ( nif->isNiBlock( index, "NiTriShape" ) || nif->isNiBlock( index, "NiTriStrips" ) )
+		if ( nif->isNiBlock( index, T_NITRISHAPE ) || nif->isNiBlock( index, T_NITRISTRIPS ) )
 			iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
 		if ( nif->isNiBlock( iData, T_NITRISHAPEDATA ) || nif->isNiBlock( iData, T_NITRISTRIPSDATA ) )
 			return iData;
@@ -109,7 +109,7 @@ public:
 			norms[ n ].normalize();
 		}
 		
-		nif->set<int>( iData, "Has Normals", 1 );
+		nif->set<int>( iData, TA_HASNORMALS, 1 );
 		nif->updateArray( iData, TA_NORMALS );
 		nif->setArray<Vector3>( iData, TA_NORMALS, norms );
 		
@@ -129,7 +129,7 @@ public:
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iData = spFaceNormals::getShapeData( nif, index );
-		return ( iData.isValid() && nif->get<bool>( iData, "Has Normals" ) );
+		return ( iData.isValid() && nif->get<bool>( iData, TA_HASNORMALS ) );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )

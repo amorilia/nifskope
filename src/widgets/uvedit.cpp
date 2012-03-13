@@ -1188,7 +1188,7 @@ class UVWScaleCommand : public QUndoCommand
 public:
 	UVWScaleCommand( UVWidget * w, float sX, float sY ) : QUndoCommand(), uvw( w ), scaleX( sX ), scaleY( sY )
 	{
-		setText( "Scale" );
+		setText( TA_SCALE );
 	}
 	
 	int id() const
@@ -1386,7 +1386,7 @@ class UVWRotateCommand : public QUndoCommand
 public:
 	UVWRotateCommand( UVWidget * w, float r ) : QUndoCommand(), uvw( w ), rotation( r )
 	{
-		setText( "Rotation" );
+		setText( TA_ROTATION );
 	}
 	
 	int id() const
@@ -1549,7 +1549,7 @@ void UVWidget::getCoordSets()
 {
 	coordSetSelect->clear();
 	
-	quint8 numUvSets = nif->get<quint8>( iShapeData, "Num UV Sets" );
+	quint8 numUvSets = nif->get<quint8>( iShapeData, TA_NUMUVSETS );
 	
         for ( int i = 0; i < numUvSets; i++ )
 	{
@@ -1597,8 +1597,8 @@ void UVWidget::duplicateCoordSet()
 	// this signal close the UVWidget
 	disconnect( nif, SIGNAL( dataChanged( const QModelIndex &, const QModelIndex & ) ), this, SLOT( nifDataChanged( const QModelIndex & ) ) );
 	// expand the UV Sets array and duplicate the current coordinates
-	quint8 numUvSets = nif->get<quint8>( iShapeData, "Num UV Sets" );
-	nif->set<quint8>( iShapeData, "Num UV Sets", numUvSets + 1 );
+	quint8 numUvSets = nif->get<quint8>( iShapeData, TA_NUMUVSETS );
+	nif->set<quint8>( iShapeData, TA_NUMUVSETS, numUvSets + 1 );
 	QModelIndex uvSets = nif->getIndex( iShapeData, TA_UVSETS );
 	nif->updateArray( uvSets );
 	nif->setArray<Vector2>( uvSets.child( numUvSets, 0), nif->getArray<Vector2>( uvSets.child( currentCoordSet, 0 ) ) );

@@ -239,7 +239,7 @@ public:
 			removed = false;
 			for ( int b = 0; b < nif->getBlockCount(); b++ )
 			{
-				QModelIndex iNode = nif->getBlock( b, "NiNode" );
+				QModelIndex iNode = nif->getBlock( b, T_NINODE );
 				if ( iNode.isValid() )
 				{
 					if ( nif->getChildLinks( b ).isEmpty() && nif->getParentLinks( b ).isEmpty() )
@@ -292,7 +292,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif && nif->isNiBlock( index, "NiNode" );
+		return nif && nif->isNiBlock( index, T_NINODE );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -306,12 +306,12 @@ public:
 		
 		QList<qint32> lTris;
 		
-		foreach ( qint32 lChild, nif->getLinkArray( iParent, "Children" ) )
+		foreach ( qint32 lChild, nif->getLinkArray( iParent, TA_CHILDREN ) )
 		{
 			if ( nif->getParent( lChild ) == nif->getBlockNumber( iParent ) )
 			{
 				QModelIndex iChild = nif->getBlock( lChild );
-				if ( nif->isNiBlock( iChild, "NiTriShape" ) || nif->isNiBlock( iChild, "NiTriStrips" ) )
+				if ( nif->isNiBlock( iChild, T_NITRISHAPE ) || nif->isNiBlock( iChild, T_NITRISTRIPS ) )
 					lTris << lChild;
 			}
 		}
@@ -469,10 +469,10 @@ public:
 			nif->setArray<Vector2>( iUVa.child( r, 0 ), nif->getArray<Vector2>( iUVa.child( r, 0 ) ).mid( 0, numA ) + nif->getArray<Vector2>( iUVb.child( r, 0 ) ) );
 		}
 		
-		int triCntA = nif->get<int>( iDataA, "Num Triangles" );
-		int triCntB = nif->get<int>( iDataB, "Num Triangles" );
-		nif->set<int>( iDataA, "Num Triangles", triCntA + triCntB );
-		nif->set<int>( iDataA, "Num Triangle Points", ( triCntA + triCntB ) * 3 );
+		int triCntA = nif->get<int>( iDataA, TA_NUMTRIANGLES );
+		int triCntB = nif->get<int>( iDataB, TA_NUMTRIANGLES );
+		nif->set<int>( iDataA, TA_NUMTRIANGLES, triCntA + triCntB );
+		nif->set<int>( iDataA, TA_NUMTRIANGLEPOINTS, ( triCntA + triCntB ) * 3 );
 		
 		QVector<Triangle> triangles = nif->getArray<Triangle>( iDataB, TA_TRIANGLES );
 		QMutableVectorIterator<Triangle> itTri( triangles );
@@ -486,9 +486,9 @@ public:
 		nif->updateArray( iDataA, TA_TRIANGLES );
 		nif->setArray<Triangle>( iDataA, TA_TRIANGLES, triangles + nif->getArray<Triangle>( iDataA, TA_TRIANGLES ) );
 		
-		int stripCntA = nif->get<int>( iDataA, "Num Strips" );
-		int stripCntB = nif->get<int>( iDataB, "Num Strips" );
-		nif->set<int>( iDataA, "Num Strips", stripCntA + stripCntB );
+		int stripCntA = nif->get<int>( iDataA, TA_NUMSTRIPS );
+		int stripCntB = nif->get<int>( iDataB, TA_NUMSTRIPS );
+		nif->set<int>( iDataA, TA_NUMSTRIPS, stripCntA + stripCntB );
 		
 		nif->updateArray( iDataA, TA_STRIPLENGTHS );
 		nif->updateArray( iDataA, TA_POINTS );

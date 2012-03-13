@@ -170,7 +170,7 @@ public:
 		if ( TheHavokCode.Initialize() )
 		{
 			QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
-			if ( nif->isNiBlock( index, "bhkMoppBvTreeShape" ) )
+			if ( nif->isNiBlock( index, T_BHKMOPPBVTREESHAPE ) )
 			{
 				return ( nif->checkVersion( NF_V20000004, NF_V20000005 ) 
 						|| nif->checkVersion( NF_V20020007, NF_V20020007 ) );
@@ -188,15 +188,15 @@ public:
 		
 		QPersistentModelIndex ibhkMoppBvTreeShape = iBlock;
 		
-		QModelIndex ibhkPackedNiTriStripsShape = nif->getBlock( nif->getLink( ibhkMoppBvTreeShape, "Shape" ) );
-		if ( !nif->isNiBlock( ibhkPackedNiTriStripsShape, "bhkPackedNiTriStripsShape" ))
+		QModelIndex ibhkPackedNiTriStripsShape = nif->getBlock( nif->getLink( ibhkMoppBvTreeShape, TA_SHAPE ) );
+		if ( !nif->isNiBlock( ibhkPackedNiTriStripsShape, T_BHKPACKEDNITRISTRIPSSHAPE ))
 		{
 			qWarning() << Spell::tr( "only bhkPackedNiTriStripsShape can be used with bhkMoppBvTreeShape Mopp code at this time" );
 			return iBlock;
 		}
 		
 		QModelIndex ihkPackedNiTriStripsData = nif->getBlock( nif->getLink( ibhkPackedNiTriStripsShape, TA_DATA ) );
-		if ( !nif->isNiBlock( ihkPackedNiTriStripsData, "hkPackedNiTriStripsData" ))
+		if ( !nif->isNiBlock( ihkPackedNiTriStripsData, T_HKPACKEDNITRISTRIPSDATA ))
 			return iBlock;
 		
 		QVector<int> subshapeVerts;
@@ -219,11 +219,11 @@ public:
 		QVector<Vector3> verts = nif->getArray<Vector3>( ihkPackedNiTriStripsData, TA_VERTICES );
 		QVector<Triangle> triangles;
 		
-		int nTriangles = nif->get<int>( ihkPackedNiTriStripsData, "Num Triangles" );
+		int nTriangles = nif->get<int>( ihkPackedNiTriStripsData, TA_NUMTRIANGLES );
 		QModelIndex iTriangles = nif->getIndex( ihkPackedNiTriStripsData, TA_TRIANGLES );
 		triangles.resize(nTriangles);
 		for ( int t = 0; t < nTriangles; t++ ) {
-			triangles[t] = nif->get<Triangle>( iTriangles.child( t, 0 ), "Triangle" );
+			triangles[t] = nif->get<Triangle>( iTriangles.child( t, 0 ), TA_TRIANGLE );
 		}
 		
 		if ( verts.isEmpty() || triangles.isEmpty() )
@@ -245,7 +245,7 @@ public:
 			QModelIndex iCodeOrigin = nif->getIndex( ibhkMoppBvTreeShape, "Origin" );
 			nif->set<Vector3>( iCodeOrigin, origin );
 			
-			QModelIndex iCodeScale = nif->getIndex( ibhkMoppBvTreeShape, "Scale" );
+			QModelIndex iCodeScale = nif->getIndex( ibhkMoppBvTreeShape, TA_SCALE );
 			nif->set<float>( iCodeScale, scale );
 			
 			QModelIndex iCodeSize = nif->getIndex( ibhkMoppBvTreeShape, "MOPP Data Size" );

@@ -186,17 +186,17 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 	QModelIndex iBlock = nif->getBlock( index );
 
 	//Be sure the user hasn't clicked on a NiTriStrips object
-	if ( iBlock.isValid() && nif->itemName(iBlock) == "NiTriStrips" )
+	if ( iBlock.isValid() && nif->itemName(iBlock) == T_NITRISTRIPS )
 	{
 		int result = QMessageBox::information( 0, tr("Import OBJ"), tr("You cannot import an OBJ file over a NiTriStrips object.  Please convert it to a NiTriShape object first by right-clicking and choosing Mesh > Triangulate") );
 		return;
 	}
 
-	if ( iBlock.isValid() && nif->itemName( index ) == "NiNode" )
+	if ( iBlock.isValid() && nif->itemName( index ) == T_NINODE )
 	{
 		iNode = index;
 	}
-	else if ( iBlock.isValid() && nif->itemName( index ) == "NiTriShape" )
+	else if ( iBlock.isValid() && nif->itemName( index ) == T_NITRISHAPE )
 	{
 		iShape = index;
 		//Find parent of NiTriShape
@@ -599,7 +599,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 
 	if ( iNode.isValid() == false )
 	{
-		iNode = nif->insertNiBlock( "NiNode" );
+		iNode = nif->insertNiBlock( T_NINODE );
 		nif->set<QString>( iNode, TA_NAME, "Scene Root" );
 	}
 
@@ -619,9 +619,9 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 		{
 			groupNode = true;
 
-			iNode = nif->insertNiBlock( "NiNode" );
+			iNode = nif->insertNiBlock( T_NINODE );
 			nif->set<QString>( iNode, TA_NAME, mesh->name );
-			addLink( nif, iRoot, "Children", nif->getBlockNumber( iNode ) );
+			addLink( nif, iRoot, TA_CHILDREN, nif->getBlockNumber( iNode ) );
 		}
 
 		int shapecount = 0;
@@ -635,17 +635,17 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 
 			if ( iShape.isValid() == false || objIndex != 0 )
 			{
-				iShape = nif->insertNiBlock( "NiTriShape" );
+				iShape = nif->insertNiBlock( T_NITRISHAPE );
 			}
 			if ( groupNode )
 			{
 				nif->set<QString>( iShape, TA_NAME, QString( "%1:%2" ).arg( nif->get<QString>( iNode, TA_NAME ) ).arg( shapecount++ ) );
-				addLink( nif, iNode, "Children", nif->getBlockNumber( iShape ) );
+				addLink( nif, iNode, TA_CHILDREN, nif->getBlockNumber( iShape ) );
 			}
 			else
 			{
 				nif->set<QString>( iShape, TA_NAME, mesh->name );
-				addLink( nif, iRoot, "Children", nif->getBlockNumber( iShape ) );
+				addLink( nif, iRoot, TA_CHILDREN, nif->getBlockNumber( iShape ) );
 			}
 			
 			if ( iMaterial.isValid() == false || objIndex != 0 )
@@ -673,7 +673,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 					}
 					addLink( nif, iShape, TA_PROPERTIES, nif->getBlockNumber( iTexProp ) );
 					
-					nif->set<int>( iTexProp, "Has Base Texture", 1 );
+					nif->set<int>( iTexProp, TA_HASBASETEXTURE, 1 );
 					QModelIndex iBaseMap = nif->getIndex( iTexProp, TA_BASETEXTURE );
 					nif->set<int>( iBaseMap, TA_CLAMPMODE, 3 );
 					nif->set<int>( iBaseMap, TA_FILTERMODE, 2 );
@@ -684,13 +684,13 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 					}
 					nif->setLink( iBaseMap, TA_SOURCE, nif->getBlockNumber( iTexSource ) );
 					
-					nif->set<int>( iTexSource, "Pixel Layout", nif->getVersion() == "20.0.0.5" ? 6 : 5 );
-					nif->set<int>( iTexSource, "Use Mipmaps", 2 );
-					nif->set<int>( iTexSource, "Alpha Format", 3 );
-					nif->set<int>( iTexSource, "Unknown Byte", 1 );
-					nif->set<int>( iTexSource, "Unknown Byte 2", 1 );
+					nif->set<int>( iTexSource, TA_PIXELLAYOUT, nif->getVersion() == "20.0.0.5" ? 6 : 5 );
+					nif->set<int>( iTexSource, TA_USEMIPMAPS, 2 );
+					nif->set<int>( iTexSource, TA_ALPHAFORMAT, 3 );
+					nif->set<int>( iTexSource, TA_UNKNOWNBYTE, 1 );
+					nif->set<int>( iTexSource, TA_UNKNOWNBYTE2, 1 );
 					
-					nif->set<int>( iTexSource, "Use External", 1 );
+					nif->set<int>( iTexSource, TA_USEEXTERNAL, 1 );
 					nif->set<QString>( iTexSource, TA_FILENAME, mat->map_Kd );
 				}
 				else
@@ -709,7 +709,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 
 					nif->setLink( iTexProp, TA_IMAGE, nif->getBlockNumber( iTexSource ) );
 					
-					nif->set<int>( iTexSource, "External", 1 );
+					nif->set<int>( iTexSource, TA_EXTERNAL, 1 );
 					nif->set<QString>( iTexSource, TA_FILENAME, mat->map_Kd );
 				}
 			}
@@ -735,15 +735,15 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			}
 			
 			nif->set<int>( iData, TA_NUMVERTICES, mesh->vertices.count() );
-			nif->set<int>( iData, "Has Vertices", 1 );
+			nif->set<int>( iData, TA_HASVERTICES, 1 );
 			nif->updateArray( iData, TA_VERTICES );
 			nif->setArray<Vector3>( iData, TA_VERTICES,  mesh->vertices );
-			nif->set<int>( iData, "Has Normals", 1 );
+			nif->set<int>( iData, TA_HASNORMALS, 1 );
 			nif->updateArray( iData, TA_NORMALS );
 			nif->setArray<Vector3>( iData, TA_NORMALS,  mesh->normals );
-			nif->set<int>( iData, "Has UV", 1 );
-			nif->set<int>( iData, "Num UV Sets", 1 );
-			nif->set<int>( iData, "Num UV Sets 2", 1 );
+			nif->set<int>( iData, TA_HASUV, 1 );
+			nif->set<int>( iData, TA_NUMUVSETS, 1 );
+			nif->set<int>( iData, TA_NUMUVSETS2, 1 );
 			QModelIndex iTexCo = nif->getIndex( iData, TA_UVSETS );
 			if ( !iTexCo.isValid() ) {
 				iTexCo = nif->getIndex( iData, TA_UVSETS2 );
@@ -752,9 +752,9 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			nif->updateArray( iTexCo.child( 0, 0 ) );
 			nif->setArray<Vector2>( iTexCo.child( 0, 0 ),  mesh->texcoords );
 			
-			nif->set<int>( iData, "Has Triangles", 1 );
-			nif->set<int>( iData, "Num Triangles", triangles.count() );
-			nif->set<int>( iData, "Num Triangle Points", triangles.count() * 3 );
+			nif->set<int>( iData, TA_HASTRIANGLES, 1 );
+			nif->set<int>( iData, TA_NUMTRIANGLES, triangles.count() );
+			nif->set<int>( iData, TA_NUMTRIANGLEPOINTS, triangles.count() * 3 );
 			nif->updateArray( iData, TA_TRIANGLES );
 			nif->setArray<Triangle>( iData, TA_TRIANGLES, triangles );
 			
@@ -762,16 +762,16 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			foreach ( Vector3 v,  mesh->vertices )
 				center += v;
 			if (  mesh->vertices.count() > 0 ) center /=  mesh->vertices.count();
-			nif->set<Vector3>( iData, "Center", center );
+			nif->set<Vector3>( iData, TA_CENTER, center );
 			float radius = 0;
 			foreach ( Vector3 v,  mesh->vertices )
 			{
 				float d = ( center - v ).length();
 				if ( d > radius ) radius = d;
 			}
-			nif->set<float>( iData, "Radius", radius );
+			nif->set<float>( iData, TA_RADIUS, radius );
 			
-			nif->set<int>( iData, "Unknown Short 2", 0x4000 );
+			nif->set<int>( iData, TA_UNKNOWNSHORT2, 0x4000 );
 		}
 
 		// set up a controller for animated objects

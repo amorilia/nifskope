@@ -361,14 +361,14 @@ NifMatrix4Edit::NifMatrix4Edit( NifModel * nif, const QModelIndex & index )
 	
 	group = new QGroupBox;
 	vbox->addWidget( group );
-	group->setTitle( tr("Rotation") );
+	group->setTitle( tr(TA_ROTATION) );
 	group->setLayout( new QHBoxLayout );
 	group->layout()->addWidget( rotation = new RotationEdit() );
 	connect( rotation, SIGNAL( sigEdited() ), this, SLOT( applyData() ) );
 	
 	group = new QGroupBox;
 	vbox->addWidget( group );
-	group->setTitle( tr("Scale") );
+	group->setTitle( tr(TA_SCALE) );
 	group->setLayout( new QHBoxLayout );
 	group->layout()->addWidget( scale = new VectorEdit() );
 	connect( scale, SIGNAL( sigEdited() ), this, SLOT( applyData() ) );

@@ -375,7 +375,7 @@ int TexCache::bind( const QModelIndex & iSource )
 {
 	const NifModel * nif = qobject_cast<const NifModel *>( iSource.model() );
 	if ( nif && iSource.isValid() ) {
-		if ( nif->get<quint8>( iSource, "Use External" ) == 0 ){
+		if ( nif->get<quint8>( iSource, TA_USEEXTERNAL ) == 0 ){
 			QModelIndex iData = nif->getBlock( nif->getLink( iSource, "Pixel Data" ) );
 			if (iData.isValid()) {
 				Tex * tx = embedTextures.value( iData );
@@ -438,7 +438,7 @@ QString TexCache::info( const QModelIndex& iSource )
 	QString temp;
 	const NifModel * nif = qobject_cast<const NifModel *>( iSource.model() );
 	if ( nif && iSource.isValid() ) {
-		if ( nif->get<quint8>( iSource, "Use External" ) == 0 ) {
+		if ( nif->get<quint8>( iSource, TA_USEEXTERNAL ) == 0 ) {
 			QModelIndex iData = nif->getBlock( nif->getLink( iSource, "Pixel Data" ) );
 			if (iData.isValid()) {
 				Tex * tx = embedTextures.value( iData );
@@ -480,7 +480,7 @@ bool TexCache::importFile( NifModel * nif, const QModelIndex & iSource, QModelIn
 	//const NifModel * nif = qobject_cast<const NifModel *>( iSource.model() );
 	if ( nif && iSource.isValid() )
 	{
-		if( nif->get<quint8>( iSource, "Use External" ) == 1 )
+		if( nif->get<quint8>( iSource, TA_USEEXTERNAL ) == 1 )
 		{
 			QString filename = nif->get<QString>( iSource, TA_FILENAME );
 			//qWarning() << "TexCache::importFile: Texture has filename (from NIF) " << filename;

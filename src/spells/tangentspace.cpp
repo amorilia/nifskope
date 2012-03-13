@@ -41,12 +41,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 bool spTangentSpace::isApplicable( const NifModel * nif, const QModelIndex & index )
 {
 	QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
-	if ( !( nif->isNiBlock( index, "NiTriShape" ) && nif->isNiBlock( iData, T_NITRISHAPEDATA ) )
-		&& !( nif->isNiBlock( index, "NiTriStrips" ) && nif->isNiBlock( iData, T_NITRISTRIPSDATA ) ) )
+	if ( !( nif->isNiBlock( index, T_NITRISHAPE ) && nif->isNiBlock( iData, T_NITRISHAPEDATA ) )
+		&& !( nif->isNiBlock( index, T_NITRISTRIPS ) && nif->isNiBlock( iData, T_NITRISTRIPSDATA ) ) )
 		return false;
 
 	// early exit of normals are missing
-	if ( !nif->get<bool>( iData, "Has Normals" ) )
+	if ( !nif->get<bool>( iData, TA_HASNORMALS ) )
 		return false;
 
 	if ( nif->checkVersion( NF_V20000004, NF_V20000005 ) && (nif->getUserVersion() == 11) )
@@ -73,7 +73,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 	QVector<Vector3> norms = nif->getArray<Vector3>( iData, TA_NORMALS );
 
 	QVector<Color4> vxcol = nif->getArray<Color4>( iData, TA_VERTEXCOLORS );
-	int numUVSets = nif->get<int>( iData, "Num UV Sets" );
+	int numUVSets = nif->get<int>( iData, TA_NUMUVSETS );
 	int tspaceFlags = nif->get<int>( iData, "TSpace Flag" );
 	QModelIndex iTexCo = nif->getIndex( iData, TA_UVSETS );
 	if ( ! iTexCo.isValid() ) iTexCo = nif->getIndex( iData, TA_UVSETS2 );
@@ -250,7 +250,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 		if (tspaceFlags == 0)
 			tspaceFlags = 0x10;
 		nif->set<int>( iShape, "TSpace Flag", tspaceFlags);
-		nif->set<int>( iShape, "Num UV Sets", numUVSets);
+		nif->set<int>( iShape, TA_NUMUVSETS, numUVSets);
 		QModelIndex iBinorms = nif->getIndex( iData, TA_BINORMALS );
 		QModelIndex iTangents = nif->getIndex( iData, TA_TANGENTS );
 		nif->updateArray(iBinorms);

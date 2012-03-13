@@ -143,7 +143,7 @@ Node * Scene::getNode( const NifModel * nif, const QModelIndex & iNode )
 	Node * node = nodes.get( iNode );
 	if ( node ) return node;
 	
-	if ( nif->inherits( iNode, "NiNode" ) )
+	if ( nif->inherits( iNode, T_NINODE ) )
 	{
 		if ( nif->itemName( iNode ) == "NiLODNode" )
 			node = new LODNode( this, iNode );
@@ -152,7 +152,7 @@ Node * Scene::getNode( const NifModel * nif, const QModelIndex & iNode )
 		else
 			node = new Node( this, iNode );
 	}
-	else if ( nif->itemName( iNode ) == "NiTriShape" || nif->itemName( iNode ) == "NiTriStrips" || nif->inherits( iNode, T_NITRIBASEDGEOM) )
+	else if ( nif->itemName( iNode ) == T_NITRISHAPE || nif->itemName( iNode ) == T_NITRISTRIPS || nif->inherits( iNode, T_NITRIBASEDGEOM) )
 	{
 		node = new Mesh( this, iNode );
 	}

@@ -101,9 +101,9 @@ void blockLink( NifModel * nif, const QModelIndex & index, const QModelIndex & i
 	{
 		nif->setLink( index, nif->getBlockNumber( iBlock ) );
 	}
-	if ( nif->inherits( index, "NiNode" ) && nif->inherits( iBlock, "NiAVObject" ) )
+	if ( nif->inherits( index, T_NINODE ) && nif->inherits( iBlock, "NiAVObject" ) )
 	{
-		addLink( nif, index, "Children", nif->getBlockNumber( iBlock ) );
+		addLink( nif, index, TA_CHILDREN, nif->getBlockNumber( iBlock ) );
 		if ( nif->inherits( iBlock, "NiDynamicEffect" ) )
 		{
 			addLink( nif, index, "Effects", nif->getBlockNumber( iBlock ) );
@@ -305,7 +305,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->isNiBlock( index ) && nif->inherits( index, "NiNode" );
+		return nif->isNiBlock( index ) && nif->inherits( index, T_NINODE );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -322,7 +322,7 @@ public:
 		{
 			QPersistentModelIndex iParent = index;
 			QModelIndex iNode = nif->insertNiBlock( act->text(), nif->getBlockNumber( index ) + 1 );
-			addLink( nif, iParent, "Children", nif->getBlockNumber( iNode ) );
+			addLink( nif, iParent, TA_CHILDREN, nif->getBlockNumber( iNode ) );
 			return iNode;
 		}
 		else
@@ -341,7 +341,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->isNiBlock( index ) && nif->inherits( index, "NiNode" );
+		return nif->isNiBlock( index ) && nif->inherits( index, T_NINODE );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -358,7 +358,7 @@ public:
 		{
 			QPersistentModelIndex iParent = index;
 			QModelIndex iLight = nif->insertNiBlock( act->text(), nif->getBlockNumber( index ) + 1 );
-			addLink( nif, iParent, "Children", nif->getBlockNumber( iLight ) );
+			addLink( nif, iParent, TA_CHILDREN, nif->getBlockNumber( iLight ) );
 			addLink( nif, iParent, "Effects", nif->getBlockNumber( iLight ) );
 
 			if ( nif->checkVersion(0, 0x04000002) ) {
@@ -847,42 +847,42 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex iParent = nif->getBlock( nif->getParent( nif->getBlockNumber( index ) ), "NiNode" );
-		return nif->inherits( index, "NiNode" ) && iParent.isValid();
+		QModelIndex iParent = nif->getBlock( nif->getParent( nif->getBlockNumber( index ) ), T_NINODE );
+		return nif->inherits( index, T_NINODE ) && iParent.isValid();
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & iNode )
 	{
-		QModelIndex iParent = nif->getBlock( nif->getParent( nif->getBlockNumber( iNode ) ), "NiNode" );
+		QModelIndex iParent = nif->getBlock( nif->getParent( nif->getBlockNumber( iNode ) ), T_NINODE );
 		doNode( nif, iNode, iParent, Transform() );
 		return iNode;
 	}
 	
 	void doNode( NifModel * nif, const QModelIndex & iNode, const QModelIndex & iParent, Transform tp )
 	{
-		if ( ! nif->inherits( iNode, "NiNode" ) )
+		if ( ! nif->inherits( iNode, T_NINODE ) )
 			return;
 		
 		Transform t = tp * Transform( nif, iNode );
 		
 		QList<qint32> links;
 		
-		foreach ( qint32 l, nif->getLinkArray( iNode, "Children" ) )
+		foreach ( qint32 l, nif->getLinkArray( iNode, TA_CHILDREN ) )
 		{
 			QModelIndex iChild = nif->getBlock( l );
 			if ( nif->getParent( nif->getBlockNumber( iChild ) ) == nif->getBlockNumber( iNode ) )
 			{
 				Transform tc = t * Transform( nif, iChild );
 				tc.writeBack( nif, iChild );
-				addLink( nif, iParent, "Children", l );
-				delLink( nif, iNode, "Children", l );
+				addLink( nif, iParent, TA_CHILDREN, l );
+				delLink( nif, iNode, TA_CHILDREN, l );
 				links.append( l );
 			}
 		}
 		
 		foreach ( qint32 l, links )
 		{
-			doNode( nif, nif->getBlock( l, "NiNode" ), iParent, tp );
+			doNode( nif, nif->getBlock( l, T_NINODE ), iParent, tp );
 		}
 	}
 };
@@ -1287,7 +1287,7 @@ public:
 			}
 			
 			QModelIndex iNumChildren = nif->getIndex( iBlock, "Num Children" );
-			QModelIndex iChildren = nif->getIndex( iBlock, "Children" );
+			QModelIndex iChildren = nif->getIndex( iBlock, TA_CHILDREN );
 			// NiNode children are NIAVObjects and have a Name
 			if ( iNumChildren.isValid() && iChildren.isValid() )
 			{
@@ -1345,7 +1345,7 @@ public:
 		QModelIndex iParent = nif->getBlock( nif->getParent( thisBlockNumber ) );
 		
 		// find our index into the parent children array
-		QVector<int> parentChildLinks = nif->getLinkArray( iParent, "Children" );
+		QVector<int> parentChildLinks = nif->getLinkArray( iParent, TA_CHILDREN );
 		int thisBlockIndex = parentChildLinks.indexOf( thisBlockNumber );
 		
 		// attach a new node
@@ -1354,7 +1354,7 @@ public:
 		QStringList ids = nif->allNiBlocks();
 		ids.sort();
 		foreach ( QString id, ids )
-			if ( nif->inherits( id, "NiNode" ) )
+			if ( nif->inherits( id, T_NINODE ) )
 				menu.addAction( id );
 		
 		QModelIndex attachedNode;
@@ -1373,10 +1373,10 @@ public:
 		int attachedNodeNumber = thisBlockNumber++;
 		
 		// replace this block with the attached node
-		nif->setLink( nif->getIndex( iParent, "Children" ).child( thisBlockIndex, 0 ), attachedNodeNumber );
+		nif->setLink( nif->getIndex( iParent, TA_CHILDREN ).child( thisBlockIndex, 0 ), attachedNodeNumber );
 		
 		// attach ourselves to the attached node
-		addLink( nif, attachedNode, "Children", thisBlockNumber );
+		addLink( nif, attachedNode, TA_CHILDREN, thisBlockNumber );
 		
 		return attachedNode;
 	}

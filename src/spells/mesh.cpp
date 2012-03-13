@@ -53,7 +53,7 @@ static QModelIndex getShape( const NifModel * nif, const QModelIndex & index )
 	QModelIndex iShape = nif->getBlock( index );
 	if ( nif->isNiBlock( iShape, "NiTriBasedGeomData" ) )
 		iShape = nif->getBlock( nif->getParent( nif->getBlockNumber( iShape ) ) );
-	if ( nif->isNiBlock( iShape, "NiTriShape" ) || nif->isNiBlock( index, "NiTriStrips" ) )
+	if ( nif->isNiBlock( iShape, T_NITRISHAPE ) || nif->isNiBlock( index, T_NITRISTRIPS ) )
 		if ( nif->getBlock( nif->getLink( iShape, TA_DATA ), "NiTriBasedGeomData" ).isValid() )
 			return iShape;
 	return QModelIndex();
@@ -68,7 +68,7 @@ static QModelIndex getShape( const NifModel * nif, const QModelIndex & index )
 static QModelIndex getTriShapeData( const NifModel * nif, const QModelIndex & index )
 {
 	QModelIndex iData = nif->getBlock( index );
-	if ( nif->isNiBlock( index, "NiTriShape" ) )
+	if ( nif->isNiBlock( index, T_NITRISHAPE ) )
 		iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
 	if ( nif->isNiBlock( iData, T_NITRISHAPEDATA ) )
 		return iData;
@@ -454,8 +454,8 @@ public:
 		if ( cnt > 0 )
 		{
 			qWarning() << QString( Spell::tr("%1 triangles removed") ).arg( cnt );
-			nif->set<int>( iData, "Num Triangles", tris.count() );
-			nif->set<int>( iData, "Num Triangle Points", tris.count() * 3 );
+			nif->set<int>( iData, TA_NUMTRIANGLES, tris.count() );
+			nif->set<int>( iData, TA_NUMTRIANGLEPOINTS, tris.count() * 3 );
 			nif->updateArray( iData, TA_TRIANGLES );
 			nif->setArray<Triangle>( iData, TA_TRIANGLES, tris.toVector() );
 		}
@@ -671,8 +671,8 @@ QModelIndex spUpdateCenterRadius::cast( NifModel * nif, const QModelIndex & inde
 			radius = d;
 	}
 	
-	nif->set<Vector3>( iData, "Center", center );
-	nif->set<float>( iData, "Radius", radius );
+	nif->set<Vector3>( iData, TA_CENTER, center );
+	nif->set<float>( iData, TA_RADIUS, radius );
 	
 	return index;
 }

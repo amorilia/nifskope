@@ -64,7 +64,7 @@ class spStrippify : public Spell
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->checkVersion( NF_V10000000, 0 ) && nif->isNiBlock( index, "NiTriShape" );
+		return nif->checkVersion( NF_V10000000, 0 ) && nif->isNiBlock( index, T_NITRISHAPE );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -103,10 +103,10 @@ class spStrippify : public Spell
 		{
 			copyValue<int>( nif, iStripData, iData, TA_NUMVERTICES );
 			
-			nif->set<int>( iStripData, "Has Vertices", 1 );
+			nif->set<int>( iStripData, TA_HASVERTICES, 1 );
 			copyArray<Vector3>( nif, iStripData, iData, TA_VERTICES );
 			
-			copyValue<int>( nif, iStripData, iData, "Has Normals" );
+			copyValue<int>( nif, iStripData, iData, TA_HASNORMALS );
 			copyArray<Vector3>( nif, iStripData, iData, TA_NORMALS );
 			
 			copyValue<int>( nif, iStripData, iData, "TSpace Flag" );
@@ -116,10 +116,10 @@ class spStrippify : public Spell
 			copyValue<int>( nif, iStripData, iData, "Has Vertex Colors" );
 			copyArray<Color4>( nif, iStripData, iData, TA_VERTEXCOLORS );
 			
-			copyValue<int>( nif, iStripData, iData, "Has UV" );
-			copyValue<int>( nif, iStripData, iData, "Num UV Sets" );
+			copyValue<int>( nif, iStripData, iData, TA_HASUV );
+			copyValue<int>( nif, iStripData, iData, TA_NUMUVSETS );
 			copyValue<int>( nif, iStripData, iData, "BS Num UV Sets" );
-			copyValue<int>( nif, iStripData, iData, "Num UV Sets 2" );
+			copyValue<int>( nif, iStripData, iData, TA_NUMUVSETS2 );
 			QModelIndex iDstUV = nif->getIndex( iStripData, TA_UVSETS );
 			QModelIndex iSrcUV = nif->getIndex( iData, TA_UVSETS );
 			if ( iDstUV.isValid() && iSrcUV.isValid() )
@@ -141,11 +141,11 @@ class spStrippify : public Spell
 				}
 			}
 			
-			copyValue<Vector3>( nif, iStripData, iData, "Center" );
-			copyValue<float>( nif, iStripData, iData, "Radius" );
+			copyValue<Vector3>( nif, iStripData, iData, TA_CENTER );
+			copyValue<float>( nif, iStripData, iData, TA_RADIUS );
 			
-			nif->set<int>( iStripData, "Num Strips", strips.count() );
-			nif->set<int>( iStripData, "Has Points", 1 );
+			nif->set<int>( iStripData, TA_NUMSTRIPS, strips.count() );
+			nif->set<int>( iStripData, TA_HASPOINTS, 1 );
 			
 			QModelIndex iLengths = nif->getIndex( iStripData, TA_STRIPLENGTHS );
 			QModelIndex iPoints = nif->getIndex( iStripData, TA_POINTS );
@@ -165,9 +165,9 @@ class spStrippify : public Spell
 					x++;
 					z += strip.count() - 2;
 				}
-				nif->set<int>( iStripData, "Num Triangles", z );
+				nif->set<int>( iStripData, TA_NUMTRIANGLES, z );
 				
-				nif->setData( idx.sibling( idx.row(), NifModel::NameCol ), "NiTriStrips" );
+				nif->setData( idx.sibling( idx.row(), NifModel::NameCol ), T_NITRISTRIPS );
 				int lnk = nif->getLink( idx, TA_DATA );
 				nif->setLink( idx, TA_DATA, nif->getBlockNumber( iStripData ) );
 				nif->removeNiBlock( lnk );
@@ -197,7 +197,7 @@ public:
 		
 		for ( int l = 0; l < nif->getBlockCount(); l++ )
 		{
-			QModelIndex idx = nif->getBlock( l, "NiTriShape" );
+			QModelIndex idx = nif->getBlock( l, T_NITRISHAPE );
 			if ( idx.isValid() )
 				iTriShapes << idx;
 		}
@@ -221,7 +221,7 @@ class spTriangulate : public Spell
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->isNiBlock( index, "NiTriStrips" );
+		return nif->isNiBlock( index, T_NITRISTRIPS );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -254,10 +254,10 @@ class spTriangulate : public Spell
 		{
 			copyValue<int>( nif, iTriData, iStripData, TA_NUMVERTICES );
 			
-			nif->set<int>( iTriData, "Has Vertices", 1 );
+			nif->set<int>( iTriData, TA_HASVERTICES, 1 );
 			copyArray<Vector3>( nif, iTriData, iStripData, TA_VERTICES );
 			
-			copyValue<int>( nif, iTriData, iStripData, "Has Normals" );
+			copyValue<int>( nif, iTriData, iStripData, TA_HASNORMALS );
 			copyArray<Vector3>( nif, iTriData, iStripData, TA_NORMALS );
 			
 			copyValue<int>( nif, iTriData, iStripData, "TSpace Flag" );
@@ -267,10 +267,10 @@ class spTriangulate : public Spell
 			copyValue<int>( nif, iTriData, iStripData, "Has Vertex Colors" );
 			copyArray<Color4>( nif, iTriData, iStripData, TA_VERTEXCOLORS );
 			
-			copyValue<int>( nif, iTriData, iStripData, "Has UV" );
-			copyValue<int>( nif, iTriData, iStripData, "Num UV Sets" );
+			copyValue<int>( nif, iTriData, iStripData, TA_HASUV );
+			copyValue<int>( nif, iTriData, iStripData, TA_NUMUVSETS );
 			copyValue<int>( nif, iTriData, iStripData, "BS Num UV Sets" );
-			copyValue<int>( nif, iTriData, iStripData, "Num UV Sets 2" );
+			copyValue<int>( nif, iTriData, iStripData, TA_NUMUVSETS2 );
 			QModelIndex iDstUV = nif->getIndex( iTriData, TA_UVSETS );
 			QModelIndex iSrcUV = nif->getIndex( iStripData, TA_UVSETS );
 			if ( iDstUV.isValid() && iSrcUV.isValid() )
@@ -292,12 +292,12 @@ class spTriangulate : public Spell
 				}
 			}
 			
-			copyValue<Vector3>( nif, iTriData, iStripData, "Center" );
-			copyValue<float>( nif, iTriData, iStripData, "Radius" );
+			copyValue<Vector3>( nif, iTriData, iStripData, TA_CENTER );
+			copyValue<float>( nif, iTriData, iStripData, TA_RADIUS );
 			
-			nif->set<int>( iTriData, "Num Triangles", triangles.count() );
-			nif->set<int>( iTriData, "Num Triangle Points", triangles.count() * 3 );
-			nif->set<int>( iTriData, "Has Triangles", 1 );
+			nif->set<int>( iTriData, TA_NUMTRIANGLES, triangles.count() );
+			nif->set<int>( iTriData, TA_NUMTRIANGLEPOINTS, triangles.count() * 3 );
+			nif->set<int>( iTriData, TA_HASTRIANGLES, 1 );
 			
 			QModelIndex iTriangles = nif->getIndex( iTriData, TA_TRIANGLES );
 			if ( iTriangles.isValid() )
@@ -306,7 +306,7 @@ class spTriangulate : public Spell
 				nif->setArray<Triangle>( iTriangles, triangles );
 			}
 			
-			nif->setData( idx.sibling( idx.row(), NifModel::NameCol ), "NiTriShape" );
+			nif->setData( idx.sibling( idx.row(), NifModel::NameCol ), T_NITRISHAPE );
 			int lnk = nif->getLink( idx, TA_DATA );
 			nif->setLink( idx, TA_DATA, nif->getBlockNumber( iTriData ) );
 			nif->removeNiBlock( lnk );
@@ -326,7 +326,7 @@ public:
 	
 	static QModelIndex getStripsData( const NifModel * nif, const QModelIndex & index )
 	{
-		if ( nif->isNiBlock( index, "NiTriStrips" ) )
+		if ( nif->isNiBlock( index, T_NITRISTRIPS ) )
 			return nif->getBlock( nif->getLink( index, TA_DATA ), T_NITRISTRIPSDATA );
 		else
 			return nif->getBlock( index, T_NITRISTRIPSDATA );
@@ -335,7 +335,7 @@ public:
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iData = getStripsData( nif, index );
-		return iData.isValid() && nif->get<int>( iData, "Num Strips" ) > 1;
+		return iData.isValid() && nif->get<int>( iData, TA_NUMSTRIPS ) > 1;
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -364,7 +364,7 @@ public:
 				strip << strip.last() << s.first() << s;
 		}
 		
-		nif->set<int>( iData, "Num Strips", 1 );
+		nif->set<int>( iData, TA_NUMSTRIPS, 1 );
 		nif->updateArray( iLength );
 		nif->set<int>( iLength.child( 0, 0 ), strip.size() );
 		nif->updateArray( iPoints );
@@ -387,7 +387,7 @@ public:
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iData = spStichStrips::getStripsData( nif, index );
-		return iData.isValid() && nif->get<int>( iData, "Num Strips" ) == 1;
+		return iData.isValid() && nif->get<int>( iData, TA_NUMSTRIPS ) == 1;
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -435,7 +435,7 @@ public:
 		if ( ! scratch.isEmpty() )
 			strips << scratch;
 		
-		nif->set<int>( iData, "Num Strips", strips.size() );
+		nif->set<int>( iData, TA_NUMSTRIPS, strips.size() );
 		nif->updateArray( iLength );
 		nif->updateArray( iPoints );
 		for ( int r = 0; r < strips.count(); r++ )
