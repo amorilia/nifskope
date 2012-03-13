@@ -147,7 +147,7 @@ Node * Scene::getNode( const NifModel * nif, const QModelIndex & iNode )
 	{
 		if ( nif->itemName( iNode ) == "NiLODNode" )
 			node = new LODNode( this, iNode );
-		else if ( nif->itemName( iNode ) == "NiBillboardNode" )
+		else if ( nif->itemName( iNode ) == T_NIBILLBOARDNODE )
 			node = new BillboardNode( this, iNode );
 		else
 			node = new Node( this, iNode );

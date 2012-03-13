@@ -245,7 +245,7 @@ public:
 	{
 		foreach ( qint32 l, nif->getChildLinks( nif->getBlockNumber( node ) ) )
 		{
-			QModelIndex iCtrl = nif->getBlock( l, "NiTimeController" );
+			QModelIndex iCtrl = nif->getBlock( l, T_NITIMECONTROLLER );
 			if ( iCtrl.isValid() )
 			{
 				if ( nif->inherits( iCtrl, ctrltype ) )

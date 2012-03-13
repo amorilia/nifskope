@@ -249,7 +249,7 @@ void ZBufferProperty::update( const NifModel * nif, const QModelIndex & block )
 		};
 
 		// This was checking version 0x10000001 ?
-		if ( nif->checkVersion( NF_V04010012, NF_V20000005 ) )
+		if ( nif->checkVersion( NF_V04010018, NF_V20000005 ) )
 		{
 			depthFunc = depthMap[ nif->get<int>( iBlock, TA_FUNCTION ) & 0x07 ];
 		}

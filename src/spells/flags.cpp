@@ -84,19 +84,19 @@ public:
 			return nif->getIndex( index, TA_FLAGS );
 		if ( nif->inherits( nif->getBlock( index ), T_BHKRIGIDBODY ) )
 		{
-			QModelIndex iFlags = nif->getIndex( nif->getBlock( index ), "Col Filter" );
+			QModelIndex iFlags = nif->getIndex( nif->getBlock( index ), TA_COLFILTER );
 			iFlags = iFlags.sibling( iFlags.row(), NifModel::ValueCol );
 			if ( index == iFlags )
 				return iFlags;
 		}
-		else if ( nif->inherits( nif->getBlock( index ), "BSXFlags" ) )
+		else if ( nif->inherits( nif->getBlock( index ), T_BSXFLAGS ) )
 		{
-			QModelIndex iFlags = nif->getIndex( nif->getBlock( index ), "Integer Data" );
+			QModelIndex iFlags = nif->getIndex( nif->getBlock( index ), TA_INTEGERDATA );
 			iFlags = iFlags.sibling( iFlags.row(), NifModel::ValueCol );
 			if ( index == iFlags )
 				return iFlags;
 		}
-		else if ( nif->itemName( index ) == TA_FLAGS && nif->itemType( index.parent() ) == "TexDesc" )
+		else if ( nif->itemName( index ) == TA_FLAGS && nif->itemType( index.parent() ) == C_TEXDESC )
 		{
 			return index;
 		}
@@ -111,9 +111,9 @@ public:
 			QString name = nif->itemName( index.parent() );
 			if ( name == T_NIALPHAPROPERTY )
 				return Alpha;
-			else if ( name == "NiBillboardNode" )
+			else if ( name == T_NIBILLBOARDNODE )
 				return Billboard;
-			else if ( nif->inherits( name, "NiTimeController" ) )
+			else if ( nif->inherits( name, T_NITIMECONTROLLER ) )
 			{
 				if ( name == T_NIMATERIALCOLORCONTROLLER )
 				{
@@ -129,13 +129,13 @@ public:
 				return Shape;
 			else if ( name == T_NISTENCILPROPERTY )
 				return Stencil;
-			else if ( nif->itemType( index.parent() ) == "TexDesc" )
+			else if ( nif->itemType( index.parent() ) == C_TEXDESC )
 				return TexDesc;
 			else if ( name == T_NIVERTEXTCOLORPROPERTY )
 				return VertexColor;
 			else if ( name == T_NIZBUFFERPROPERTY )
 				return ZBuffer;
-			else if ( name == "BSXFlags" )
+			else if ( name == T_BSXFLAGS )
 				return BSX;
 		}
 		return None;
@@ -206,27 +206,27 @@ public:
 		
 		// See glBlendFunc; ONE and ZERO appear to swapped from where they should be (not to mention missing values before SATURATE)
 		QStringList blendModes = QStringList()
-			<< Spell::tr("One")
-			<< Spell::tr("Zero")
-			<< Spell::tr("Src Color")
-			<< Spell::tr("Inv Src Color")
-			<< Spell::tr("Dst Color")
-			<< Spell::tr("Inv Dst Color")
-			<< Spell::tr("Src Alpha")
-			<< Spell::tr("Inv Src Alpha")
-			<< Spell::tr("Dst Alpha")
-			<< Spell::tr("Inv Dst Alpha")
-			<< Spell::tr("Src Alpha Saturate");
+			<< Spell::tr(BF_ONE)
+			<< Spell::tr(BF_ZERO)
+			<< Spell::tr(BF_SRC_COLOR)
+			<< Spell::tr(BF_INV_SRC_COLOR)
+			<< Spell::tr(BF_DST_COLOR)
+			<< Spell::tr(BF_INV_DST_COLOR)
+			<< Spell::tr(BF_SRC_ALPHA)
+			<< Spell::tr(BF_INV_SRC_ALPHA)
+			<< Spell::tr(BF_DST_ALPHA)
+			<< Spell::tr(BF_INV_DST_ALPHA)
+			<< Spell::tr(BF_SRC_ALPHA_SATURATE);
 		// ALWAYS and NEVER are swapped from where they should be; see glAlphaFunc
 		QStringList testModes = QStringList()
-			<< Spell::tr("Always")
-			<< Spell::tr("Less")
-			<< Spell::tr("Equal")
-			<< Spell::tr("Less or Equal")
-			<< Spell::tr("Greater")
-			<< Spell::tr("Not Equal")
-			<< Spell::tr("Greater or Equal")
-			<< Spell::tr("Never");
+			<< Spell::tr(CF_ALWAYS)
+			<< Spell::tr(CF_LESS)
+			<< Spell::tr(CF_EQUAL)
+			<< Spell::tr(CF_LESS_OR_EQUAL)
+			<< Spell::tr(CF_GREATER)
+			<< Spell::tr(CF_NOT_EQUAL)
+			<< Spell::tr(CF_GREATER_OR_EQUAL)
+			<< Spell::tr(CF_NEVER);
 		
 		QCheckBox * chkBlend = dlgCheck( vbox, Spell::tr("Enable Blending") );
 		chkBlend->setChecked( flags & 1 );
@@ -371,7 +371,7 @@ public:
 			flags = ( flags & 0xdf ) | ( chkScaled->isChecked() ? 0x20 : 0 );
 			flags = ( flags & 0xe0 ) | ( chkLinked->isChecked() ? spnPartNo->value() : 0 );
 			nif->set<int>( index, flags );
-			nif->set<int>( index.parent(), "Col Filter Copy", flags );
+			nif->set<int>( index.parent(), TA_COLFILTERCOPY, flags );
 		}
 	}
 	
@@ -397,7 +397,7 @@ public:
 		cmbCollision->setCurrentIndex( flags >> 1 & 3 );
 		
 		QCheckBox * chkShadow = 0;
-		if ( nif->checkVersion( 0x04000002, 0x04000002 ) )
+		if ( nif->checkVersion( NF_V04000002, NF_V04000002 ) )
 		{
 			chkShadow = dlgCheck( vbox, Spell::tr("Shadow") );
 			chkShadow->setChecked( flags & 0x40 );
@@ -434,23 +434,23 @@ public:
 		
 		// ALWAYS and NEVER are swapped, otherwise values match glDepthFunc 
 		QStringList compareFunc = QStringList()
-			<< Spell::tr("Always") // 0
-			<< Spell::tr("Less") // 1
-			<< Spell::tr("Equal") // 2
-			<< Spell::tr("Less or Equal") // 3
-			<< Spell::tr("Greater") // 4
-			<< Spell::tr("Not Equal") // 5
-			<< Spell::tr("Greater or Equal") // 6
-			<< Spell::tr("Never"); // 7
+			<< Spell::tr(CF_ALWAYS) // 0
+			<< Spell::tr(CF_LESS) // 1
+			<< Spell::tr(CF_EQUAL) // 2
+			<< Spell::tr(CF_LESS_OR_EQUAL) // 3
+			<< Spell::tr(CF_GREATER) // 4
+			<< Spell::tr(CF_NOT_EQUAL) // 5
+			<< Spell::tr(CF_GREATER_OR_EQUAL) // 6
+			<< Spell::tr(CF_NEVER); // 7
 		
 		QComboBox * cmbFunc = dlgCombo( vbox, Spell::tr("Z Buffer Test Function"), compareFunc, chkEnable );
-		if ( nif->checkVersion( 0x0401000C, NF_V20000005 ) )
+		if ( nif->checkVersion( NF_V04010012, NF_V20000005 ) )
 			cmbFunc->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_FUNCTION ) );
 		else
 			cmbFunc->setCurrentIndex( ( flags >> 2 ) & 0x07 );
 		
 		QCheckBox * setFlags = 0;
-		if( nif->checkVersion( 0x0401000C, NF_V20000005 ) )
+		if( nif->checkVersion( NF_V04010012, NF_V20000005 ) )
 		{
 			setFlags = dlgCheck( vbox, Spell::tr("Set Flags also") );
 			setFlags->setChecked( flags > 3 );
@@ -464,7 +464,7 @@ public:
 		{
 			flags = ( flags & 0xfffe ) | ( chkEnable->isChecked() ? 1 : 0 );
 			flags = ( flags & 0xfffd ) | ( chkROnly->isChecked() ? 0 : 2 );
-			if ( nif->checkVersion( 0x0401000C, NF_V20000005 ) )
+			if ( nif->checkVersion( NF_V04010012, NF_V20000005 ) )
 			{
 				nif->set<int>( nif->getBlock( index ), TA_FUNCTION, cmbFunc->currentIndex() );
 			}
@@ -544,14 +544,14 @@ public:
 		QComboBox * cmbCollision = dlgCombo( vbox, Spell::tr("Collision Detection"), collideModes );
 		cmbCollision->setCurrentIndex( flags >> 1 & 3 );
 		
-		QComboBox * cmbMode = dlgCombo( vbox, Spell::tr("Billboard Mode"), billboardModes );
+		QComboBox * cmbMode = dlgCombo( vbox, Spell::tr(TA_BILLBOARDMODE), billboardModes );
 		// Billboard Mode is an enum as of 10.1.0.0
 		if ( nif->checkVersion( NF_V10010000, 0 ) )
 		{
 			// this value doesn't exist before 10.1.0.0
 			// ROTATE_ABOUT_UP2 is too hard to put in and possibly meaningless
 			cmbMode->addItem( Spell::tr("Rigid Face Center") );
-			cmbMode->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Billboard Mode" ) );
+			cmbMode->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_BILLBOARDMODE ) );
 		}
 		else
 		{
@@ -566,7 +566,7 @@ public:
 			flags = ( flags & 0xfff9 ) | ( cmbCollision->currentIndex() << 1);
 			if ( nif->checkVersion( NF_V10010000, 0 ) )
 			{
-				nif->set<int>( nif->getBlock( index ), "Billboard Mode", cmbMode->currentIndex() );
+				nif->set<int>( nif->getBlock( index ), TA_BILLBOARDMODE, cmbMode->currentIndex() );
 			}
 			else
 			{
@@ -590,17 +590,17 @@ public:
 		
 		QStringList stencilActions = QStringList()
 			<< Spell::tr("Keep") // 0
-			<< Spell::tr("Zero") // 1
+			<< Spell::tr(BF_ZERO) // 1
 			<< Spell::tr("Replace") // 2
 			<< Spell::tr("Increment") // 3
 			<< Spell::tr("Decrement") // 4
 			<< Spell::tr("Invert"); // 5
 		
-		QComboBox * cmbFail = dlgCombo( vbox, Spell::tr("Fail Action"), stencilActions );
+		QComboBox * cmbFail = dlgCombo( vbox, Spell::tr(TA_FAILACTION), stencilActions );
 		
-		QComboBox * cmbZFail = dlgCombo( vbox, Spell::tr("Z Fail Action"), stencilActions );
+		QComboBox * cmbZFail = dlgCombo( vbox, Spell::tr(TA_ZFAILACTION), stencilActions );
 		
-		QComboBox * cmbPass = dlgCombo( vbox, Spell::tr("Pass Action"), stencilActions );
+		QComboBox * cmbPass = dlgCombo( vbox, Spell::tr(TA_PASSACTION), stencilActions );
 		
 		QStringList drawModes = QStringList()
 			<< Spell::tr("Counter clock wise or Both") // 0
@@ -612,16 +612,16 @@ public:
 		
 		// Appears to match glStencilFunc
 		QStringList compareFunc = QStringList()
-			<< Spell::tr("Never") // 0
-			<< Spell::tr("Less") // 1
-			<< Spell::tr("Equal") // 2
-			<< Spell::tr("Less or Equal") // 3
-			<< Spell::tr("Greater") // 4
-			<< Spell::tr("Not Equal") // 5
-			<< Spell::tr("Greater or Equal") // 6
-			<< Spell::tr("Always"); // 7
+			<< Spell::tr(CF_NEVER) // 0
+			<< Spell::tr(CF_LESS) // 1
+			<< Spell::tr(CF_EQUAL) // 2
+			<< Spell::tr(CF_LESS_OR_EQUAL) // 3
+			<< Spell::tr(CF_GREATER) // 4
+			<< Spell::tr(CF_NOT_EQUAL) // 5
+			<< Spell::tr(CF_GREATER_OR_EQUAL) // 6
+			<< Spell::tr(CF_ALWAYS); // 7
 		
-		QComboBox * cmbFunc = dlgCombo( vbox, Spell::tr("Stencil Function"), compareFunc );
+		QComboBox * cmbFunc = dlgCombo( vbox, Spell::tr(TA_STENCILFUNCTION), compareFunc );
 		
 		// prior to 20.1.0.3 flags itself appears unused; after 10.0.1.2 and until 20.1.0.3 it is not present
 		// 20.0.0.5 is the last version with these values
@@ -629,12 +629,12 @@ public:
 		{
 			// set based on Stencil Enabled, Stencil Function, Fail Action, Z Fail Action, Pass Action, Draw Mode
 			// Possibly include Stencil Ref and Stencil Mask except they don't seem to ever vary from the default
-			chkEnable->setChecked( nif->get<bool>( nif->getBlock( index ), "Stencil Enabled" ) );
-			cmbFail->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Fail Action" ) );
-			cmbZFail->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Z Fail Action" ) );
-			cmbPass->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Pass Action" ) );
+			chkEnable->setChecked( nif->get<bool>( nif->getBlock( index ), TA_STENCILENABLED ) );
+			cmbFail->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_FAILACTION ) );
+			cmbZFail->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_ZFAILACTION ) );
+			cmbPass->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_PASSACTION ) );
 			cmbDrawMode->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_DRAWMODE ) );
-			cmbFunc->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Stencil Function" ) );
+			cmbFunc->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_STENCILFUNCTION ) );
 		}
 		else
 		{
@@ -653,12 +653,12 @@ public:
 		{
 			if ( nif->checkVersion( 0, NF_V20000005 ) )
 			{
-				nif->set<bool>( nif->getBlock( index ), "Stencil Enabled", chkEnable->isChecked() );
-				nif->set<int>( nif->getBlock( index ), "Fail Action", cmbFail->currentIndex() );
-				nif->set<int>( nif->getBlock( index ), "Z Fail Action", cmbZFail->currentIndex() );
-				nif->set<int>( nif->getBlock( index ), "Pass Action", cmbPass->currentIndex() );
+				nif->set<bool>( nif->getBlock( index ), TA_STENCILENABLED, chkEnable->isChecked() );
+				nif->set<int>( nif->getBlock( index ), TA_FAILACTION, cmbFail->currentIndex() );
+				nif->set<int>( nif->getBlock( index ), TA_ZFAILACTION, cmbZFail->currentIndex() );
+				nif->set<int>( nif->getBlock( index ), TA_PASSACTION, cmbPass->currentIndex() );
 				nif->set<int>( nif->getBlock( index ), TA_DRAWMODE, cmbDrawMode->currentIndex() );
-				nif->set<int>( nif->getBlock( index ), "Stencil Function", cmbFunc->currentIndex() );
+				nif->set<int>( nif->getBlock( index ), TA_STENCILFUNCTION, cmbFunc->currentIndex() );
 			}
 			else
 			{

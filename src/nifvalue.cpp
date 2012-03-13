@@ -785,7 +785,7 @@ QColor NifValue::toColor() const
 
 void NifOStream::init()
 {
-	bool32bit =  ( model->inherits( "NifModel" ) && model->getVersionNumber() <= 0x04000002 );
+	bool32bit =  ( model->inherits( "NifModel" ) && model->getVersionNumber() <= NF_V04000002 );
 	linkAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() < NF_V03030013 );
 	stringAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() >= NF_V20010003 );
 }
@@ -1063,7 +1063,7 @@ bool NifIStream::read( NifValue & val )
 
 void NifIStream::init()
 {
-	bool32bit =  ( model->inherits( "NifModel" ) && model->getVersionNumber() <= 0x04000002 );
+	bool32bit =  ( model->inherits( "NifModel" ) && model->getVersionNumber() <= NF_V04000002 );
 	linkAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() < NF_V03030013 );
 	stringAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() >= NF_V20010003 );
 	bigEndian = false; // set when tFileVersion is read
@@ -1275,7 +1275,7 @@ bool NifOStream::write( const NifValue & val )
 
 void NifSStream::init()
 {
-	bool32bit =  ( model->inherits( "NifModel" ) && model->getVersionNumber() <= 0x04000002 );
+	bool32bit =  ( model->inherits( "NifModel" ) && model->getVersionNumber() <= NF_V04000002 );
 	stringAdjust = ( model->inherits( "NifModel" ) && model->getVersionNumber() >= NF_V20010003 );
 }
 

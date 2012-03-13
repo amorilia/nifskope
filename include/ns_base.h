@@ -47,8 +47,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NF_V20000004 0x14000004
 #define NF_V20050000 0x14050000
 #define NF_V20020007 0x14020007
-#define NF_V04010012 0x04010012
+#define NF_V04010018 0x04010012
 #define NF_V04000000 0x04000000
+#define NF_V04000002 0x04000002
+#define NF_V04010012 0x0401000C
 
 #define NF_H1 "NetImmerse File Format, Version "
 #define NF_H2 "Gamebryo File Format, Version "
@@ -162,7 +164,14 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define T_BHKNITRISTRIPSSHAPE "bhkNiTriStripsShape"
 #define T_BHKRIGIDBODY "bhkRigidBody"
 #define T_BHKCOLLISIONOBJECT "bhkCollisionObject"
+#define T_BSXFLAGS "BSXFlags"
+#define T_NIBILLBOARDNODE "NiBillboardNode"
+#define T_NITIMECONTROLLER "NiTimeController"
 
+// main tags: compounds
+#define C_TEXDESC "TexDesc"
+
+// tag <add
 #define TA_FILENAME "File Name"
 #define TA_STRINGDATA "String Data"
 #define TA_NAME "Name"
@@ -290,6 +299,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TA_PARENT "Parent"
 #define TA_UNKNOWNSHORT "Unknown Short"
 #define TA_COLLISIONOBJECT "Collision Object"
+#define TA_COLFILTER "Col Filter"
+#define TA_INTEGERDATA "Integer Data"
+#define TA_COLFILTERCOPY "Col Filter Copy"
+#define TA_BILLBOARDMODE "Billboard Mode"
+#define TA_STENCILENABLED "Stencil Enabled"
+#define TA_FAILACTION "Fail Action"
+#define TA_ZFAILACTION "Z Fail Action"
+#define TA_PASSACTION "Pass Action"
+#define TA_STENCILFUNCTION "Stencil Function"
 
 // NiBlocks - artificial blocks
 #define B_NIHEADER "NiHeader"
@@ -324,5 +342,27 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TX_DECAL1 "decal1"
 #define TX_DECAL2 "decal2"
 #define TX_DECAL3 "decal3"
+
+// blend function names
+#define BF_ONE "One"
+#define BF_ZERO "Zero"
+#define BF_SRC_COLOR "Src Color"
+#define BF_INV_SRC_COLOR "Inv Src Color"
+#define BF_DST_COLOR "Dst Color"
+#define BF_INV_DST_COLOR "Inv Dst Color"
+#define BF_SRC_ALPHA "Src Alpha"
+#define BF_INV_SRC_ALPHA "Inv Src Alpha"
+#define BF_DST_ALPHA "Dst Alpha"
+#define BF_INV_DST_ALPHA "Inv Dst Alpha"
+#define BF_SRC_ALPHA_SATURATE "Src Alpha Saturate"
+// blend compare function names
+#define CF_ALWAYS "Always"
+#define CF_LESS "Less"
+#define CF_EQUAL "Equal"
+#define CF_LESS_OR_EQUAL "Less or Equal"
+#define CF_GREATER "Greater"
+#define CF_NOT_EQUAL "Not Equal"
+#define CF_GREATER_OR_EQUAL "Greater or Equal"
+#define CF_NEVER "Never"
 
 #endif /* __NS_BASE_H__ */

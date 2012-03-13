@@ -103,7 +103,7 @@ void Controllable::update( const NifModel * nif, const QModelIndex & i )
 		// sync the list of attached controllers
 		QList<Controller*> rem( controllers );
 		QModelIndex iCtrl = nif->getBlock( nif->getLink( iBlock, "Controller" ) );
-		while ( iCtrl.isValid() && nif->inherits( iCtrl, "NiTimeController" ) )
+		while ( iCtrl.isValid() && nif->inherits( iCtrl, T_NITIMECONTROLLER ) )
 		{
 			bool add = true;
 			foreach ( Controller * ctrl, controllers )

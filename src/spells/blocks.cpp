@@ -129,7 +129,7 @@ void blockLink( NifModel * nif, const QModelIndex & index, const QModelIndex & i
 	{
 		addLink( nif, index, TA_EXTRADATALIST, nif->getBlockNumber( iBlock ) );
 	}
-	else if ( nif->inherits( index, "NiObjectNET") && nif->inherits( iBlock, "NiTimeController" ) )
+	else if ( nif->inherits( index, "NiObjectNET") && nif->inherits( iBlock, T_NITIMECONTROLLER ) )
 	{
 		if ( nif->getLink( index, "Controller" ) > 0 )
 		{
@@ -141,7 +141,7 @@ void blockLink( NifModel * nif, const QModelIndex & index, const QModelIndex & i
 			nif->setLink( iBlock, "Target", nif->getBlockNumber( index ) );
 		}
 	}
-	else if ( nif->inherits( index, "NiTimeController" ) && nif->inherits( iBlock, "NiTimeController" ) )
+	else if ( nif->inherits( index, T_NITIMECONTROLLER ) && nif->inherits( iBlock, T_NITIMECONTROLLER ) )
 	{
 		if ( nif->getLink( index, "Next Controller" ) > 0)
 		{
@@ -242,7 +242,7 @@ public:
 			// insert block
 			QModelIndex newindex = nif->insertNiBlock( act->text(), nif->getBlockNumber( index ) + 1 );
 			// Set values that can't be handled by defaults in nif.xml
-			if ( act->text() == "BSXFlags" ) {
+			if ( act->text() == T_BSXFLAGS ) {
 				nif->set<QString>( nif->getIndex( newindex, TA_NAME ), "BSX" );
 			}
 			else if ( act->text() == "BSBound" ) {
@@ -361,7 +361,7 @@ public:
 			addLink( nif, iParent, TA_CHILDREN, nif->getBlockNumber( iLight ) );
 			addLink( nif, iParent, "Effects", nif->getBlockNumber( iLight ) );
 
-			if ( nif->checkVersion(0, 0x04000002) ) {
+			if ( nif->checkVersion(0, NF_V04000002) ) {
 				nif->set<int>( iLight, "Num Affected Node List Pointers", 1 );
 				nif->updateArray( iLight, "Affected Node List Pointers" );
 			}
@@ -408,7 +408,7 @@ public:
 			QModelIndex iExtra = nif->insertNiBlock( act->text(), nif->getBlockNumber( index ) + 1 );
 			
 			// fixup
-			if ( act->text() == "BSXFlags" ) {
+			if ( act->text() == T_BSXFLAGS ) {
 				nif->set<QString>( nif->getIndex( iExtra, TA_NAME ), "BSX" );
 			}
 			else if ( act->text() == "BSBound" ) {
