@@ -328,7 +328,7 @@ public:
 		NifBlockEditor * edit = new NifBlockEditor( nif, nif->getBlock( index ) );
 		if ( Transform::canConstruct( nif, index ) )
 		{
-			edit->add( new NifVectorEdit( nif, nif->getIndex( index, "Translation" ) ) );
+			edit->add( new NifVectorEdit( nif, nif->getIndex( index, TA_TRANSLATION ) ) );
 			edit->add( new NifRotationEdit( nif, nif->getIndex( index, "Rotation" ) ) );
 			edit->add( new NifFloatEdit( nif, nif->getIndex( index, "Scale" ) ) );
 		}

@@ -53,7 +53,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class spEditFlags : public Spell
 {
 public:
-	QString name() const { return Spell::tr( "Flags" ); }
+	QString name() const { return Spell::tr( TA_FLAGS ); }
 	bool instant() const { return true; }
 	QIcon icon() const { return  QIcon( ":/img/flag" ); }
 	
@@ -78,10 +78,10 @@ public:
 	//! Find the index of flags relative to a given NIF index
 	QModelIndex getFlagIndex( const NifModel * nif, const QModelIndex & index ) const
 	{
-		if ( nif->itemName( index ) == "Flags" && nif->isNiBlock( index.parent() ) )
+		if ( nif->itemName( index ) == TA_FLAGS && nif->isNiBlock( index.parent() ) )
 			return index;
 		if ( nif->isNiBlock( index ) )
-			return nif->getIndex( index, "Flags" );
+			return nif->getIndex( index, TA_FLAGS );
 		if ( nif->inherits( nif->getBlock( index ), "bhkRigidBody" ) )
 		{
 			QModelIndex iFlags = nif->getIndex( nif->getBlock( index ), "Col Filter" );
@@ -96,7 +96,7 @@ public:
 			if ( index == iFlags )
 				return iFlags;
 		}
-		else if ( nif->itemName( index ) == "Flags" && nif->itemType( index.parent() ) == "TexDesc" )
+		else if ( nif->itemName( index ) == TA_FLAGS && nif->itemType( index.parent() ) == "TexDesc" )
 		{
 			return index;
 		}
@@ -109,13 +109,13 @@ public:
 		if ( nif->getValue( index ).isCount() )
 		{
 			QString name = nif->itemName( index.parent() );
-			if ( name == "NiAlphaProperty" )
+			if ( name == T_NIALPHAPROPERTY )
 				return Alpha;
 			else if ( name == "NiBillboardNode" )
 				return Billboard;
 			else if ( nif->inherits( name, "NiTimeController" ) )
 			{
-				if ( name == "NiMaterialColorController" )
+				if ( name == T_NIMATERIALCOLORCONTROLLER )
 				{
 					return MatColControl;
 				}
@@ -127,13 +127,13 @@ public:
 				return RigidBody;
 			else if ( name == "NiTriShape" || name == "NiTriStrips" )
 				return Shape;
-			else if ( name == "NiStencilProperty" )
+			else if ( name == T_NISTENCILPROPERTY )
 				return Stencil;
 			else if ( nif->itemType( index.parent() ) == "TexDesc" )
 				return TexDesc;
-			else if ( name == "NiVertexColorProperty" )
+			else if ( name == T_NIVERTEXTCOLORPROPERTY )
 				return VertexColor;
-			else if ( name == "NiZBufferProperty" )
+			else if ( name == T_NIZBUFFERPROPERTY )
 				return ZBuffer;
 			else if ( name == "BSXFlags" )
 				return BSX;
@@ -248,7 +248,7 @@ public:
 		cmbTest->setCurrentIndex( flags >> 10 & 0x07 );
 		
 		QSpinBox * spnTest = dlgSpin( vbox, Spell::tr("Alpha Test Threshold"), 0x00, 0xff );
-		spnTest->setValue( nif->get<int>( nif->getBlock( index ), "Threshold" ) );
+		spnTest->setValue( nif->get<int>( nif->getBlock( index ), TA_THRESHOLD ) );
 		
 		QCheckBox * chkSort = dlgCheck( vbox, Spell::tr("No Sorter") );
 		chkSort->setChecked( ( flags & 0x2000 ) != 0 );
@@ -271,7 +271,7 @@ public:
 				flags |= 0x0200;
 			}
 			flags = ( flags & 0xe3ff ) | ( cmbTest->currentIndex() << 10 );
-			nif->set<int>( nif->getBlock( index ), "Threshold", spnTest->value() );
+			nif->set<int>( nif->getBlock( index ), TA_THRESHOLD, spnTest->value() );
 			
 			flags = ( flags & 0xdfff ) | ( chkSort->isChecked() ? 0x2000 : 0 );
 			
@@ -445,7 +445,7 @@ public:
 		
 		QComboBox * cmbFunc = dlgCombo( vbox, Spell::tr("Z Buffer Test Function"), compareFunc, chkEnable );
 		if ( nif->checkVersion( 0x0401000C, NF_V20000005 ) )
-			cmbFunc->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Function" ) );
+			cmbFunc->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_FUNCTION ) );
 		else
 			cmbFunc->setCurrentIndex( ( flags >> 2 ) & 0x07 );
 		
@@ -466,7 +466,7 @@ public:
 			flags = ( flags & 0xfffd ) | ( chkROnly->isChecked() ? 0 : 2 );
 			if ( nif->checkVersion( 0x0401000C, NF_V20000005 ) )
 			{
-				nif->set<int>( nif->getBlock( index ), "Function", cmbFunc->currentIndex() );
+				nif->set<int>( nif->getBlock( index ), TA_FUNCTION, cmbFunc->currentIndex() );
 			}
 			
 			if( nif->checkVersion( NF_V20010003, 0 ) || ( setFlags != 0 && setFlags->isChecked() ) )
@@ -608,7 +608,7 @@ public:
 			<< Spell::tr("Draw clock wise") // 2
 			<< Spell::tr("Draw Both"); // 3
 		
-		QComboBox * cmbDrawMode = dlgCombo( vbox, Spell::tr("Draw Mode"), drawModes );
+		QComboBox * cmbDrawMode = dlgCombo( vbox, Spell::tr(TA_DRAWMODE), drawModes );
 		
 		// Appears to match glStencilFunc
 		QStringList compareFunc = QStringList()
@@ -633,7 +633,7 @@ public:
 			cmbFail->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Fail Action" ) );
 			cmbZFail->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Z Fail Action" ) );
 			cmbPass->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Pass Action" ) );
-			cmbDrawMode->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Draw Mode" ) );
+			cmbDrawMode->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_DRAWMODE ) );
 			cmbFunc->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Stencil Function" ) );
 		}
 		else
@@ -657,7 +657,7 @@ public:
 				nif->set<int>( nif->getBlock( index ), "Fail Action", cmbFail->currentIndex() );
 				nif->set<int>( nif->getBlock( index ), "Z Fail Action", cmbZFail->currentIndex() );
 				nif->set<int>( nif->getBlock( index ), "Pass Action", cmbPass->currentIndex() );
-				nif->set<int>( nif->getBlock( index ), "Draw Mode", cmbDrawMode->currentIndex() );
+				nif->set<int>( nif->getBlock( index ), TA_DRAWMODE, cmbDrawMode->currentIndex() );
 				nif->set<int>( nif->getBlock( index ), "Stencil Function", cmbFunc->currentIndex() );
 			}
 			else
@@ -694,20 +694,20 @@ public:
 			<< Spell::tr("Emissive")
 			<< Spell::tr("Emissive + Ambient + Diffuse");
 		
-		QComboBox * cmbLight = dlgCombo( vbox, Spell::tr("Lighting Mode"), lightMode );
+		QComboBox * cmbLight = dlgCombo( vbox, Spell::tr(TA_LIGHTINGMODE), lightMode );
 		
 		QStringList vertMode = QStringList()
 			<< Spell::tr("Source Ignore")
 			<< Spell::tr("Source Emissive")
 			<< Spell::tr("Source Ambient/Diffuse");
 		
-		QComboBox * cmbVert = dlgCombo( vbox, Spell::tr("Vertex Mode"), vertMode );
+		QComboBox * cmbVert = dlgCombo( vbox, Spell::tr(TA_VERTEXMODE), vertMode );
 		
 		// Use enums in preference to flags since they probably have a higher priority
 		if ( nif->checkVersion( 0, NF_V20000005 ) )
 		{
-			cmbLight->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Lighting Mode" ) );
-			cmbVert->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Vertex Mode" ) );
+			cmbLight->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_LIGHTINGMODE ) );
+			cmbVert->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_VERTEXMODE ) );
 		}
 		else
 		{
@@ -721,8 +721,8 @@ public:
 		{
 			if ( nif->checkVersion( 0, NF_V20000005 ) )
 			{
-				nif->set<int>( nif->getBlock( index ), "Lighting Mode", cmbLight->currentIndex() );
-				nif->set<int>( nif->getBlock( index ), "Vertex Mode", cmbVert->currentIndex() );
+				nif->set<int>( nif->getBlock( index ), TA_LIGHTINGMODE, cmbLight->currentIndex() );
+				nif->set<int>( nif->getBlock( index ), TA_VERTEXMODE, cmbVert->currentIndex() );
 			}
 			
 			if( nif->checkVersion( NF_V20010003, 0 ) || ( setFlags != 0 && setFlags->isChecked() ) )
@@ -760,11 +760,11 @@ public:
 			<< Spell::tr("Specular")
 			<< Spell::tr("Emissive");
 		
-		QComboBox * cmbColor = dlgCombo( vbox, Spell::tr("Target Color"), targetColor );
+		QComboBox * cmbColor = dlgCombo( vbox, Spell::tr(TA_TARGETCOLOR), targetColor );
 		// Target Color enum exists as of 10.1.0.0
 		if ( nif->checkVersion( NF_V10010000, 0 ) )
 		{
-			cmbColor->setCurrentIndex( nif->get<int>( nif->getBlock( index ), "Target Color" ) );
+			cmbColor->setCurrentIndex( nif->get<int>( nif->getBlock( index ), TA_TARGETCOLOR ) );
 		}
 		else
 		{
@@ -780,7 +780,7 @@ public:
 			
 			if ( nif->checkVersion( NF_V10010000, 0 ) )
 			{
-				nif->set<int>( nif->getBlock( index ), "Target Color", cmbColor->currentIndex() );
+				nif->set<int>( nif->getBlock( index ), TA_TARGETCOLOR, cmbColor->currentIndex() );
 			}
 			else
 			{
@@ -806,7 +806,7 @@ public:
 			<< Spell::tr("Wrap S Clamp T")
 			<< Spell::tr("Wrap Both");
 		
-		QComboBox * cmbClamp = dlgCombo( vbox, Spell::tr("Clamp Mode"), clampModes );
+		QComboBox * cmbClamp = dlgCombo( vbox, Spell::tr(TA_CLAMPMODE), clampModes );
 		cmbClamp->setCurrentIndex( ( flags & 0xF000 ) >> 0x0C );
 		
 		QStringList filterModes = QStringList()
@@ -817,7 +817,7 @@ public:
 			<< Spell::tr("FILTER_NEAREST_MIPLERP")
 			<< Spell::tr("FILTER_BILERP_MIPNEAREST");
 		
-		QComboBox * cmbFilter = dlgCombo( vbox, Spell::tr("Filter Mode"), filterModes );
+		QComboBox * cmbFilter = dlgCombo( vbox, Spell::tr(TA_FILTERMODE), filterModes );
 		cmbFilter->setCurrentIndex( ( flags & 0x0F00 ) >> 0x08 );
 		
 		dlgButtons( & dlg, vbox );

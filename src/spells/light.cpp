@@ -109,14 +109,14 @@ public:
 		
 		NifBlockEditor * le = new NifBlockEditor( nif, iLight );
 		le->pushLayout( new QHBoxLayout() );
-		le->add( new NifVectorEdit( nif, nif->getIndex( iLight, "Translation" ) ) );
+		le->add( new NifVectorEdit( nif, nif->getIndex( iLight, TA_TRANSLATION ) ) );
 		le->add( new NifRotationEdit( nif, nif->getIndex( iLight, "Rotation" ) ) );
 		le->popLayout();
 		le->add( new NifFloatSlider( nif, nif->getIndex( iLight, "Dimmer" ), 0, 1.0 ) );
 		le->pushLayout( new QHBoxLayout() );
-		le->add( new NifColorEdit( nif, nif->getIndex( iLight, "Ambient Color" ) ) );
-		le->add( new NifColorEdit( nif, nif->getIndex( iLight, "Diffuse Color" ) ) );
-		le->add( new NifColorEdit( nif, nif->getIndex( iLight, "Specular Color" ) ) );
+		le->add( new NifColorEdit( nif, nif->getIndex( iLight, TA_AMBIENTCOLOR ) ) );
+		le->add( new NifColorEdit( nif, nif->getIndex( iLight, TA_DIFFUSECOLOR ) ) );
+		le->add( new NifColorEdit( nif, nif->getIndex( iLight, TA_SPECULARCOLOR ) ) );
 		le->popLayout();
 		le->pushLayout( new QHBoxLayout(), "Point Light Parameter" );
 		le->add( new NifFloatEdit( nif, nif->getIndex( iLight, "Constant Attenuation" ) ) );

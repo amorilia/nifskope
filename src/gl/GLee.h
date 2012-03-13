@@ -7080,7 +7080,7 @@ GLEE_EXTERN GLboolean _GLEE_SGIX_texture_range;
 #define GL_MAT_EMISSION_BIT_PGI                            0x00800000
 #define GL_MAT_COLOR_INDEXES_BIT_PGI                       0x01000000
 #define GL_MAT_SHININESS_BIT_PGI                           0x02000000
-#define GL_MAT_SPECULAR_BIT_PGI                            0x04000000
+#define GL_MAT_SPECULAR_BIT_PGI                            NF_V04000000
 #define GL_NORMAL_BIT_PGI                                  0x08000000
 #define GL_TEXCOORD1_BIT_PGI                               0x10000000
 #define GL_TEXCOORD2_BIT_PGI                               0x20000000

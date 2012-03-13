@@ -354,7 +354,7 @@ NifMatrix4Edit::NifMatrix4Edit( NifModel * nif, const QModelIndex & index )
 	
 	QGroupBox * group = new QGroupBox;
 	vbox->addWidget( group );
-	group->setTitle( tr("Translation") );
+	group->setTitle( tr(TA_TRANSLATION) );
 	group->setLayout( new QHBoxLayout );
 	group->layout()->addWidget( translation = new VectorEdit() );
 	connect( translation, SIGNAL( sigEdited() ), this, SLOT( applyData() ) );

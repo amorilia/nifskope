@@ -1581,7 +1581,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 			nif->set<quint8>( iData, "Bits Per Pixel", pix.get<quint8>( iPixData, "Bits Per Pixel" ) );
 			nif->set<int>( iData, "Unknown Int 2", pix.get<int>( iPixData, "Unknown Int 2" ) );
 			nif->set<quint32>( iData, "Unknown Int 3", pix.get<quint32>( iPixData, "Unknown Int 3" ) );
-			nif->set<quint16>( iData, "Flags", pix.get<quint16>( iPixData, "Flags" ) );
+			nif->set<quint16>( iData, TA_FLAGS, pix.get<quint16>( iPixData, TA_FLAGS ) );
 			nif->set<quint32>( iData, "Unknown Int 4", pix.get<quint32>( iPixData, "Unknown Int 4" ) );
 			
 			if ( nif->checkVersion( 0x14030006, 0 ) && pix.checkVersion( 0x14030006, 0 ) )
@@ -1694,7 +1694,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 		{
 			// set stuff
 			nif->set<qint32>( iData, "Unknown Int 2", -1 ); // probably a link to something
-			nif->set<quint8>( iData, "Flags", 1 );
+			nif->set<quint8>( iData, TA_FLAGS, 1 );
 			QModelIndex destChannels = nif->getIndex( iData, "Channels" );
 			
 			for ( int i = 0; i < 4; i++ )
@@ -1765,7 +1765,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 			throw QString( "not a DDS file" );
 
 #ifndef QT_NO_DEBUG
-		qWarning() << "Size: " << ddsHeader.dwSize << "Flags" << ddsHeader.dwFlags << "Height" << ddsHeader.dwHeight << "Width" << ddsHeader.dwWidth;
+		qWarning() << "Size: " << ddsHeader.dwSize << TA_FLAGS << ddsHeader.dwFlags << "Height" << ddsHeader.dwHeight << "Width" << ddsHeader.dwWidth;
 		qWarning() << "FourCC:" << ddsHeader.ddsPixelFormat.dwFourCC;
 #endif
 		if ( ddsHeader.ddsPixelFormat.dwFlags & DDPF_FOURCC )
@@ -1844,7 +1844,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 		{
 			// set stuff
 			nif->set<qint32>( iData, "Unknown Int 2", -1 ); // probably a link to something
-			nif->set<quint8>( iData, "Flags", 1 );
+			nif->set<quint8>( iData, TA_FLAGS, 1 );
 			QModelIndex destChannels = nif->getIndex( iData, "Channels" );
 			// DXT1, DXT5
 			if ( ddsHeader.ddsPixelFormat.dwFlags & DDPF_FOURCC )

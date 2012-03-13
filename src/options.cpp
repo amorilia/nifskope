@@ -681,7 +681,7 @@ void Options::textureFolderAutoDetect()
 				list << dir.filePath( dn );
 				
 #ifndef FSENGINE
-			if ( ! dir.cd( "Textures" ) )
+			if ( ! dir.cd( TA_TEXTURES ) )
 			{
 				QMessageBox::information( dialog, "NifSkope",
 					tr("<p>The texture folder was not found.</p>"
@@ -771,7 +771,7 @@ void Options::textureFolderAutoDetect()
             list << dir.filePath( dn );
 
 #ifndef FSENGINE
-         if ( ! dir.cd( "Textures" ) )
+         if ( ! dir.cd( TA_TEXTURES ) )
          {
             QMessageBox::information( dialog, "NifSkope",
                tr("<p>The texture folder was not found.</p>"

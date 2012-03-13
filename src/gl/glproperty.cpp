@@ -49,33 +49,33 @@ Property * Property::create( Scene * scene, const NifModel * nif, const QModelIn
 {
 	Property * property = 0;
 	
-	if ( nif->isNiBlock( index, "NiAlphaProperty" ) )
+	if ( nif->isNiBlock( index, T_NIALPHAPROPERTY ) )
 		property = new AlphaProperty( scene, index );
-	else if ( nif->isNiBlock( index, "NiZBufferProperty" ) )
+	else if ( nif->isNiBlock( index, T_NIZBUFFERPROPERTY ) )
 		property = new ZBufferProperty( scene, index );
-	else if ( nif->isNiBlock( index, "NiTexturingProperty" ) )
+	else if ( nif->isNiBlock( index, T_NITEXTURINGPROPERTY ) )
 		property = new TexturingProperty( scene, index );
-	else if ( nif->isNiBlock( index, "NiTextureProperty" ) )
+	else if ( nif->isNiBlock( index, T_NITEXTUREPROPERTY ) )
 		property = new TextureProperty( scene, index );
-	else if ( nif->isNiBlock( index, "NiMaterialProperty" ) )
+	else if ( nif->isNiBlock( index, T_NIMATERIALPROPERTY ) )
 		property = new MaterialProperty( scene, index );
-	else if ( nif->isNiBlock( index, "NiSpecularProperty" ) )
+	else if ( nif->isNiBlock( index, T_NISPECULARPROPERTY ) )
 		property = new SpecularProperty( scene, index );
-	else if ( nif->isNiBlock( index, "NiWireframeProperty" ) )
+	else if ( nif->isNiBlock( index, T_NIWIREFRAMEPROPERTY ) )
 		property = new WireframeProperty( scene, index );
-	else if ( nif->isNiBlock( index, "NiVertexColorProperty" ) )
+	else if ( nif->isNiBlock( index, T_NIVERTEXTCOLORPROPERTY ) )
 		property = new VertexColorProperty( scene, index );
-	else if ( nif->isNiBlock( index, "NiStencilProperty" ) )
+	else if ( nif->isNiBlock( index, T_NISTENCILPROPERTY ) )
 		property = new StencilProperty( scene, index );
 	else if ( nif->isNiBlock( index, T_BSLIGHTINGSHADERPROPERTY ) )
 		property = new BSShaderLightingProperty( scene, index );
-	else if ( nif->isNiBlock( index, "BSShaderLightingProperty" ) )
+	else if ( nif->isNiBlock( index, T_BSSHADERLIGHTINGPROPERTY ) )
 		property = new BSShaderLightingProperty( scene, index );
 	else if ( nif->isNiBlock( index, T_BSEFFECTSHADERPROPERTY ) )
 		property = new BSShaderLightingProperty( scene, index );
-	else if ( nif->isNiBlock( index, "BSShaderNoLightingProperty" ) )
+	else if ( nif->isNiBlock( index, T_BSSHADERNOLIGHTINGPROPERTY ) )
 		property = new BSShaderLightingProperty( scene, index );
-	else if ( nif->isNiBlock( index, "BSShaderPPLightingProperty" ) )
+	else if ( nif->isNiBlock( index, T_BSSHADERPPLIGHINGPROPERTY ) )
 		property = new BSShaderLightingProperty( scene, index );
 	else if (index.isValid())
 	{
@@ -190,7 +190,7 @@ void AlphaProperty::update( const NifModel * nif, const QModelIndex & block )
 	
 	if ( iBlock.isValid() && iBlock == block )
 	{
-		unsigned short flags = nif->get<int>( iBlock, "Flags" );
+		unsigned short flags = nif->get<int>( iBlock, TA_FLAGS );
 		
 		alphaBlend = flags & 1;
 		
@@ -210,7 +210,7 @@ void AlphaProperty::update( const NifModel * nif, const QModelIndex & block )
 		
 		alphaTest = flags & ( 1 << 9 );
 		alphaFunc = testMap[ ( flags >> 10 ) & 0x7 ];
-		alphaThreshold = nif->get<int>( iBlock, "Threshold" ) / 255.0;
+		alphaThreshold = nif->get<int>( iBlock, TA_THRESHOLD ) / 255.0;
 		
 		alphaSort = ( flags & 0x2000 ) == 0;
 	}
@@ -241,7 +241,7 @@ void ZBufferProperty::update( const NifModel * nif, const QModelIndex & block )
 	
 	if ( iBlock.isValid() && iBlock == block )
 	{
-		int flags = nif->get<int>( iBlock, "Flags" );
+		int flags = nif->get<int>( iBlock, TA_FLAGS );
 		depthTest = flags & 1;
 		depthMask = flags & 2;
 		static const GLenum depthMap[8] = {
@@ -249,9 +249,9 @@ void ZBufferProperty::update( const NifModel * nif, const QModelIndex & block )
 		};
 
 		// This was checking version 0x10000001 ?
-		if ( nif->checkVersion( 0x04010012, NF_V20000005 ) )
+		if ( nif->checkVersion( NF_V04010012, NF_V20000005 ) )
 		{
-			depthFunc = depthMap[ nif->get<int>( iBlock, "Function" ) & 0x07 ];
+			depthFunc = depthMap[ nif->get<int>( iBlock, TA_FUNCTION ) & 0x07 ];
 		}
 		else if ( nif->checkVersion( NF_V20010003, 0 ) )
 		{
@@ -295,24 +295,24 @@ void TexturingProperty::update( const NifModel * nif, const QModelIndex & proper
 	
 	if ( iBlock.isValid() && iBlock == property )
 	{
-		static const char * texnames[numTextures] = { "Base Texture", "Dark Texture", "Detail Texture", "Gloss Texture", "Glow Texture", "Bump Map Texture", "Decal 0 Texture", "Decal 1 Texture", "Decal 2 Texture", "Decal 3 Texture" };
+		static const char * texnames[numTextures] = { TA_BASETEXTURE, TA_DARKTEXTURE, TA_DETAILTEXTURE, TA_GLOSSTEXTURE, TA_GLOWTEXTURE, TA_BUMPMAPTEXTURE, TA_DECAL0TEXTURE, TA_DECAL1TEXTURE, TA_DECAL2TEXTURE, TA_DECAL3TEXTURE };
 		for ( int t = 0; t < numTextures; t++ )
 		{
 			QModelIndex iTex = nif->getIndex( property, texnames[t] );
 			if ( iTex.isValid() )
 			{
-				textures[t].iSource = nif->getBlock( nif->getLink( iTex, "Source" ), T_NISOURCETEXTURE );
-				textures[t].coordset = nif->get<int>( iTex, "UV Set" );
+				textures[t].iSource = nif->getBlock( nif->getLink( iTex, TA_SOURCE ), T_NISOURCETEXTURE );
+				textures[t].coordset = nif->get<int>( iTex, TA_UVSET );
 				int filterMode = 0, clampMode = 0;
 				if( nif->checkVersion( 0, NF_V20000005 ) )
 				{
-					filterMode = nif->get<int>( iTex, "Filter Mode" );
-					clampMode = nif->get<int>( iTex, "Clamp Mode" );
+					filterMode = nif->get<int>( iTex, TA_FILTERMODE );
+					clampMode = nif->get<int>( iTex, TA_CLAMPMODE );
 				}
 				else if( nif->checkVersion( NF_V20010003, 0 ) )
 				{
-					filterMode = ( ( nif->get<ushort>( iTex, "Flags" ) & 0x0F00 ) >> 0x08 );
-					clampMode = ( ( nif->get<ushort>(iTex, "Flags" ) & 0xF000 ) >> 0x0C );
+					filterMode = ( ( nif->get<ushort>( iTex, TA_FLAGS ) & 0x0F00 ) >> 0x08 );
+					clampMode = ( ( nif->get<ushort>(iTex, TA_FLAGS ) & 0xF000 ) >> 0x0C );
 				}
 				
 				switch ( filterMode )
@@ -335,13 +335,13 @@ void TexturingProperty::update( const NifModel * nif, const QModelIndex & proper
 					default:	textures[t].wrapS = GL_REPEAT;	textures[t].wrapT = GL_REPEAT;	break;
 				}
 				
-				textures[t].hasTransform = nif->get<int>( iTex, "Has Texture Transform" );
+				textures[t].hasTransform = nif->get<int>( iTex, TA_HASTEXTURETRANSFORM );
 				if ( textures[t].hasTransform )
 				{
-					textures[t].translation = nif->get<Vector2>( iTex, "Translation" );
-					textures[t].tiling = nif->get<Vector2>( iTex, "Tiling" );
-					textures[t].rotation = nif->get<float>( iTex, "W Rotation" );
-					textures[t].center = nif->get<Vector2>( iTex, "Center Offset" );
+					textures[t].translation = nif->get<Vector2>( iTex, TA_TRANSLATION );
+					textures[t].tiling = nif->get<Vector2>( iTex, TA_TILING );
+					textures[t].rotation = nif->get<float>( iTex, TA_WROTATION );
+					textures[t].center = nif->get<Vector2>( iTex, TA_CENTEROFFSET );
 				}
 				else
 				{
@@ -488,16 +488,16 @@ public:
 	{
 		if ( Controller::update( nif, index ) )
 		{
-			flipDelta = nif->get<float>( iBlock, "Delta" );
-			flipSlot = nif->get<int>( iBlock, "Texture Slot" );
+			flipDelta = nif->get<float>( iBlock, TA_DELTA );
+			flipSlot = nif->get<int>( iBlock, TA_TEXTURESLOT );
 			
-			if ( nif->checkVersion( 0x04000000, 0 ) )
+			if ( nif->checkVersion( NF_V04000000, 0 ) )
 			{
-				iSources = nif->getIndex( iBlock, "Sources" );
+				iSources = nif->getIndex( iBlock, TA_SOURCES );
 			}
 			else
 			{
-				iSources = nif->getIndex( iBlock, "Images" );
+				iSources = nif->getIndex( iBlock, TA_IMAGES );
 			}
 			return true;
 		}
@@ -535,7 +535,7 @@ public:
 		{
 			// If desired, we could force display even if texture transform was disabled:
 			// tex->hasTransform = true;
-			// however "Has Texture Transform" doesn't exist until 10.1.0.0, and neither does
+			// however TA_HASTEXTURETRANSFORM doesn't exist until 10.1.0.0, and neither does
 			// NiTextureTransformController - so we won't bother
 			switch ( texOP )
 			{
@@ -562,8 +562,8 @@ public:
 	{
 		if ( Controller::update( nif, index ) )
 		{
-			texSlot = nif->get<int>( iBlock, "Texture Slot" );
-			texOP = nif->get<int>( iBlock, "Operation" );
+			texSlot = nif->get<int>( iBlock, TA_TEXTURESLOT );
+			texOP = nif->get<int>( iBlock, TA_OPERATION );
 			return true;
 		}
 		return false;
@@ -581,13 +581,13 @@ protected:
 //! Set the appropriate Controller
 void TexturingProperty::setController( const NifModel * nif, const QModelIndex & iController )
 {
-	if ( nif->itemName( iController ) == "NiFlipController" )
+	if ( nif->itemName( iController ) == T_NIFLIPCONTROLLER )
 	{
 		Controller * ctrl = new TexFlipController( this, iController );
 		ctrl->update( nif, iController );
 		controllers.append( ctrl );
 	}
-	else if ( nif->itemName( iController ) == "NiTextureTransformController" )
+	else if ( nif->itemName( iController ) == T_NITEXTURETRANSFORMCONTROLLER )
 	{
 		Controller * ctrl = new TexTransController( this, iController );
 		ctrl->update( nif, iController );
@@ -600,16 +600,16 @@ int TexturingProperty::getId( const QString & texname )
 	static QHash<QString, int> hash;
 	if ( hash.isEmpty() )
 	{
-		hash.insert( "base", 0 );
-		hash.insert( "dark", 1 );
-		hash.insert( "detail", 2 );
-		hash.insert( "gloss", 3 );
-		hash.insert( "glow", 4 );
-		hash.insert( "bumpmap", 5 );
-		hash.insert( "decal0", 6 );
-		hash.insert( "decal1", 7 );
-		hash.insert( "decal2", 8 );
-		hash.insert( "decal3", 9 );
+		hash.insert( TX_BASE, 0 );
+		hash.insert( TX_DARK, 1 );
+		hash.insert( TX_DETAIL, 2 );
+		hash.insert( TX_GLOSS, 3 );
+		hash.insert( TX_GLOW, 4 );
+		hash.insert( TX_BUMPMAP, 5 );
+		hash.insert( TX_DECAL0, 6 );
+		hash.insert( TX_DECAL1, 7 );
+		hash.insert( TX_DECAL2, 8 );
+		hash.insert( TX_DECAL3, 9 );
 	}
 	if ( hash.contains( texname ) )
 		return hash[ texname ];
@@ -635,7 +635,7 @@ void TextureProperty::update( const NifModel * nif, const QModelIndex & property
 	
 	if ( iBlock.isValid() && iBlock == property )
 	{
-		iImage = nif->getBlock( nif->getLink( iBlock, "Image" ), T_NIIMAGE );
+		iImage = nif->getBlock( nif->getLink( iBlock, TA_IMAGE ), T_NIIMAGE );
 	}
 }
 
@@ -683,7 +683,7 @@ QString TextureProperty::fileName() const
 
 void TextureProperty::setController( const NifModel * nif, const QModelIndex & iController )
 {
-	if ( nif->itemName( iController ) == "NiFlipController" )
+	if ( nif->itemName( iController ) == T_NIFLIPCONTROLLER )
 	{
 		Controller * ctrl = new TexFlipController( this, iController );
 		ctrl->update( nif, iController );
@@ -709,26 +709,26 @@ void MaterialProperty::update( const NifModel * nif, const QModelIndex & index )
 
 	if ( iBlock.isValid() && iBlock == index )
 	{
-		alpha = nif->get<float>( index, "Alpha" );
+		alpha = nif->get<float>( index, TA_ALPHA );
 		if ( alpha < 0.0 ) alpha = 0.0;
 		if ( alpha > 1.0 ) alpha = 1.0;
 		
-		ambient = Color4( nif->get<Color3>( index, "Ambient Color" ) );
-		diffuse = Color4( nif->get<Color3>( index, "Diffuse Color" ) );
-		specular = Color4( nif->get<Color3>( index, "Specular Color" ) );
-		emissive = Color4( nif->get<Color3>( index, "Emissive Color" ) );
+		ambient = Color4( nif->get<Color3>( index, TA_AMBIENTCOLOR ) );
+		diffuse = Color4( nif->get<Color3>( index, TA_DIFFUSECOLOR ) );
+		specular = Color4( nif->get<Color3>( index, TA_SPECULARCOLOR ) );
+		emissive = Color4( nif->get<Color3>( index, TA_EMISSIVECOLOR ) );
 		
-		shininess = nif->get<float>( index, "Glossiness" );
+		shininess = nif->get<float>( index, TA_GLOSSINESS );
 	}
 	
 	// special case to force refresh of materials
 	bool overrideMaterials = Options::overrideMaterials();
 	if ( overridden && !overrideMaterials && iBlock.isValid() )
 	{
-		ambient = Color4( nif->get<Color3>( iBlock, "Ambient Color" ) );
-		diffuse = Color4( nif->get<Color3>( iBlock, "Diffuse Color" ) );
-		specular = Color4( nif->get<Color3>( iBlock, "Specular Color" ) );
-		emissive = Color4( nif->get<Color3>( iBlock, "Emissive Color" ) );
+		ambient = Color4( nif->get<Color3>( iBlock, TA_AMBIENTCOLOR ) );
+		diffuse = Color4( nif->get<Color3>( iBlock, TA_DIFFUSECOLOR ) );
+		specular = Color4( nif->get<Color3>( iBlock, TA_SPECULARCOLOR ) );
+		emissive = Color4( nif->get<Color3>( iBlock, TA_EMISSIVECOLOR ) );
 	} 
 	else if ( overrideMaterials  )
 	{
@@ -807,11 +807,11 @@ public:
 		{
 			if ( nif->checkVersion( NF_V10010000, 0 ) )
 			{
-				tColor = nif->get<int>( iBlock, "Target Color" );
+				tColor = nif->get<int>( iBlock, TA_TARGETCOLOR );
 			}
 			else
 			{
-				tColor = ( ( nif->get<int>( iBlock, "Flags" ) >> 4 ) & 7 );
+				tColor = ( ( nif->get<int>( iBlock, TA_FLAGS ) >> 4 ) & 7 );
 			}
 			return true;
 		}
@@ -836,13 +836,13 @@ protected:
 
 void MaterialProperty::setController( const NifModel * nif, const QModelIndex & iController )
 {
-	if ( nif->itemName( iController ) == "NiAlphaController" )
+	if ( nif->itemName( iController ) == T_NIALPHACONTROLLER )
 	{
 		Controller * ctrl = new AlphaController( this, iController );
 		ctrl->update( nif, iController );
 		controllers.append( ctrl );
 	}
-	else if ( nif->itemName( iController ) == "NiMaterialColorController" )
+	else if ( nif->itemName( iController ) == T_NIMATERIALCOLORCONTROLLER )
 	{
 		Controller * ctrl = new MaterialColorController( this, iController );
 		ctrl->update( nif, iController );
@@ -886,7 +886,7 @@ void SpecularProperty::update( const NifModel * nif, const QModelIndex & block )
 	Property::update( nif, block );
 	if ( iBlock.isValid() && iBlock == block )
 	{
-		spec = nif->get<int>( iBlock, "Flags" ) != 0;
+		spec = nif->get<int>( iBlock, TA_FLAGS ) != 0;
 	}
 }
 
@@ -895,7 +895,7 @@ void WireframeProperty::update( const NifModel * nif, const QModelIndex & block 
 	Property::update( nif, block );
 	if ( iBlock.isValid() && iBlock == block )
 	{
-		wire = nif->get<int>( iBlock, "Flags" ) != 0;
+		wire = nif->get<int>( iBlock, TA_FLAGS ) != 0;
 	}
 }
 
@@ -917,11 +917,11 @@ void VertexColorProperty::update( const NifModel * nif, const QModelIndex & bloc
 	Property::update( nif, block );
 	if ( iBlock.isValid() && iBlock == block )
 	{
-		vertexmode = nif->get<int>( iBlock, "Vertex Mode" );
+		vertexmode = nif->get<int>( iBlock, TA_VERTEXMODE );
 		// 0 : source ignore
 		// 1 : source emissive
 		// 2 : source ambient + diffuse
-		lightmode = nif->get<int>( iBlock, "Lighting Mode" );
+		lightmode = nif->get<int>( iBlock, TA_LIGHTINGMODE );
 		// 0 : emissive
 		// 1 : emissive + ambient + diffuse
 	}
@@ -983,7 +983,7 @@ void StencilProperty::update( const NifModel * nif, const QModelIndex & block )
 		// ! glFrontFace( GL_CCW )
 		if ( nif->checkVersion( 0, NF_V20000005 ) )
 		{
-			switch ( nif->get<int>( iBlock, "Draw Mode" ) )
+			switch ( nif->get<int>( iBlock, TA_DRAWMODE ) )
 			{
 				case 2:
 					cullEnable = true;
@@ -1002,7 +1002,7 @@ void StencilProperty::update( const NifModel * nif, const QModelIndex & block )
 		}
 		else
 		{
-			switch ( ( nif->get<int>( iBlock, "Flags" ) >> 10 ) & 3 )
+			switch ( ( nif->get<int>( iBlock, TA_FLAGS ) >> 10 ) & 3 )
 			{
 				case 2:
 					cullEnable = true;
@@ -1049,8 +1049,8 @@ void BSShaderLightingProperty::update( const NifModel * nif, const QModelIndex &
 
 	if ( iBlock.isValid() && iBlock == property )
 	{
-		iTextureSet = nif->getBlock( nif->getLink( iBlock, "Texture Set" ), "BSShaderTextureSet" );
-		// handle niobject name="BSEffectShaderProperty...
+		iTextureSet = nif->getBlock( nif->getLink( iBlock, TA_TEXTURESET ), T_BSSHADERTEXTURESET );
+		// handle niobject name=T_BSEFFECTSHADERPROPERTY...
 		if (!iTextureSet.isValid())
 			iSourceTexture = iBlock;
 	}
@@ -1106,8 +1106,8 @@ QString BSShaderLightingProperty::fileName( int id ) const
 	const NifModel * nif = qobject_cast<const NifModel *>( iTextureSet.model() );
 	if ( nif && iTextureSet.isValid() )
 	{
-		int nTextures = nif->get<int>( iTextureSet, "Num Textures" );
-		QModelIndex iTextures = nif->getIndex( iTextureSet, "Textures" );
+		int nTextures = nif->get<int>( iTextureSet, TA_NUMTEXTURES );
+		QModelIndex iTextures = nif->getIndex( iTextureSet, TA_TEXTURES );
 		if (id >= 0 && id < nTextures)
 			return nif->get<QString>( iTextures.child( id, 0 ) );
 	}
@@ -1116,7 +1116,7 @@ QString BSShaderLightingProperty::fileName( int id ) const
 		// handle niobject name="BSEffectShaderProperty...
 		nif = qobject_cast<const NifModel *>( iSourceTexture.model() );
 		if (nif && iSourceTexture.isValid())
-			return nif->get<QString>(iSourceTexture, "Source Texture");
+			return nif->get<QString>(iSourceTexture, TA_SOURCETEXTURE);
 	}
 	return QString();
 }
@@ -1126,14 +1126,14 @@ int BSShaderLightingProperty::getId( const QString & id )
 	static QHash<QString, int> hash;
 	if ( hash.isEmpty() )
 	{
-		hash.insert( "base", 0 );
-		hash.insert( "dark", 1 );
-		hash.insert( "detail", 2 );
-		hash.insert( "gloss", 3 );
-		hash.insert( "glow", 4 );
-		hash.insert( "bumpmap", 5 );
-		hash.insert( "decal0", 6 );
-		hash.insert( "decal1", 7 );
+		hash.insert( TX_BASE, 0 );
+		hash.insert( TX_DARK, 1 );
+		hash.insert( TX_DETAIL, 2 );
+		hash.insert( TX_GLOSS, 3 );
+		hash.insert( TX_GLOW, 4 );
+		hash.insert( TX_BUMPMAP, 5 );
+		hash.insert( TX_DECAL0, 6 );
+		hash.insert( TX_DECAL1, 7 );
 	}
 	if ( hash.contains( id ) )
 		return hash[ id ];

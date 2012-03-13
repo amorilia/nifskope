@@ -101,7 +101,7 @@ FileFlags FSOverlayEngine::fileFlags( FileFlags type = FileInfoAll ) const
 		if ( ! caseSensitive() )
 			base = base.toLower();
 		
-		//qDebug() << "base" << base;
+		//qDebug() << TX_BASE << base;
 		
 		if ( overlayDirs.contains( base ) )
 		{

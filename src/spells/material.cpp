@@ -138,7 +138,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex iBlock = nif->getBlock( index, "NiMaterialProperty" );
+		QModelIndex iBlock = nif->getBlock( index, T_NIMATERIALPROPERTY );
 		QModelIndex sibling = index.sibling( index.row(), 0 );
 		return index.isValid() && ( iBlock == sibling || nif->getIndex( iBlock, TA_NAME ) == sibling );
 	}
@@ -149,15 +149,15 @@ public:
 		NifBlockEditor * me = new NifBlockEditor( nif, iMaterial );
 		
 		me->pushLayout( new QHBoxLayout );
-		me->add( new NifColorEdit( nif, nif->getIndex( iMaterial, "Ambient Color" ) ) );
-		me->add( new NifColorEdit( nif, nif->getIndex( iMaterial, "Diffuse Color" ) ) );
+		me->add( new NifColorEdit( nif, nif->getIndex( iMaterial, TA_AMBIENTCOLOR ) ) );
+		me->add( new NifColorEdit( nif, nif->getIndex( iMaterial, TA_DIFFUSECOLOR ) ) );
 		me->popLayout();
 		me->pushLayout( new QHBoxLayout );
-		me->add( new NifColorEdit( nif, nif->getIndex( iMaterial, "Specular Color" ) ) );
-		me->add( new NifColorEdit( nif, nif->getIndex( iMaterial, "Emissive Color" ) ) );
+		me->add( new NifColorEdit( nif, nif->getIndex( iMaterial, TA_SPECULARCOLOR ) ) );
+		me->add( new NifColorEdit( nif, nif->getIndex( iMaterial, TA_EMISSIVECOLOR ) ) );
 		me->popLayout();
-		me->add( new NifFloatSlider( nif, nif->getIndex( iMaterial, "Alpha" ), 0.0, 1.0 ) );
-		me->add( new NifFloatSlider( nif, nif->getIndex( iMaterial, "Glossiness" ), 0.0, 100.0 ) );
+		me->add( new NifFloatSlider( nif, nif->getIndex( iMaterial, TA_ALPHA ), 0.0, 1.0 ) );
+		me->add( new NifFloatSlider( nif, nif->getIndex( iMaterial, TA_GLOSSINESS ), 0.0, 100.0 ) );
 		me->setWindowModality(Qt::ApplicationModal);
 		me->show();
 		

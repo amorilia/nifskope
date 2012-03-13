@@ -196,7 +196,7 @@ bool Controller::update( const NifModel * nif, const QModelIndex & index )
 		phase = nif->get<float>( index, "Phase" );
 		frequency = nif->get<float>( index, "Frequency" );
 		
-		int flags = nif->get<int>( index, "Flags" );
+		int flags = nif->get<int>( index, TA_FLAGS );
 		active = flags & 0x08;
 		extrapolation = (Extrapolation) ( ( flags & 0x06 ) >> 1 );
 		
@@ -654,7 +654,7 @@ bool BSplineTransformInterpolator::update( const NifModel * nif, const QModelInd
       if (iBasis.isValid())
           nCtrl = nif->get<uint>( iBasis, "Num Control Points" );
 
-      lTrans = nif->getIndex( index, "Translation");
+      lTrans = nif->getIndex( index, TA_TRANSLATION);
       lRotate = nif->getIndex( index, "Rotation");
       lScale = nif->getIndex( index, "Scale");
 

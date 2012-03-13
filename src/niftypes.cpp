@@ -447,11 +447,11 @@ bool Transform::canConstruct( const NifModel * nif, const QModelIndex & parent )
 	return nif && (
 		(
 			parent.isValid() && nif->getIndex( parent, "Rotation" ).isValid()
-			&& nif->getIndex( parent, "Translation" ).isValid()
+			&& nif->getIndex( parent, TA_TRANSLATION ).isValid()
 			&& nif->getIndex( parent, "Scale" ).isValid()
 		) || (
 			skinTransform.isValid() && nif->getIndex( skinTransform, "Rotation" ).isValid()
-			&& nif->getIndex( skinTransform, "Translation" ).isValid()
+			&& nif->getIndex( skinTransform, TA_TRANSLATION ).isValid()
 			&& nif->getIndex( skinTransform, "Scale" ).isValid()
 		)
 	);
@@ -466,7 +466,7 @@ Transform::Transform( const NifModel * nif, const QModelIndex & transform )
 		skinTransform = transform;
 	}
 	rotation = nif->get<Matrix>( skinTransform, "Rotation" );
-	translation = nif->get<Vector3>( skinTransform, "Translation" );
+	translation = nif->get<Vector3>( skinTransform, TA_TRANSLATION );
 	scale = nif->get<float>( skinTransform, "Scale" );
 }
 
@@ -478,7 +478,7 @@ void Transform::writeBack( NifModel * nif, const QModelIndex & transform ) const
 		skinTransform = transform;
 	}
 	nif->set<Matrix>( skinTransform, "Rotation", rotation );
-	nif->set<Vector3>( skinTransform, "Translation", translation );
+	nif->set<Vector3>( skinTransform, TA_TRANSLATION, translation );
 	nif->set<float>( skinTransform, "Scale", scale );
 }
 

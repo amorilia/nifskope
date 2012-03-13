@@ -77,7 +77,7 @@ public:
 				iBound = nif->getIndex( index, "Bounding Box" );
 			}
 			
-			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, "Translation" ) ) );
+			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, TA_TRANSLATION ) ) );
 			edit->add( new NifRotationEdit( nif, nif->getIndex( iBound, "Rotation" ) ) );
 			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, "Radius" ) ) );
 		}

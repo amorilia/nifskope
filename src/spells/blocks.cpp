@@ -367,9 +367,9 @@ public:
 			}
 
 			if ( act->text() == "NiTextureEffect" ) {
-				nif->set<int>( iLight, "Flags", 4 );
+				nif->set<int>( iLight, TA_FLAGS, 4 );
 				QModelIndex iSrcTex = nif->insertNiBlock( T_NISOURCETEXTURE, nif->getBlockNumber( iLight ) + 1 );
-				nif->setLink( iLight, "Source Texture", nif->getBlockNumber( iSrcTex ) );
+				nif->setLink( iLight, TA_SOURCETEXTURE, nif->getBlockNumber( iSrcTex ) );
 			}
 			
 			return iLight;

@@ -214,7 +214,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			{
 				QModelIndex temp = nif->getBlock( *it );
 				QString type = nif->itemName( temp );
-				if ( type == "NiMaterialProperty" )
+				if ( type == T_NIMATERIALPROPERTY )
 				{
 					iMaterial = temp;
 				}
@@ -222,7 +222,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 				{
 					iData = temp;
 				}
-				else if ( (type == "NiTexturingProperty") || (type == "NiTextureProperty") )
+				else if ( (type == T_NITEXTURINGPROPERTY) || (type == T_NITEXTUREPROPERTY) )
 				{
 					iTexProp = temp;
 
@@ -650,15 +650,15 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			
 			if ( iMaterial.isValid() == false || objIndex != 0 )
 			{
-				iMaterial = nif->insertNiBlock( "NiMaterialProperty" );
+				iMaterial = nif->insertNiBlock( T_NIMATERIALPROPERTY );
 			}
 			nif->set<QString>( iMaterial, TA_NAME, mat->name );
-			nif->set<Color3>( iMaterial, "Ambient Color", mat->Ka );
-			nif->set<Color3>( iMaterial, "Diffuse Color", mat->Kd );
-			nif->set<Color3>( iMaterial, "Specular Color", mat->Ks );
-			nif->set<Color3>( iMaterial, "Emissive Color", Color3( 0, 0, 0 ) );
-			nif->set<float>( iMaterial, "Alpha", mat->alpha );
-			nif->set<float>( iMaterial, "Glossiness", mat->glossiness );
+			nif->set<Color3>( iMaterial, TA_AMBIENTCOLOR, mat->Ka );
+			nif->set<Color3>( iMaterial, TA_DIFFUSECOLOR, mat->Kd );
+			nif->set<Color3>( iMaterial, TA_SPECULARCOLOR, mat->Ks );
+			nif->set<Color3>( iMaterial, TA_EMISSIVECOLOR, Color3( 0, 0, 0 ) );
+			nif->set<float>( iMaterial, TA_ALPHA, mat->alpha );
+			nif->set<float>( iMaterial, TA_GLOSSINESS, mat->glossiness );
 			
 			addLink( nif, iShape, TA_PROPERTIES, nif->getBlockNumber( iMaterial ) );
 			
@@ -667,22 +667,22 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 				if ( nif->getVersionNumber() >= NF_V03030013 )
 				{
 					//Newer versions use NiTexturingProperty and NiSourceTexture
-					if ( iTexProp.isValid() == false || objIndex != 0 || nif->itemType(iTexProp) != "NiTexturingProperty" )
+					if ( iTexProp.isValid() == false || objIndex != 0 || nif->itemType(iTexProp) != T_NITEXTURINGPROPERTY )
 					{
-						iTexProp = nif->insertNiBlock( "NiTexturingProperty" );
+						iTexProp = nif->insertNiBlock( T_NITEXTURINGPROPERTY );
 					}
 					addLink( nif, iShape, TA_PROPERTIES, nif->getBlockNumber( iTexProp ) );
 					
 					nif->set<int>( iTexProp, "Has Base Texture", 1 );
-					QModelIndex iBaseMap = nif->getIndex( iTexProp, "Base Texture" );
-					nif->set<int>( iBaseMap, "Clamp Mode", 3 );
-					nif->set<int>( iBaseMap, "Filter Mode", 2 );
+					QModelIndex iBaseMap = nif->getIndex( iTexProp, TA_BASETEXTURE );
+					nif->set<int>( iBaseMap, TA_CLAMPMODE, 3 );
+					nif->set<int>( iBaseMap, TA_FILTERMODE, 2 );
 					
 					if ( iTexSource.isValid() == false || objIndex != 0 || nif->itemType(iTexSource) != T_NISOURCETEXTURE )
 					{
 						iTexSource = nif->insertNiBlock( T_NISOURCETEXTURE );
 					}
-					nif->setLink( iBaseMap, "Source", nif->getBlockNumber( iTexSource ) );
+					nif->setLink( iBaseMap, TA_SOURCE, nif->getBlockNumber( iTexSource ) );
 					
 					nif->set<int>( iTexSource, "Pixel Layout", nif->getVersion() == "20.0.0.5" ? 6 : 5 );
 					nif->set<int>( iTexSource, "Use Mipmaps", 2 );
@@ -696,9 +696,9 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 				else
 				{
 					//Older versions use NiTextureProperty and NiImage
-					if ( iTexProp.isValid() == false || objIndex != 0 || nif->itemType(iTexProp) != "NiTextureProperty" )
+					if ( iTexProp.isValid() == false || objIndex != 0 || nif->itemType(iTexProp) != T_NITEXTUREPROPERTY )
 					{
-						iTexProp = nif->insertNiBlock( "NiTextureProperty" );
+						iTexProp = nif->insertNiBlock( T_NITEXTUREPROPERTY );
 					}
 					addLink( nif, iShape, TA_PROPERTIES, nif->getBlockNumber( iTexProp ) );
 					
@@ -707,7 +707,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 						iTexSource = nif->insertNiBlock( T_NIIMAGE );
 					}
 
-					nif->setLink( iTexProp, "Image", nif->getBlockNumber( iTexSource ) );
+					nif->setLink( iTexProp, TA_IMAGE, nif->getBlockNumber( iTexSource ) );
 					
 					nif->set<int>( iTexSource, "External", 1 );
 					nif->set<QString>( iTexSource, TA_FILENAME, mat->map_Kd );

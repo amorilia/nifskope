@@ -602,7 +602,7 @@ BSAIterator::BSAIterator( QDir::Filters filters, const QStringList & nameFilters
 	: QAbstractFileEngineIterator( filters, nameFilters ), current( None ), archive( archive ), fileIndex( -1 ), folderIndex ( -1 )
 {
 	archive->ref.ref();
-	//qDebug() << "Entered BSAIterator with filters" << filters << "names" << nameFilters << "base" << base; 
+	//qDebug() << "Entered BSAIterator with filters" << filters << "names" << nameFilters << TX_BASE << base; 
 	//qDebug() << "Archive is" << archive->path();
 	//qDebug() << "Path is" << path() << "currentFilePath is" << currentFilePath();
 	

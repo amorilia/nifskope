@@ -82,14 +82,14 @@ public:
 			for ( qint32 b = 0; b < nif->getBlockCount(); b++ )
 			{
 				QModelIndex iBlock = nif->getBlock( b );
-				if ( nif->isNiBlock( iBlock, "NiMaterialProperty" ) )
+				if ( nif->isNiBlock( iBlock, T_NIMATERIALPROPERTY ) )
 				{
 					if ( nif->get<QString>( iBlock, TA_NAME ).contains( "Material" ) )
 						nif->set<QString>( iBlock, TA_NAME, "Material" );
 					else if ( nif->get<QString>( iBlock, TA_NAME ).contains( "Default" ) )
 						nif->set<QString>( iBlock, TA_NAME, "Default" );
 				}
-				if ( nif->inherits( iBlock, "BSShaderProperty" ) || nif->isNiBlock( iBlock, "BSShaderTextureSet") )
+				if ( nif->inherits( iBlock, "BSShaderProperty" ) || nif->isNiBlock( iBlock, T_BSSHADERTEXTURESET) )
 				{
 					// these need to be unique
 					continue;
@@ -173,7 +173,7 @@ public:
 					if ( iProp.isValid() && nif->getParent( l ) != b )
 					{
 						QMap<qint32,qint32> map;
-						if ( nif->isNiBlock( iProp, "NiTexturingProperty" ) )
+						if ( nif->isNiBlock( iProp, T_NITEXTURINGPROPERTY ) )
 						{
 							foreach ( qint32 sl, nif->getChildLinks( nif->getBlockNumber( iProp ) ) )
 							{
@@ -372,7 +372,7 @@ public:
 	bool matches( const NifModel * nif, QModelIndex iTriA, QModelIndex iTriB )
 	{
 		if ( iTriA == iTriB || nif->itemName( iTriA ) != nif->itemName( iTriB )
-			|| nif->get<int>( iTriA, "Flags" ) != nif->get<int>( iTriB, "Flags" ) )
+			|| nif->get<int>( iTriA, TA_FLAGS ) != nif->get<int>( iTriB, TA_FLAGS ) )
 			return false;
 		
 		QVector<qint32> lPrpsA = nif->getLinkArray( iTriA, TA_PROPERTIES );
@@ -442,7 +442,7 @@ public:
 	//! Combines meshes a and b ( a += b )
 	void combine( NifModel * nif, QModelIndex iTriA, QModelIndex iTriB )
 	{
-		nif->set<quint32>( iTriB, "Flags", nif->get<quint32>( iTriB, "Flags" ) | 1 );
+		nif->set<quint32>( iTriB, TA_FLAGS, nif->get<quint32>( iTriB, TA_FLAGS ) | 1 );
 		
 		QModelIndex iDataA = nif->getBlock( nif->getLink( iTriA, TA_DATA ), "NiTriBasedGeomData" );
 		QModelIndex iDataB = nif->getBlock( nif->getLink( iTriB, TA_DATA ), "NiTriBasedGeomData" );

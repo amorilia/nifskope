@@ -205,9 +205,9 @@ public:
 		if (  ( nif->isNiBlock( iBlock, T_NISOURCETEXTURE ) || nif->isNiBlock( iBlock, T_NIIMAGE ) )
 			&& ( iBlock == idx.sibling( idx.row(), 0 ) || nif->itemName( idx ) == TA_FILENAME ) )
 			return true;
-		else if ( nif->isNiBlock( iBlock, "BSShaderNoLightingProperty" ) && nif->itemName( idx ) == TA_FILENAME )
+		else if ( nif->isNiBlock( iBlock, T_BSSHADERNOLIGHTINGPROPERTY ) && nif->itemName( idx ) == TA_FILENAME )
 			return true;
-		else if ( nif->isNiBlock( iBlock, "BSShaderTextureSet" ) && nif->itemName( idx ) == "Textures" )
+		else if ( nif->isNiBlock( iBlock, T_BSSHADERTEXTURESET ) && nif->itemName( idx ) == TA_TEXTURES )
 			return true;
 		else if ( nif->isNiBlock( iBlock, "SkyShaderProperty" ) && nif->itemName( idx ) == TA_FILENAME )
 			return true;
@@ -228,9 +228,9 @@ public:
 			iFile = nif->getIndex( iBlock, TA_FILENAME );
 			setExternal = true;
 		}
-		else if ( nif->isNiBlock( iBlock, "BSShaderTextureSet" ) && nif->itemName( idx ) == "Textures" )
+		else if ( nif->isNiBlock( iBlock, T_BSSHADERTEXTURESET ) && nif->itemName( idx ) == TA_TEXTURES )
 			iFile = idx;
-		else if ( nif->isNiBlock( iBlock, "BSShaderNoLightingProperty" ) && nif->itemName( idx ) == TA_FILENAME )
+		else if ( nif->isNiBlock( iBlock, T_BSSHADERNOLIGHTINGPROPERTY ) && nif->itemName( idx ) == TA_FILENAME )
 			iFile = idx;
 		else if ( nif->isNiBlock( iBlock, "SkyShaderProperty" ) && nif->itemName( idx ) == TA_FILENAME )
 			iFile = idx;
@@ -311,7 +311,7 @@ REGISTER_SPELL( spEditTexCoords )
  */
 QModelIndex addTexture( NifModel * nif, const QModelIndex & index, const QString & name )
 {
-	QModelIndex iTexProp = nif->getBlock( index, "NiTexturingProperty" );
+	QModelIndex iTexProp = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 	if ( ! iTexProp.isValid() )	return index;
 	if ( nif->get<int>( iTexProp, "Texture Count" ) < 7 )
 		nif->set<int>( iTexProp, "Texture Count", 7 );
@@ -320,15 +320,15 @@ QModelIndex addTexture( NifModel * nif, const QModelIndex & index, const QString
 	QPersistentModelIndex iTex = nif->getIndex( iTexProp, name );
 	if ( ! iTex.isValid() ) return index;
 
-	nif->set<int>( iTex, "Clamp Mode", 3 );
-	nif->set<int>( iTex, "Filter Mode", 3 );
+	nif->set<int>( iTex, TA_CLAMPMODE, 3 );
+	nif->set<int>( iTex, TA_FILTERMODE, 3 );
 	nif->set<int>( iTex, "PS2 K", -75 );
 	nif->set<int>( iTex, "Unknown1", 257 );
 
 	QModelIndex iSrcTex = nif->insertNiBlock( T_NISOURCETEXTURE, nif->getBlockNumber( iTexProp ) + 1 );
-	nif->setLink( iTex, "Source", nif->getBlockNumber( iSrcTex ) );
+	nif->setLink( iTex, TA_SOURCE, nif->getBlockNumber( iSrcTex ) );
 
-	nif->set<int>( iSrcTex, "Pixel Layout", ( nif->getVersion() == "20.0.0.5" && name == "Base Texture" ? 6 : 5 ) );
+	nif->set<int>( iSrcTex, "Pixel Layout", ( nif->getVersion() == "20.0.0.5" && name == TA_BASETEXTURE ? 6 : 5 ) );
 	nif->set<int>( iSrcTex, "Use Mipmaps", 2 );
 	nif->set<int>( iSrcTex, "Alpha Format", 3 );
 	nif->set<int>( iSrcTex, "Unknown Byte", 1 );
@@ -348,13 +348,13 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex block = nif->getBlock( index, "NiTexturingProperty" );
+		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 		return ( block.isValid() && nif->get<int>( block, "Has Base Texture" ) == 0 ); 
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		return addTexture( nif, index, "Base Texture" );
+		return addTexture( nif, index, TA_BASETEXTURE );
 	}
 };
 
@@ -369,13 +369,13 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex block = nif->getBlock( index, "NiTexturingProperty" );
+		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 		return ( block.isValid() && nif->get<int>( block, "Has Dark Texture" ) == 0 ); 
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		return addTexture( nif, index, "Dark Texture" );
+		return addTexture( nif, index, TA_DARKTEXTURE );
 	}
 };
 
@@ -390,13 +390,13 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex block = nif->getBlock( index, "NiTexturingProperty" );
+		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 		return ( block.isValid() && nif->get<int>( block, "Has Detail Texture" ) == 0 ); 
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		return addTexture( nif, index, "Detail Texture" );
+		return addTexture( nif, index, TA_DETAILTEXTURE );
 	}
 };
 
@@ -411,13 +411,13 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex block = nif->getBlock( index, "NiTexturingProperty" );
+		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 		return ( block.isValid() && nif->get<int>( block, "Has Glow Texture" ) == 0 ); 
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		return addTexture( nif, index, "Glow Texture" );
+		return addTexture( nif, index, TA_GLOWTEXTURE );
 	}
 };
 
@@ -432,14 +432,14 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex block = nif->getBlock( index, "NiTexturingProperty" );
+		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 		return ( block.isValid() && nif->get<int>( block, "Has Bump Map Texture" ) == 0 ); 
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex iSrcTex = addTexture( nif, index, "Bump Map Texture" );
-		QModelIndex block = nif->getBlock( index, "NiTexturingProperty" );
+		QModelIndex iSrcTex = addTexture( nif, index, TA_BUMPMAPTEXTURE );
+		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 		nif->set<float>( block, "Bump Map Luma Scale", 1.0 );
 		nif->set<float>( block, "Bump Map Luma Offset", 0.0 );
 		QModelIndex iMatrix = nif->getIndex( block, "Bump Map Matrix" );
@@ -462,13 +462,13 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex block = nif->getBlock( index, "NiTexturingProperty" );
+		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 		return ( block.isValid() && nif->get<int>( block, "Has Decal 0 Texture" ) == 0 ); 
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		return addTexture( nif, index, "Decal 0 Texture" );
+		return addTexture( nif, index, TA_DECAL0TEXTURE );
 	}
 };
 
@@ -483,13 +483,13 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex block = nif->getBlock( index, "NiTexturingProperty" );
+		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 		return ( block.isValid() && nif->get<int>( block, "Has Decal 1 Texture" ) == 0 ); 
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		return addTexture( nif, index, "Decal 1 Texture" );
+		return addTexture( nif, index, TA_DECAL1TEXTURE );
 	}
 };
 
@@ -504,13 +504,13 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex block = nif->getBlock( index, "NiTexturingProperty" );
+		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 		return ( block.isValid() && nif->get<int>( block, "Has Decal 2 Texture" ) == 0 ); 
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		return addTexture( nif, index, "Decal 2 Texture" );
+		return addTexture( nif, index, TA_DECAL2TEXTURE );
 	}
 };
 
@@ -525,13 +525,13 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex block = nif->getBlock( index, "NiTexturingProperty" );
+		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 		return ( block.isValid() && nif->get<int>( block, "Has Decal 3 Texture" ) == 0 ); 
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		return addTexture( nif, index, "Decal 3 Texture" );
+		return addTexture( nif, index, TA_DECAL3TEXTURE );
 	}
 };
 
@@ -749,7 +749,7 @@ public:
 		if ( !index.isValid() )
 			return;
 		
-		if ( nif->inherits( index, "NiTexturingProperty" ) &&
+		if ( nif->inherits( index, T_NITEXTURINGPROPERTY ) &&
 			nif->get<int>( index, "Apply Mode" ) == rep )
 			nif->set<int>( index, "Apply Mode", by );
 		
@@ -1071,7 +1071,7 @@ void TexFlipDialog::listFromNif()
 {
 	// update string list
 	int numSources = nif->get<int>( baseIndex, "Num Sources" );
-	QModelIndex sources = nif->getIndex( baseIndex, "Sources" );
+	QModelIndex sources = nif->getIndex( baseIndex, TA_SOURCES );
 	
 	if ( nif->rowCount( sources ) != numSources )
 	{
@@ -1101,7 +1101,7 @@ public:
  	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( nif->getBlockName( index ) == "NiFlipController" );
+		return ( nif->getBlockName( index ) == T_NIFLIPCONTROLLER );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -1124,7 +1124,7 @@ public:
 
 		// TODO: use a map here to delete missing textures and preserve existing properties
 		
-		QModelIndex sources = nif->getIndex( flipController, "Sources" );
+		QModelIndex sources = nif->getIndex( flipController, TA_SOURCES );
 		if ( nif->get<int>( flipController, "Num Sources" ) > flipNames.size() )
 		{
 			// delete blocks
@@ -1156,8 +1156,8 @@ public:
 		}
 		
 		nif->set<float>( flipController, "Frequency", 1 );
-		nif->set<quint16>( flipController, "Flags", 8 );
-		nif->set<float>( flipController, "Delta", ( nif->get<float>( flipController, "Stop Time" ) - nif->get<float>( flipController, "Start Time" ) ) / flipNames.size() );
+		nif->set<quint16>( flipController, TA_FLAGS, 8 );
+		nif->set<float>( flipController, TA_DELTA, ( nif->get<float>( flipController, "Stop Time" ) - nif->get<float>( flipController, "Start Time" ) ) / flipNames.size() );
 		
 		return index;
 	}
@@ -1175,14 +1175,14 @@ public:
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
 		// also check NiTextureProperty?
-		QModelIndex block = nif->getBlock( index, "NiTexturingProperty" );
+		QModelIndex block = nif->getBlock( index, T_NITEXTURINGPROPERTY );
 		return block.isValid();
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
 		// attach a NiFlipController
-		QModelIndex flipController = nif->insertNiBlock( "NiFlipController", nif->getBlockNumber( index ) + 1 );
+		QModelIndex flipController = nif->insertNiBlock( T_NIFLIPCONTROLLER, nif->getBlockNumber( index ) + 1 );
 		blockLink( nif, index, flipController );
 		
 		spEditFlipper flipEdit;

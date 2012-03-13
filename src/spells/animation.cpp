@@ -271,7 +271,7 @@ public:
 		nif->setLink( iNode, "Controller", nif->getBlockNumber( iCtrl ) );
 		nif->setLink( iCtrl, "Next Controller", oldctrl );
 		nif->setLink( iCtrl, "Target", nif->getBlockNumber( iNode ) );
-		nif->set<int>( iCtrl, "Flags", 8 );
+		nif->set<int>( iCtrl, TA_FLAGS, 8 );
 		
 		return iCtrl;
 	}

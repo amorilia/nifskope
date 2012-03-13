@@ -1394,7 +1394,7 @@ void GLView::dragMoveEvent( QDragMoveEvent * e )
 	{
 		foreach ( qint32 l, model->getChildLinks( model->getBlockNumber( iObj ) ) )
 		{
-			QModelIndex iTxt = model->getBlock( l, "NiTexturingProperty" );
+			QModelIndex iTxt = model->getBlock( l, T_NITEXTURINGPROPERTY );
 			if ( iTxt.isValid() )
 			{
 				QModelIndex iSrc = model->getBlock( model->getLink( iTxt, "Base Texture/Source" ), T_NISOURCETEXTURE );

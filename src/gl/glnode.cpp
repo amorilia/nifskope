@@ -572,7 +572,7 @@ void Node::update( const NifModel * nif, const QModelIndex & index )
 
 	if ( iBlock == index )
 	{
-		flags.bits = nif->get<int>( iBlock, "Flags" );
+		flags.bits = nif->get<int>( iBlock, TA_FLAGS );
 		local = Transform( nif, iBlock );
 	}
 	
@@ -770,7 +770,7 @@ void Node::transform()
 				if ( nif->isNiBlock( iBody, "bhkRigidBodyT" ) )
 				{
 					t.rotation.fromQuat( nif->get<Quat>( iBody, "Rotation" ) );
-					t.translation = Vector3( nif->get<Vector4>( iBody, "Translation" ) * 7 );
+					t.translation = Vector3( nif->get<Vector4>( iBody, TA_TRANSLATION ) * 7 );
 				}
 				scene->bhkBodyTrans.insert( nif->getBlockNumber( iBody ), worldTrans() * t );
 			}
@@ -1502,7 +1502,7 @@ void Node::drawHavok()
 		
 		Transform bt;
 		
-		bt.translation = nif->get<Vector3>( iBox, "Translation" );
+		bt.translation = nif->get<Vector3>( iBox, TA_TRANSLATION );
 		bt.rotation = nif->get<Matrix>( iBox, "Rotation" );
 		bt.scale = 1.0f;
 		
@@ -1830,7 +1830,7 @@ BoundSphere Node::bounds() const
 	if ( nif->get<bool>( iBlock, "Has Bounding Box" ) == true )
 	{
 		QModelIndex iBox = nif->getIndex( iBlock, "Bounding Box" );
-		Vector3 trans = nif->get<Vector3>( iBox, "Translation" );
+		Vector3 trans = nif->get<Vector3>( iBox, TA_TRANSLATION );
 		Vector3 rad = nif->get<Vector3>( iBox, "Radius" );
 		boundsphere |= BoundSphere(trans, rad.length());
 	}

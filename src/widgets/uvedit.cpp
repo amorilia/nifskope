@@ -90,16 +90,16 @@ UVWidget::UVWidget( QWidget * parent )
 	: QGLWidget( QGLFormat( QGL::SampleBuffers ), parent, 0, Qt::Tool | Qt::WindowStaysOnTopHint ), undoStack( new QUndoStack( this ) )
 {
 	texnames = QStringList() // these are not translated since they are pulled from nif.xml
-		<< "Base Texture"
-		<< "Dark Texture"
-		<< "Detail Texture"
-		<< "Gloss Texture"
-		<< "Glow Texture"
-		<< "Bump Map Texture"
-		<< "Decal 0 Texture"
-		<< "Decal 1 Texture"
-		<< "Decal 2 Texture"
-		<< "Decal 3 Texture";
+		<< TA_BASETEXTURE
+		<< TA_DARKTEXTURE
+		<< TA_DETAILTEXTURE
+		<< TA_GLOSSTEXTURE
+		<< TA_GLOWTEXTURE
+		<< TA_BUMPMAPTEXTURE
+		<< TA_DECAL0TEXTURE
+		<< TA_DECAL1TEXTURE
+		<< TA_DECAL2TEXTURE
+		<< TA_DECAL3TEXTURE;
 	
 	setWindowTitle( tr("UV Editor") );
 	setFocusPolicy( Qt::StrongFocus );
@@ -862,7 +862,7 @@ bool UVWidget::setNifData( NifModel * nifModel, const QModelIndex & nifIndex )
 		
 	foreach( qint32 l, nif->getLinkArray( iShape, TA_PROPERTIES ) )
 	{
-		QModelIndex iTexProp = nif->getBlock( l, "NiTexturingProperty" );
+		QModelIndex iTexProp = nif->getBlock( l, T_NITEXTURINGPROPERTY );
 		if( iTexProp.isValid() )
 		{
 			while ( currentTexSlot < texnames.size() )
@@ -870,10 +870,10 @@ bool UVWidget::setNifData( NifModel * nifModel, const QModelIndex & nifIndex )
 				iTex = nif->getIndex( iTexProp, texnames[currentTexSlot] );
 				if( iTex.isValid() )
 				{
-					QModelIndex iTexSource = nif->getBlock( nif->getLink( iTex, "Source" ) );
+					QModelIndex iTexSource = nif->getBlock( nif->getLink( iTex, TA_SOURCE ) );
 					if( iTexSource.isValid() )
 					{
-						currentCoordSet = nif->get<int>( iTex, "UV Set" );
+						currentCoordSet = nif->get<int>( iTex, TA_UVSET );
 						iTexCoords = nif->getIndex( iShapeData, TA_UVSETS ).child( currentCoordSet, 0 );
 						texsource = iTexSource;
 						if( setTexCoords() ) return true;
@@ -887,10 +887,10 @@ bool UVWidget::setNifData( NifModel * nifModel, const QModelIndex & nifIndex )
 		}
 		else 
 		{
-			iTexProp = nif->getBlock( l, "NiTextureProperty" );
+			iTexProp = nif->getBlock( l, T_NITEXTUREPROPERTY );
 			if( iTexProp.isValid() )
 			{
-				QModelIndex iTexSource = nif->getBlock( nif->getLink( iTexProp, "Image" ) );
+				QModelIndex iTexSource = nif->getBlock( nif->getLink( iTexProp, TA_IMAGE ) );
 				if( iTexSource.isValid() )
 				{
 					//texfile = TexCache::find( nif->get<QString>( iTexSource, TA_FILENAME ) , nif->getFolder() );
@@ -901,18 +901,18 @@ bool UVWidget::setNifData( NifModel * nifModel, const QModelIndex & nifIndex )
 			else
 			{
 				// TODO: use the BSShaderTextureSet
-				iTexProp = nif->getBlock( l, "BSShaderPPLightingProperty" );
+				iTexProp = nif->getBlock( l, T_BSSHADERPPLIGHINGPROPERTY );
 				if( !iTexProp.isValid() )
 					iTexProp = nif->getBlock( l, T_BSLIGHTINGSHADERPROPERTY );
 				if( iTexProp.isValid() )
 				{
-					QModelIndex iTexSource = nif->getBlock( nif->getLink( iTexProp, "Texture Set" ) );
+					QModelIndex iTexSource = nif->getBlock( nif->getLink( iTexProp, TA_TEXTURESET ) );
 					if( iTexSource.isValid() )
 					{
 						// Assume that a FO3 mesh never has embedded textures...
 						//texsource = iTexSource;
 						//return true;
-						QModelIndex textures = nif->getIndex(iTexSource, "Textures");
+						QModelIndex textures = nif->getIndex(iTexSource, TA_TEXTURES);
 						if (textures.isValid())
 						{
 							texfile = TexCache::find( nif->get<QString>( textures.child(0, 0)) , nif->getFolder() );
@@ -1492,7 +1492,7 @@ void UVWidget::getTexSlots()
 	validTexs.clear();
 	foreach( qint32 l, nif->getLinkArray( iShape, TA_PROPERTIES ) )
 	{
-		QModelIndex iTexProp = nif->getBlock( l, "NiTexturingProperty" );
+		QModelIndex iTexProp = nif->getBlock( l, T_NITEXTURINGPROPERTY );
 		if( iTexProp.isValid() )
 		{
 			foreach( QString name, texnames )
@@ -1523,16 +1523,16 @@ void UVWidget::selectTexSlot()
 	currentTexSlot = texnames.indexOf( selected );
 	foreach( qint32 l, nif->getLinkArray( iShape, TA_PROPERTIES ) )
 	{
-		QModelIndex iTexProp = nif->getBlock( l, "NiTexturingProperty" );
+		QModelIndex iTexProp = nif->getBlock( l, T_NITEXTURINGPROPERTY );
 		if( iTexProp.isValid() )
 		{
 			iTex = nif->getIndex( iTexProp, texnames[currentTexSlot] );
 			if( iTex.isValid() )
 			{
-				QModelIndex iTexSource = nif->getBlock( nif->getLink( iTex, "Source" ) );
+				QModelIndex iTexSource = nif->getBlock( nif->getLink( iTex, TA_SOURCE ) );
 				if( iTexSource.isValid() )
 				{
-					currentCoordSet = nif->get<int>( iTex, "UV Set" );
+					currentCoordSet = nif->get<int>( iTex, TA_UVSET );
 					iTexCoords = nif->getIndex( iShapeData, TA_UVSETS ).child( currentCoordSet, 0 );
 					texsource = iTexSource;
 					setTexCoords();
@@ -1585,7 +1585,7 @@ void UVWidget::changeCoordSet( int setToUse )
 {
 	// update
 	currentCoordSet = setToUse;
-	nif->set<quint8>( iTex, "UV Set", currentCoordSet );
+	nif->set<quint8>( iTex, TA_UVSET, currentCoordSet );
 	// read new coordinate set
 	iTexCoords = nif->getIndex( iShapeData, TA_UVSETS ).child( currentCoordSet, 0 );
 	setTexCoords();

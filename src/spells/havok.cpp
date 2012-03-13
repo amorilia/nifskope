@@ -336,7 +336,7 @@ public:
 		Transform t;
 		if ( nif->isNiBlock( index, "bhkRigidBodyT" ) )
 		{
-			t.translation = Vector3( nif->get<Vector4>( index, "Translation" ) * 7 );
+			t.translation = Vector3( nif->get<Vector4>( index, TA_TRANSLATION ) * 7 );
 			t.rotation.fromQuat( nif->get<Quat>( index, "Rotation" ) );
 		}
 		
