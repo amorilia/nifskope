@@ -376,7 +376,7 @@ int TexCache::bind( const QModelIndex & iSource )
 	const NifModel * nif = qobject_cast<const NifModel *>( iSource.model() );
 	if ( nif && iSource.isValid() ) {
 		if ( nif->get<quint8>( iSource, TA_USEEXTERNAL ) == 0 ){
-			QModelIndex iData = nif->getBlock( nif->getLink( iSource, "Pixel Data" ) );
+			QModelIndex iData = nif->getBlock( nif->getLink( iSource, TA_PIXELDATA ) );
 			if (iData.isValid()) {
 				Tex * tx = embedTextures.value( iData );
 				if (tx == NULL){
@@ -439,7 +439,7 @@ QString TexCache::info( const QModelIndex& iSource )
 	const NifModel * nif = qobject_cast<const NifModel *>( iSource.model() );
 	if ( nif && iSource.isValid() ) {
 		if ( nif->get<quint8>( iSource, TA_USEEXTERNAL ) == 0 ) {
-			QModelIndex iData = nif->getBlock( nif->getLink( iSource, "Pixel Data" ) );
+			QModelIndex iData = nif->getBlock( nif->getLink( iSource, TA_PIXELDATA ) );
 			if (iData.isValid()) {
 				Tex * tx = embedTextures.value( iData );
 				temp = QString("Embedded texture: %1\nWidth: %2\nHeight: %3\nMipmaps: %4")

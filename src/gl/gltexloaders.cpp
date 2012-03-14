@@ -984,7 +984,7 @@ bool texLoad( const QModelIndex & iData, QString & texformat, GLuint & width, GL
 
 		QBuffer buf;
 		
-		QModelIndex iPixelData = nif->getIndex( iData, "Pixel Data" );
+		QModelIndex iPixelData = nif->getIndex( iData, TA_PIXELDATA );
 		if ( iPixelData.isValid() ) {
 			QModelIndex iFaceData = iPixelData.child(0,0);
 			if ( iFaceData.isValid() ) {
@@ -1179,7 +1179,7 @@ bool texSaveDDS( const QModelIndex & index, const QString & filepath, GLuint & w
 	
 	QBuffer buf;
 	
-	QModelIndex iPixelData = nif->getIndex( index, "Pixel Data" );
+	QModelIndex iPixelData = nif->getIndex( index, TA_PIXELDATA );
 	if ( iPixelData.isValid() ) {
 		QModelIndex iFaceData = iPixelData.child(0,0);
 		if ( iFaceData.isValid() ) {
@@ -1536,7 +1536,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 		
 		// possibly update this to ATextureRenderData...
 		QPersistentModelIndex iPixData;
-		iPixData = pix.getBlock( 0, "NiPixelData" );
+		iPixData = pix.getBlock( 0, T_NIPIXELDATA );
 		if ( ! iPixData.isValid() )
 			throw QString( "Texture .nifs should only have NiPixelData blocks" );
 		
@@ -1641,13 +1641,13 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 
 		nif->set<quint32>( iData, "Num Pixels", pix.get<quint32>( iPixData, "Num Pixels" ) );
 
-		QModelIndex srcPixelData = pix.getIndex( iPixData, "Pixel Data" );
-		QModelIndex destPixelData = nif->getIndex( iData, "Pixel Data" );
+		QModelIndex srcPixelData = pix.getIndex( iPixData, TA_PIXELDATA );
+		QModelIndex destPixelData = nif->getIndex( iData, TA_PIXELDATA );
 
 		for ( int i = 0; i < pix.rowCount( srcPixelData ); i++ )
 		{
 			nif->updateArray( destPixelData.child( i, 0 ) );
-			nif->set<QByteArray>( destPixelData.child( i, 0 ), "Pixel Data", pix.get<QByteArray>( srcPixelData.child( i, 0 ), "Pixel Data" ) );
+			nif->set<QByteArray>( destPixelData.child( i, 0 ), TA_PIXELDATA, pix.get<QByteArray>( srcPixelData.child( i, 0 ), TA_PIXELDATA ) );
 		}
 
 		//nif->set<>( iData, "", pix.get<>( iPixData, "" ) );
@@ -1745,12 +1745,12 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 		// set total pixel size
 		nif->set<quint32>( iData, "Num Pixels", mipmapOffset );
 		
-		QModelIndex iPixelData = nif->getIndex( iData, "Pixel Data" );
+		QModelIndex iPixelData = nif->getIndex( iData, TA_PIXELDATA );
 		nif->updateArray( iPixelData );
 		QModelIndex iFaceData = iPixelData.child( 0, 0 );
 		nif->updateArray( iFaceData );
 		
-		nif->set<QByteArray>( iFaceData, "Pixel Data", pixelData );
+		nif->set<QByteArray>( iFaceData, TA_PIXELDATA, pixelData );
 		
 		// return true once perfected
 		//return false;
@@ -1957,7 +1957,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 		
 		// finally, copy the data...
 
-		QModelIndex iPixelData = nif->getIndex( iData, "Pixel Data" );
+		QModelIndex iPixelData = nif->getIndex( iData, TA_PIXELDATA );
 		nif->updateArray( iPixelData );
 		QModelIndex iFaceData = iPixelData.child( 0, 0 );
 		nif->updateArray( iFaceData );
@@ -1974,10 +1974,10 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 			return false;
 		}
 		
-		nif->set<QByteArray>( iFaceData, "Pixel Data", ddsData );
+		nif->set<QByteArray>( iFaceData, TA_PIXELDATA, ddsData );
 
 		/*
-		QByteArray result = nif->get<QByteArray>( iFaceData, "Pixel Data" );
+		QByteArray result = nif->get<QByteArray>( iFaceData, TA_PIXELDATA );
 		for ( int i = 0; i < 16; i++ )
 		{
 			qWarning() << "Comparing byte " << i << ": result " << (quint8)result[i] << ", original " << (quint8)ddsData[i];

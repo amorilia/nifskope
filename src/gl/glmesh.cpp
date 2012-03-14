@@ -639,7 +639,7 @@ void Mesh::transform()
 				for ( int e = 0; e < nif->rowCount( iExtraData ); e++ )
 				{
 					QModelIndex iExtra = nif->getBlock( nif->getLink( iExtraData.child( e, 0 ) ), T_NIBINARYEXTRADATA );
-					if ( nif->get<QString>( iExtra, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
+					if ( nif->get<QString>( iExtra, TA_NAME ) == STR_TS )
 					{
 						iTangentData = iExtra;
 						QByteArray data = nif->get<QByteArray>( iExtra, TA_BINARYDATA );

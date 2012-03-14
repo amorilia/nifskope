@@ -264,8 +264,8 @@ public:
 			}
 		}
 		
-		QModelIndex iBodyA = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 0, 0 ) ), T_BHKRIGIDBODY );
-		QModelIndex iBodyB = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 1, 0 ) ), T_BHKRIGIDBODY );
+		QModelIndex iBodyA = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, TA_ENTITIES ).child( 0, 0 ) ), T_BHKRIGIDBODY );
+		QModelIndex iBodyB = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, TA_ENTITIES ).child( 1, 0 ) ), T_BHKRIGIDBODY );
 		
 		if ( ! iBodyA.isValid() || ! iBodyB.isValid() )
 		{
@@ -371,8 +371,8 @@ public:
 	{
 		QModelIndex iConstraint = nif->getBlock( idx );
 		
-		QModelIndex iBodyA = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 0, 0 ) ), T_BHKRIGIDBODY );
-		QModelIndex iBodyB = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, "Entities" ).child( 1, 0 ) ), T_BHKRIGIDBODY );
+		QModelIndex iBodyA = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, TA_ENTITIES ).child( 0, 0 ) ), T_BHKRIGIDBODY );
+		QModelIndex iBodyB = nif->getBlock( nif->getLink( nif->getIndex( iConstraint, TA_ENTITIES ).child( 1, 0 ) ), T_BHKRIGIDBODY );
 		
 		if ( ! iBodyA.isValid() || ! iBodyB.isValid() )
 		{
@@ -463,8 +463,8 @@ public:
 		
 		QPersistentModelIndex iPackedShape = nif->insertNiBlock( T_BHKPACKEDNITRISTRIPSSHAPE, nif->getBlockNumber( iShape ) );
 		
-		nif->set<int>( iPackedShape, "Num Sub Shapes", 1 );
-		QModelIndex iSubShapes = nif->getIndex( iPackedShape, "Sub Shapes" );
+		nif->set<int>( iPackedShape, TA_NUMSUBSHAPES, 1 );
+		QModelIndex iSubShapes = nif->getIndex( iPackedShape, TA_SUBSHAPES );
 		nif->updateArray( iSubShapes );
 		nif->set<int>( iSubShapes.child( 0, 0 ), "Layer", 1 );
 		nif->set<int>( iSubShapes.child( 0, 0 ), TA_NUMVERTICES, vertices.count() );

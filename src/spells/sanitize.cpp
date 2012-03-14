@@ -76,7 +76,7 @@ public:
 		{
 			QModelIndex iBlock = nif->getBlock( n );
 			
-			QModelIndex iNumChildren = nif->getIndex( iBlock, "Num Children" );
+			QModelIndex iNumChildren = nif->getIndex( iBlock, TA_NUMCHILDREN );
 			QModelIndex iChildren = nif->getIndex( iBlock, TA_CHILDREN );
 			if ( iNumChildren.isValid() && iChildren.isValid() )
 			{
@@ -132,23 +132,23 @@ public:
 			spCollapseArray arrayCollapser;
 
 			// remove empty children links
-			QModelIndex iNumChildren = nif->getIndex( iBlock, "Num Children" );
+			QModelIndex iNumChildren = nif->getIndex( iBlock, TA_NUMCHILDREN );
 			QModelIndex iChildren = nif->getIndex( iBlock, TA_CHILDREN );
 			arrayCollapser.numCollapser( nif, iNumChildren, iChildren );
 			
 			// remove empty property links
-			QModelIndex iNumProperties = nif->getIndex( iBlock, "Num Properties" );
+			QModelIndex iNumProperties = nif->getIndex( iBlock, TA_NUMPROPERTIES );
 			QModelIndex iProperties = nif->getIndex( iBlock, TA_PROPERTIES );
 			arrayCollapser.numCollapser( nif, iNumProperties, iProperties );
 			
 			// remove empty extra data links
-			QModelIndex iNumExtraData = nif->getIndex( iBlock, "Num Extra Data List" );
+			QModelIndex iNumExtraData = nif->getIndex( iBlock, TA_NUMEXTRADATALIST );
 			QModelIndex iExtraData = nif->getIndex( iBlock, TA_EXTRADATALIST );
 			arrayCollapser.numCollapser( nif, iNumExtraData, iExtraData );
 			
 			// remove empty modifier links (NiParticleSystem crashes Oblivion for those)
-			QModelIndex iNumModifiers = nif->getIndex( iBlock, "Num Modifiers" );
-			QModelIndex iModifiers = nif->getIndex( iBlock, "Modifiers" );
+			QModelIndex iNumModifiers = nif->getIndex( iBlock, TA_NUMMODIFIERS );
+			QModelIndex iModifiers = nif->getIndex( iBlock, TA_MODIFIERS );
 			arrayCollapser.numCollapser( nif, iNumModifiers, iModifiers );
 		}
 		return QModelIndex();
@@ -218,8 +218,8 @@ public:
 		QModelIndex iBlock(nif->getBlock(block));
 		// check its type
 		return (
-			nif->inherits(iBlock, "bhkRefObject")
-			&& !nif->inherits(iBlock, "bhkConstraint")
+			nif->inherits(iBlock, T_BHKREFOBJECT)
+			&& !nif->inherits(iBlock, T_BHKCONSTRAINT)
 		);
 	}
 	
@@ -232,8 +232,8 @@ public:
 		// special case: add bhkConstraint entities before bhkConstraint
 		// (these are actually links, not refs)
 		QModelIndex iBlock(nif->getBlock(block));
-		if (nif->inherits(iBlock, "bhkConstraint"))
-			foreach (qint32 entity, nif->getLinkArray(iBlock, "Entities"))
+		if (nif->inherits(iBlock, T_BHKCONSTRAINT))
+			foreach (qint32 entity, nif->getLinkArray(iBlock, TA_ENTITIES))
 				addTree(nif, entity, newblocks);
 		// add all children of block that should be before block
 		foreach (qint32 child, nif->getChildLinks(block))
@@ -368,4 +368,3 @@ public:
 };
 
 REGISTER_SPELL( spSanityCheckLinks )
-

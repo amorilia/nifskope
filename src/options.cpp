@@ -209,7 +209,7 @@ Options::Options()
       genPage->pushLayout( Qt::Horizontal );
 
       genPage->addWidget( new QLabel( tr("Startup Version") ) );
-      genPage->addWidget( StartVer = new QLineEdit( cfg.value( "Startup Version", "20.0.0.5" ).toString() ) );
+      genPage->addWidget( StartVer = new QLineEdit( cfg.value( "Startup Version", STR_V20000005 ).toString() ) );
       StartVer->setToolTip( tr("This is the version that the initial 'blank' NIF file that is created when NifSkope opens will be.") );
       connect( StartVer, SIGNAL( textChanged( const QString & ) ), this, SIGNAL( sigChanged() ) );
 

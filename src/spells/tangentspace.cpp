@@ -74,7 +74,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 
 	QVector<Color4> vxcol = nif->getArray<Color4>( iData, TA_VERTEXCOLORS );
 	int numUVSets = nif->get<int>( iData, TA_NUMUVSETS );
-	int tspaceFlags = nif->get<int>( iData, "TSpace Flag" );
+	int tspaceFlags = nif->get<int>( iData, TA_TSPACEFLAG );
 	QModelIndex iTexCo = nif->getIndex( iData, TA_UVSETS );
 	if ( ! iTexCo.isValid() ) iTexCo = nif->getIndex( iData, TA_UVSETS2 );
 	iTexCo = iTexCo.child( 0, 0 );
@@ -222,7 +222,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 		foreach ( qint32 link, nif->getChildLinks( nif->getBlockNumber( iShape ) ) )
 		{
 			iTSpace = nif->getBlock( link, T_NIBINARYEXTRADATA );
-			if ( iTSpace.isValid() && nif->get<QString>( iTSpace, TA_NAME ) == "Tangent space (binormal & tangent vectors)" )
+			if ( iTSpace.isValid() && nif->get<QString>( iTSpace, TA_NAME ) == STR_TS )
 				break;
 			else
 				iTSpace = QModelIndex();
@@ -231,8 +231,8 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 		if ( ! iTSpace.isValid() )
 		{
 			iTSpace = nif->insertNiBlock( T_NIBINARYEXTRADATA, nif->getBlockNumber( iShape ) + 1 );
-			nif->set<QString>( iTSpace, TA_NAME, "Tangent space (binormal & tangent vectors)" );
-			QModelIndex iNumExtras = nif->getIndex( iShape, "Num Extra Data List" );
+			nif->set<QString>( iTSpace, TA_NAME, STR_TS );
+			QModelIndex iNumExtras = nif->getIndex( iShape, TA_NUMEXTRADATALIST );
 			QModelIndex iExtras = nif->getIndex( iShape, TA_EXTRADATALIST );
 			if ( iNumExtras.isValid() && iExtras.isValid() )
 			{
@@ -249,7 +249,7 @@ QModelIndex spTangentSpace::cast( NifModel * nif, const QModelIndex & iBlock )
 	{
 		if (tspaceFlags == 0)
 			tspaceFlags = 0x10;
-		nif->set<int>( iShape, "TSpace Flag", tspaceFlags);
+		nif->set<int>( iShape, TA_TSPACEFLAG, tspaceFlags);
 		nif->set<int>( iShape, TA_NUMUVSETS, numUVSets);
 		QModelIndex iBinorms = nif->getIndex( iData, TA_BINORMALS );
 		QModelIndex iTangents = nif->getIndex( iData, TA_TANGENTS );

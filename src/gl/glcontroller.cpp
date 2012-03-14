@@ -191,10 +191,10 @@ bool Controller::update( const NifModel * nif, const QModelIndex & index )
 {
 	if ( iBlock.isValid() && iBlock == index )
 	{
-		start = nif->get<float>( index, "Start Time" );
-		stop = nif->get<float>( index, "Stop Time" );
+		start = nif->get<float>( index, TA_STARTTIME );
+		stop = nif->get<float>( index, TA_STOPTIME );
 		phase = nif->get<float>( index, "Phase" );
-		frequency = nif->get<float>( index, "Frequency" );
+		frequency = nif->get<float>( index, TA_FREQUENCY );
 		
 		int flags = nif->get<int>( index, TA_FLAGS );
 		active = flags & 0x08;
@@ -643,8 +643,8 @@ bool BSplineTransformInterpolator::update( const NifModel * nif, const QModelInd
 {
    if ( Interpolator::update( nif, index ) )
    {
-      start = nif->get<float>( index, "Start Time");
-      stop = nif->get<float>( index, "Stop Time");
+      start = nif->get<float>( index, TA_STARTTIME);
+      stop = nif->get<float>( index, TA_STOPTIME);
 
       iSpline = nif->getBlock( nif->getLink( index, "Spline Data" ) );
       iBasis = nif->getBlock( nif->getLink( index, "Basis Data") );

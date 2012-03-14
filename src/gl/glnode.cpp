@@ -263,10 +263,10 @@ public:
 				QModelIndex iSeq = nif->getBlock( l, "NiControllerSequence" );
 				if ( iSeq.isValid() && nif->get<QString>( iSeq, TA_NAME ) == seqname )
 				{
-					start = nif->get<float>( iSeq, "Start Time" );
-					stop = nif->get<float>( iSeq, "Stop Time" );
+					start = nif->get<float>( iSeq, TA_STARTTIME );
+					stop = nif->get<float>( iSeq, TA_STOPTIME );
 					phase = nif->get<float>( iSeq, "Phase" );
-					frequency = nif->get<float>( iSeq, "Frequency" );
+					frequency = nif->get<float>( iSeq, TA_FREQUENCY );
 					
 					QModelIndex iCtrlBlcks = nif->getIndex( iSeq, TA_CONTROLLEDBLOCKS );
 					for ( int r = 0; r < nif->rowCount( iCtrlBlcks ); r++ )
@@ -929,7 +929,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 	QString name = nif->itemName( iShape );
 	if ( name == "bhkListShape" )
 	{
-		QModelIndex iShapes = nif->getIndex( iShape, "Sub Shapes" );
+		QModelIndex iShapes = nif->getIndex( iShape, TA_SUBSHAPES );
 		if ( iShapes.isValid() )
 		{
 			for ( int r = 0; r < nif->rowCount( iShapes ); r++ )
@@ -1153,9 +1153,9 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 					i = scene->currentIndex.row();
 				}
 				//qDebug() << n;
-				// n == "Sub Shapes" if the array is selected and if an element of the array is selected
+				// n == TA_SUBSHAPES if the array is selected and if an element of the array is selected
 				// iParent != iShape only for the elements of the array
-				if (( n == "Sub Shapes" ) && ( iParent != iShape )) {
+				if (( n == TA_SUBSHAPES ) && ( iParent != iShape )) {
 					// get subshape vertex indices
 					QModelIndex iSubShapes = iParent;
 					QModelIndex iSubShape = scene->currentIndex;
@@ -1198,7 +1198,7 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 		return;
 	
 	QList<Transform> tBodies;
-	QModelIndex iBodies = nif->getIndex( iConstraint, "Entities" );
+	QModelIndex iBodies = nif->getIndex( iConstraint, TA_ENTITIES );
 	if( !iBodies.isValid() ) {
 		return;
 	}
@@ -1639,7 +1639,7 @@ void Node::drawHavok()
 	foreach ( qint32 l, nif->getLinkArray( iBody, "Constraints" ) )
 	{
 		QModelIndex iConstraint = nif->getBlock( l );
-		if ( nif->inherits( iConstraint, "bhkConstraint" ) )
+		if ( nif->inherits( iConstraint, T_BHKCONSTRAINT ) )
 			drawHvkConstraint( nif, iConstraint, scene );
 	}
 }

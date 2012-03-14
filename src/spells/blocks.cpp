@@ -1286,7 +1286,7 @@ public:
 				n = nif->getBlockCount();
 			}
 			
-			QModelIndex iNumChildren = nif->getIndex( iBlock, "Num Children" );
+			QModelIndex iNumChildren = nif->getIndex( iBlock, TA_NUMCHILDREN );
 			QModelIndex iChildren = nif->getIndex( iBlock, TA_CHILDREN );
 			// NiNode children are NIAVObjects and have a Name
 			if ( iNumChildren.isValid() && iChildren.isValid() )

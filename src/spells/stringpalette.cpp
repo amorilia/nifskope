@@ -324,7 +324,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->inherits( index, "NiSequence" )
+		return nif->inherits( index, T_NISEQUENCE )
 			&& nif->getBlock( nif->getLink( index, TA_STRINGPALETTE ) ).isValid()
 			&& nif->checkVersion( NF_V10020000, NF_V20000005 );
 	}
@@ -409,7 +409,7 @@ public:
 		QList<QPersistentModelIndex> sequenceList;
 		for ( int i = 0; i < nif->getBlockCount(); i++ )
 		{
-			QPersistentModelIndex current = nif->getBlock( i, "NiSequence" );
+			QPersistentModelIndex current = nif->getBlock( i, T_NISEQUENCE );
 			if ( current.isValid() )
 			{
 				sequenceList.append( current );
@@ -505,7 +505,7 @@ public:
 		QList<QModelIndex> sequenceList;
 		for ( int i = 0; i < nif->getBlockCount(); i++ )
 		{
-			QModelIndex current = nif->getBlock( i, "NiSequence" );
+			QModelIndex current = nif->getBlock( i, T_NISEQUENCE );
 			if ( current.isValid() )
 			{
 				sequenceList.append( current );

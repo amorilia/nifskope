@@ -201,15 +201,15 @@ public:
 		
 		QVector<int> subshapeVerts;
 		if ( nif->checkVersion( NF_V20000004, NF_V20000005 ) ) {
-			int nSubShapes = nif->get<int>( ibhkPackedNiTriStripsShape, "Num Sub Shapes" );
-			QModelIndex ihkSubShapes = nif->getIndex( ibhkPackedNiTriStripsShape, "Sub Shapes" );
+			int nSubShapes = nif->get<int>( ibhkPackedNiTriStripsShape, TA_NUMSUBSHAPES );
+			QModelIndex ihkSubShapes = nif->getIndex( ibhkPackedNiTriStripsShape, TA_SUBSHAPES );
 			subshapeVerts.resize(nSubShapes);
 			for ( int t = 0; t < nSubShapes; t++ ) {
 				subshapeVerts[t] = nif->get<int>( ihkSubShapes.child( t, 0 ), TA_NUMVERTICES );
 			}
 		} else if ( nif->checkVersion( NF_V20020007, NF_V20020007 ) ) {
-			int nSubShapes = nif->get<int>( ihkPackedNiTriStripsData, "Num Sub Shapes" );
-			QModelIndex ihkSubShapes = nif->getIndex( ihkPackedNiTriStripsData, "Sub Shapes" );
+			int nSubShapes = nif->get<int>( ihkPackedNiTriStripsData, TA_NUMSUBSHAPES );
+			QModelIndex ihkSubShapes = nif->getIndex( ihkPackedNiTriStripsData, TA_SUBSHAPES );
 			subshapeVerts.resize(nSubShapes);
 			for ( int t = 0; t < nSubShapes; t++ ) {
 				subshapeVerts[t] = nif->get<int>( ihkSubShapes.child( t, 0 ), TA_NUMVERTICES );
@@ -242,14 +242,14 @@ public:
 		}
 		else
 		{
-			QModelIndex iCodeOrigin = nif->getIndex( ibhkMoppBvTreeShape, "Origin" );
+			QModelIndex iCodeOrigin = nif->getIndex( ibhkMoppBvTreeShape, TA_ORIGIN );
 			nif->set<Vector3>( iCodeOrigin, origin );
 			
 			QModelIndex iCodeScale = nif->getIndex( ibhkMoppBvTreeShape, TA_SCALE );
 			nif->set<float>( iCodeScale, scale );
 			
-			QModelIndex iCodeSize = nif->getIndex( ibhkMoppBvTreeShape, "MOPP Data Size" );
-			QModelIndex iCode = nif->getIndex( ibhkMoppBvTreeShape, "MOPP Data" );
+			QModelIndex iCodeSize = nif->getIndex( ibhkMoppBvTreeShape, TA_MOPPDATASIZE );
+			QModelIndex iCode = nif->getIndex( ibhkMoppBvTreeShape, TA_MOPPDATA );
 			if ( iCodeSize.isValid() && iCode.isValid() )
 			{
 				nif->set<int>( iCodeSize, moppcode.size() );

@@ -590,7 +590,7 @@ public:
 		
 		QStringList stencilActions = QStringList()
 			<< Spell::tr("Keep") // 0
-			<< Spell::tr(BF_ZERO) // 1
+			<< Spell::tr("Zero") // 1
 			<< Spell::tr("Replace") // 2
 			<< Spell::tr("Increment") // 3
 			<< Spell::tr("Decrement") // 4

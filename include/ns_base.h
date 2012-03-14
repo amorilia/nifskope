@@ -34,6 +34,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __NS_BASE_H__
 
 #define STR_NOTHING "None"
+#define STR_TS "Tangent space (binormal & tangent vectors)"
+#define STR_V20000005 "20.0.0.5"
 
 #define NF_VSEPARATOR "."
 #define NF_V03030013 0x0303000D
@@ -167,6 +169,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define T_BSXFLAGS "BSXFlags"
 #define T_NIBILLBOARDNODE "NiBillboardNode"
 #define T_NITIMECONTROLLER "NiTimeController"
+#define T_BHKREFOBJECT "bhkRefObject"
+#define T_BHKCONSTRAINT "bhkConstraint"
+#define T_NISEQUENCE "NiSequence"
+#define T_NIPIXELDATA "NiPixelData"
 
 // main tags: compounds
 #define C_TEXDESC "TexDesc"
@@ -308,6 +314,41 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TA_ZFAILACTION "Z Fail Action"
 #define TA_PASSACTION "Pass Action"
 #define TA_STENCILFUNCTION "Stencil Function"
+#define TA_NUMSUBSHAPES "Num Sub Shapes"
+#define TA_SUBSHAPES "Sub Shapes"
+#define TA_MOPPDATASIZE "MOPP Data Size"
+#define TA_MOPPDATA "MOPP Data"
+#define TA_ORIGIN "Origin"
+#define TA_NUMCHILDREN "Num Children"
+#define TA_NUMPROPERTIES "Num Properties"
+#define TA_NUMEXTRADATALIST "Num Extra Data List"
+#define TA_NUMMODIFIERS "Num Modifiers"
+#define TA_MODIFIERS "Modifiers"
+#define TA_ENTITIES "Entities"
+#define TA_TSPACEFLAG "TSpace Flag"
+#define TA_TEXTURECOUNT "Texture Count"
+#define TA_PS2K "PS2 K"
+#define TA_UNKNOWN1 "Unknown1"
+#define TA_HASDARKTEXTURE "Has Dark Texture"
+#define TA_HASDETAILTEXTURE "Has Detail Texture"
+#define TA_HASGLOWTEXTURE "Has Glow Texture"
+#define TA_HASBUMPMAPTEXTURE "Has Bump Map Texture"
+#define TA_BUMPMAPLUMASCALE "Bump Map Luma Scale"
+#define TA_BUMPMAPLUMAOFFSET "Bump Map Luma Offset"
+#define TA_BUMPMAPMATRIX "Bump Map Matrix"
+#define TA_M11 "m11"
+#define TA_M12 "m12"
+#define TA_M21 "m21"
+#define TA_M22 "m22"
+#define TA_HASDECAL0TEXTURE "Has Decal 0 Texture"
+#define TA_HASDECAL1TEXTURE "Has Decal 1 Texture"
+#define TA_HASDECAL2TEXTURE "Has Decal 2 Texture"
+#define TA_APPLYMODE "Apply Mode"
+#define TA_PIXELDATA "Pixel Data"
+#define TA_STARTTIME "Start Time"
+#define TA_STOPTIME "Stop Time"
+#define TA_NUMSOURCES "Num Sources"
+#define TA_FREQUENCY "Frequency"
 
 // NiBlocks - artificial blocks
 #define B_NIHEADER "NiHeader"
@@ -364,5 +405,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CF_NOT_EQUAL "Not Equal"
 #define CF_GREATER_OR_EQUAL "Greater or Equal"
 #define CF_NEVER "Never"
+
+// decal modes
+#define DM_REPLACE "Replace"
+#define DM_DECAL "Decal"
+#define DM_MODULATE "Modulate"
+#define DM_HILIGHT "Hilight"
+#define DM_HILIGHT2 "Hilight2"
 
 #endif /* __NS_BASE_H__ */

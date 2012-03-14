@@ -109,7 +109,7 @@ class spStrippify : public Spell
 			copyValue<int>( nif, iStripData, iData, TA_HASNORMALS );
 			copyArray<Vector3>( nif, iStripData, iData, TA_NORMALS );
 			
-			copyValue<int>( nif, iStripData, iData, "TSpace Flag" );
+			copyValue<int>( nif, iStripData, iData, TA_TSPACEFLAG );
 			copyArray<Vector3>( nif, iStripData, iData, TA_BINORMALS );
 			copyArray<Vector3>( nif, iStripData, iData, TA_TANGENTS );
 			
@@ -260,7 +260,7 @@ class spTriangulate : public Spell
 			copyValue<int>( nif, iTriData, iStripData, TA_HASNORMALS );
 			copyArray<Vector3>( nif, iTriData, iStripData, TA_NORMALS );
 			
-			copyValue<int>( nif, iTriData, iStripData, "TSpace Flag" );
+			copyValue<int>( nif, iTriData, iStripData, TA_TSPACEFLAG );
 			copyArray<Vector3>( nif, iTriData, iStripData, TA_BINORMALS );
 			copyArray<Vector3>( nif, iTriData, iStripData, TA_TANGENTS );
 			
