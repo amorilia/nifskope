@@ -101,7 +101,7 @@ void blockLink( NifModel * nif, const QModelIndex & index, const QModelIndex & i
 	{
 		nif->setLink( index, nif->getBlockNumber( iBlock ) );
 	}
-	if ( nif->inherits( index, T_NINODE ) && nif->inherits( iBlock, "NiAVObject" ) )
+	if ( nif->inherits( index, T_NINODE ) && nif->inherits( iBlock, T_NIAVOBJECT ) )
 	{
 		addLink( nif, index, TA_CHILDREN, nif->getBlockNumber( iBlock ) );
 		if ( nif->inherits( iBlock, "NiDynamicEffect" ) )
@@ -109,7 +109,7 @@ void blockLink( NifModel * nif, const QModelIndex & index, const QModelIndex & i
 			addLink( nif, index, "Effects", nif->getBlockNumber( iBlock ) );
 		}
 	}
-	else if ( nif->inherits( index, "NiAVObject" ) && nif->inherits( iBlock, "NiProperty" ) )
+	else if ( nif->inherits( index, T_NIAVOBJECT ) && nif->inherits( iBlock, "NiProperty" ) )
 	{
 		addLink( nif, index, TA_PROPERTIES, nif->getBlockNumber( iBlock ) );
 	}
@@ -125,32 +125,32 @@ void blockLink( NifModel * nif, const QModelIndex & index, const QModelIndex & i
 		addLink( nif, index, TA_PROPERTIES, nif->getBlockNumber( iBlock ) );
 	}
 
-	else if ( nif->inherits( index, "NiAVObject" ) && nif->inherits( iBlock, "NiExtraData" ) )
+	else if ( nif->inherits( index, T_NIAVOBJECT ) && nif->inherits( iBlock, "NiExtraData" ) )
 	{
 		addLink( nif, index, TA_EXTRADATALIST, nif->getBlockNumber( iBlock ) );
 	}
 	else if ( nif->inherits( index, "NiObjectNET") && nif->inherits( iBlock, T_NITIMECONTROLLER ) )
 	{
-		if ( nif->getLink( index, "Controller" ) > 0 )
+		if ( nif->getLink( index, TA_CONTROLLER ) > 0 )
 		{
-			blockLink( nif, nif->getBlock( nif->getLink( index, "Controller" ) ), iBlock );
+			blockLink( nif, nif->getBlock( nif->getLink( index, TA_CONTROLLER ) ), iBlock );
 		}
 		else
 		{
-			nif->setLink( index, "Controller", nif->getBlockNumber( iBlock ) );
-			nif->setLink( iBlock, "Target", nif->getBlockNumber( index ) );
+			nif->setLink( index, TA_CONTROLLER, nif->getBlockNumber( iBlock ) );
+			nif->setLink( iBlock, TA_TARGET, nif->getBlockNumber( index ) );
 		}
 	}
 	else if ( nif->inherits( index, T_NITIMECONTROLLER ) && nif->inherits( iBlock, T_NITIMECONTROLLER ) )
 	{
-		if ( nif->getLink( index, "Next Controller" ) > 0)
+		if ( nif->getLink( index, TA_NEXTCONTROLLER ) > 0)
 		{
-			blockLink( nif, nif->getBlock( nif->getLink( index, "Next Controller" ) ), iBlock );
+			blockLink( nif, nif->getBlock( nif->getLink( index, TA_NEXTCONTROLLER ) ), iBlock );
 		}
 		else
 		{
-			nif->setLink( index, "Next Controller", nif->getBlockNumber( iBlock ) );
-			nif->setLink( iBlock, "Target", nif->getLink( index, "Target" ) );
+			nif->setLink( index, TA_NEXTCONTROLLER, nif->getBlockNumber( iBlock ) );
+			nif->setLink( iBlock, TA_TARGET, nif->getLink( index, TA_TARGET ) );
 		}
 	}
 }
@@ -267,7 +267,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->itemType( index ) == B_NIBLOCK && nif->inherits( index, "NiAVObject" );
+		return nif->itemType( index ) == B_NIBLOCK && nif->inherits( index, T_NIAVOBJECT );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -314,7 +314,7 @@ public:
 		QStringList ids = nif->allNiBlocks();
 		ids.sort();
 		foreach ( QString id, ids )
-			if ( nif->inherits( id, "NiAVObject" ) && ! nif->inherits( id, "NiDynamicEffect" ) )
+			if ( nif->inherits( id, T_NIAVOBJECT ) && ! nif->inherits( id, "NiDynamicEffect" ) )
 				menu.addAction( id );
 		
 		QAction * act = menu.exec( QCursor::pos() );

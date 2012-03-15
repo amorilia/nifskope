@@ -165,7 +165,7 @@ Node * Scene::getNode( const NifModel * nif, const QModelIndex & iNode )
 	{
 		node = new Particles( this, iNode );
 	}
-	else if (nif->inherits( iNode, "NiAVObject"))
+	else if (nif->inherits( iNode, T_NIAVOBJECT))
 	{
 		if ( nif->itemName( iNode ) == "BSTreeNode" )
 			node = new Node( this, iNode );

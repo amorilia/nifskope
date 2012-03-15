@@ -91,10 +91,10 @@ void KfmModel::clear()
 	root->killChildren();
 	insertType( root, NifData( "Kfm", "Kfm" ) );
 	kfmroot = root->child( 0 );
-	version = 0x0200000b;
+	version = NF_V02000011;
 	reset();
 	if ( kfmroot )
-		set<QString>( kfmroot, TA_HSTRING, ";Gamebryo KFM File Version 2.0.0.0b" );
+		set<QString>( kfmroot, TA_HSTRING, KF_H1 );
 }
 
 /*

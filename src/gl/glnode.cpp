@@ -134,7 +134,7 @@ public:
 				Scene * scene = target->scene;
 				extraTargets.clear();
 				
-				QVector<qint32> lTargets = nif->getLinkArray( index, "Extra Targets" );
+				QVector<qint32> lTargets = nif->getLinkArray( index, TA_EXTRATARGETS );
 				foreach ( qint32 l, lTargets )
 				{
 					Node * node = scene->getNode( nif, nif->getBlock( l ) );
@@ -212,10 +212,10 @@ public:
 			if ( target )
 			{
 				Scene * scene = target->scene;
-				QVector<qint32> lSequences = nif->getLinkArray( index, "Controller Sequences" );
+				QVector<qint32> lSequences = nif->getLinkArray( index, TA_CONTROLLERSEQUENCES );
 				foreach ( qint32 l, lSequences )
 				{
-					QModelIndex iSeq = nif->getBlock( l, "NiControllerSequence" );
+					QModelIndex iSeq = nif->getBlock( l, T_NICONTROLLERSEQUENCE );
 					if ( iSeq.isValid() )
 					{
 						QString name = nif->get<QString>( iSeq, TA_NAME );
@@ -250,17 +250,17 @@ public:
 			MultiTargetTransformController * multiTargetTransformer = 0;
 			foreach ( Controller * c, target->controllers )
 			{
-				if ( c->typeId() == "NiMultiTargetTransformController" )
+				if ( c->typeId() == T_NIMULTITARGETTRANSFORMCONTROLLER )
 				{
 					multiTargetTransformer = static_cast<MultiTargetTransformController*>( c );
 					break;
 				}
 			}
 			
-			QVector<qint32> lSequences = nif->getLinkArray( iBlock, "Controller Sequences" );
+			QVector<qint32> lSequences = nif->getLinkArray( iBlock, TA_CONTROLLERSEQUENCES );
 			foreach ( qint32 l, lSequences )
 			{
-				QModelIndex iSeq = nif->getBlock( l, "NiControllerSequence" );
+				QModelIndex iSeq = nif->getBlock( l, T_NICONTROLLERSEQUENCE );
 				if ( iSeq.isValid() && nif->get<QString>( iSeq, TA_NAME ) == seqname )
 				{
 					start = nif->get<float>( iSeq, TA_STARTTIME );
@@ -624,13 +624,13 @@ void Node::setController( const NifModel * nif, const QModelIndex & iController 
 		ctrl->update( nif, iController );
 		controllers.append( ctrl );
 	}
-	else if ( cname == "NiMultiTargetTransformController" )
+	else if ( cname == T_NIMULTITARGETTRANSFORMCONTROLLER )
 	{
 		Controller * ctrl = new MultiTargetTransformController( this, iController );
 		ctrl->update( nif, iController );
 		controllers.append( ctrl );
 	}
-	else if ( cname == "NiControllerManager" )
+	else if ( cname == T_NICONTROLLERMANAGER )
 	{
 		Controller * ctrl = new ControllerManager( this, iController );
 		ctrl->update( nif, iController );
@@ -1050,7 +1050,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 		}
 		glPopMatrix();
 	}
-	else if ( name == "bhkConvexVerticesShape" )
+	else if ( name == T_BHKCONVEXVERTICESSHAPE )
 	{
 		//glLoadName( nif->getBlockNumber( iShape ) );
 		if (Node::SELECTING) {
@@ -1238,31 +1238,31 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 	glEnable( GL_DEPTH_TEST );
 	
 	QString name = nif->itemName( iConstraint );
-	if ( name == "bhkMalleableConstraint" )
+	if ( name == T_BHKMALLEABLECONSTRAINT )
 	{
-		if ( nif->getIndex( iConstraint, "Ragdoll" ).isValid() )
+		if ( nif->getIndex( iConstraint, TA_RAGDOLL ).isValid() )
 		{
-			name = "bhkRagdollConstraint";
+			name = T_BHKRAGDOLLCONSTRAINT;
 		}
-		else if ( nif->getIndex( iConstraint, "Limited Hinge" ).isValid() )
+		else if ( nif->getIndex( iConstraint, TA_LIMITEDHINGE ).isValid() )
 		{
-			name = "bhkLimitedHingeConstraint";
+			name = T_BHKLIMITEDHINGECONSTRAINT;
 		}
 	}
 	
-	if ( name == "bhkLimitedHingeConstraint" )
+	if ( name == T_BHKLIMITEDHINGECONSTRAINT )
 	{
-		QModelIndex iHinge = nif->getIndex( iConstraint, "Limited Hinge" );
+		QModelIndex iHinge = nif->getIndex( iConstraint, TA_LIMITEDHINGE );
 		
-		const Vector3 pivotA( nif->get<Vector4>( iHinge, "Pivot A" ) );
-		const Vector3 pivotB( nif->get<Vector4>( iHinge, "Pivot B" ) );
+		const Vector3 pivotA( nif->get<Vector4>( iHinge, TA_PIVOTA ) );
+		const Vector3 pivotB( nif->get<Vector4>( iHinge, TA_PIVOTB ) );
 		
-		const Vector3 axleA( nif->get<Vector4>( iHinge, "Axle A" ) );
+		const Vector3 axleA( nif->get<Vector4>( iHinge, TA_AXLEA ) );
 		const Vector3 axleA1( nif->get<Vector4>( iHinge, "Perp2 Axle In A1" ) );
-		const Vector3 axleA2( nif->get<Vector4>( iHinge, "Perp2 Axle In A2" ) );
+		const Vector3 axleA2( nif->get<Vector4>( iHinge, TA_PERP2AXLEINA2 ) );
 		
-		const Vector3 axleB( nif->get<Vector4>( iHinge, "Axle B" ) );
-		const Vector3 axleB2( nif->get<Vector4>( iHinge, "Perp2 Axle In B2" ) );
+		const Vector3 axleB( nif->get<Vector4>( iHinge, TA_AXLEB ) );
+		const Vector3 axleB2( nif->get<Vector4>( iHinge, TA_PERP2AXLEINB2 ) );
 		
 		const float minAngle = nif->get<float>( iHinge, "Min Angle" );
 		const float maxAngle = nif->get<float>( iHinge, "Max Angle" );
@@ -1300,18 +1300,18 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 		glVertex( pivotA + axleA1 * cosf( angle ) + axleA2 * sinf( angle ) );
 		glEnd();
 	}
-	else if ( name == "bhkHingeConstraint" )
+	else if ( name == T_BHKHINGECONSTRAINT )
 	{
-		QModelIndex iHinge = nif->getIndex( iConstraint, "Hinge" );
+		QModelIndex iHinge = nif->getIndex( iConstraint, TA_HINGE );
 		
-		const Vector3 pivotA( nif->get<Vector4>( iHinge, "Pivot A" ) );
-		const Vector3 pivotB( nif->get<Vector4>( iHinge, "Pivot B" ) );
+		const Vector3 pivotA( nif->get<Vector4>( iHinge, TA_PIVOTA ) );
+		const Vector3 pivotB( nif->get<Vector4>( iHinge, TA_PIVOTB ) );
 		
 		const Vector3 axleA1( nif->get<Vector4>( iHinge, "Perp2 Axle In A1" ) );
-		const Vector3 axleA2( nif->get<Vector4>( iHinge, "Perp2 Axle In A2" ) );
+		const Vector3 axleA2( nif->get<Vector4>( iHinge, TA_PERP2AXLEINA2 ) );
 		const Vector3 axleA( Vector3::crossproduct( axleA1, axleA2 ) );
 		
-		const Vector3 axleB( nif->get<Vector4>( iHinge, "Axle B" ) );
+		const Vector3 axleB( nif->get<Vector4>( iHinge, TA_AXLEB ) );
 		
 		const Vector3 axleB1( axleB[1], axleB[2], axleB[0] );
 		const Vector3 axleB2( Vector3::crossproduct( axleB, axleB1 ) );
@@ -1330,7 +1330,7 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 		else if ( nif->checkVersion( NF_V20020007, 0 ) )
 		{
 			Vector3 axleB1temp( nif->get<Vector4>( iHinge, "Perp2 Axle In B1" ) );
-			Vector3 axleB2temp( nif->get<Vector4>( iHinge, "Perp2 Axle In B2" ) );
+			Vector3 axleB2temp( nif->get<Vector4>( iHinge, TA_PERP2AXLEINB2 ) );
 		}
 		
 		const Vector3 axleB1( axleB1temp );
@@ -1359,27 +1359,27 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 	}
 	else if ( name == "bhkStiffSpringConstraint" )
 	{
-		const Vector3 pivotA = tBodies.value( 0 ) * Vector3( nif->get<Vector4>( iConstraint, "Pivot A" ) );
-		const Vector3 pivotB = tBodies.value( 1 ) * Vector3( nif->get<Vector4>( iConstraint, "Pivot B" ) );
-		const float length = nif->get<float>( iConstraint, "Length" );
+		const Vector3 pivotA = tBodies.value( 0 ) * Vector3( nif->get<Vector4>( iConstraint, TA_PIVOTA ) );
+		const Vector3 pivotB = tBodies.value( 1 ) * Vector3( nif->get<Vector4>( iConstraint, TA_PIVOTB ) );
+		const float length = nif->get<float>( iConstraint, TA_LENGTH );
 		
 		if (!Node::SELECTING)
 			glColor( color_b );
 		
 		drawSpring( pivotA, pivotB, length );
 	}
-	else if ( name == "bhkRagdollConstraint" )
+	else if ( name == T_BHKRAGDOLLCONSTRAINT )
 	{
-		QModelIndex iRagdoll = nif->getIndex( iConstraint, "Ragdoll" );
+		QModelIndex iRagdoll = nif->getIndex( iConstraint, TA_RAGDOLL );
 		
-		const Vector3 pivotA( nif->get<Vector4>( iRagdoll, "Pivot A" ) );
-		const Vector3 pivotB( nif->get<Vector4>( iRagdoll, "Pivot B" ) );
+		const Vector3 pivotA( nif->get<Vector4>( iRagdoll, TA_PIVOTA ) );
+		const Vector3 pivotB( nif->get<Vector4>( iRagdoll, TA_PIVOTB ) );
 		
-		const Vector3 planeA( nif->get<Vector4>( iRagdoll, "Plane A" ) );
-		const Vector3 planeB( nif->get<Vector4>( iRagdoll, "Plane B" ) );
+		const Vector3 planeA( nif->get<Vector4>( iRagdoll, TA_PLANEA ) );
+		const Vector3 planeB( nif->get<Vector4>( iRagdoll, TA_PLANEB ) );
 		
-		const Vector3 twistA( nif->get<Vector4>( iRagdoll, "Twist A" ) );
-		const Vector3 twistB( nif->get<Vector4>( iRagdoll, "Twist B" ) );
+		const Vector3 twistA( nif->get<Vector4>( iRagdoll, TA_TWISTA ) );
+		const Vector3 twistB( nif->get<Vector4>( iRagdoll, TA_TWISTB ) );
 		
 		const float coneAngle( nif->get<float>( iRagdoll, "Cone Max Angle" ) );
 		
@@ -1418,10 +1418,10 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 		drawRagdollCone( pivotB, twistB, planeB, coneAngle, minPlaneAngle, maxPlaneAngle );
 		glPopMatrix();
 	}
-	else if ( name == "bhkPrismaticConstraint" )
+	else if ( name == T_BHKPRISMATICCONSTRAINT )
 	{
-		const Vector3 pivotA( nif->get<Vector4>( iConstraint, "Pivot A" ) );
-		const Vector3 pivotB( nif->get<Vector4>( iConstraint, "Pivot B" ) );
+		const Vector3 pivotA( nif->get<Vector4>( iConstraint, TA_PIVOTA ) );
+		const Vector3 pivotB( nif->get<Vector4>( iConstraint, TA_PIVOTB ) );
 
 		const Vector3 planeNormal( nif->get<Vector4>( iConstraint, "Plane" ) );
 		const Vector3 slidingAxis( nif->get<Vector4>( iConstraint, "Sliding Axis" ) );
@@ -1606,7 +1606,7 @@ void Node::drawHavok()
 		{ 0.0f, 1.0f, 1.0f }
 	};
 	
-	int color_index = nif->get<int>( iBody, "Layer" ) & 7;
+	int color_index = nif->get<int>( iBody, TA_LAYER ) & 7;
 	glColor3fv( colors[ color_index ] );
 	if ( !Node::SELECTING )
 		if ( scene->currentBlock == nif->getBlock( nif->getLink( iBody, TA_SHAPE ) ) ) {// fix: add selected visual to havok meshes
@@ -1647,7 +1647,7 @@ void Node::drawHavok()
 void drawFurnitureMarker( const NifModel *nif, const QModelIndex &iPosition )
 {
 	QString name = nif->itemName( iPosition );
-	Vector3 offs = nif->get<Vector3>( iPosition, "Offset" );
+	Vector3 offs = nif->get<Vector3>( iPosition, TA_OFFSET );
 	quint16 orient = nif->get<quint16>( iPosition, "Orientation" );
 	quint8 ref1 = nif->get<quint8>( iPosition, "Position Ref 1" );
 	quint8 ref2 = nif->get<quint8>( iPosition, "Position Ref 2" );

@@ -1389,7 +1389,7 @@ void GLView::dragMoveEvent( QDragMoveEvent * e )
 		fnDragTexOrg = QString();
 	}
 	
-	QModelIndex iObj = model->getBlock( indexAt( e->pos() ), "NiAVObject" );
+	QModelIndex iObj = model->getBlock( indexAt( e->pos() ), T_NIAVOBJECT );
 	if ( iObj.isValid() )
 	{
 		foreach ( qint32 l, model->getChildLinks( model->getBlockNumber( iObj ) ) )
@@ -1397,6 +1397,9 @@ void GLView::dragMoveEvent( QDragMoveEvent * e )
 			QModelIndex iTxt = model->getBlock( l, T_NITEXTURINGPROPERTY );
 			if ( iTxt.isValid() )
 			{
+				// TODO: its unclear as to what this one refers to
+				// there is "Base Texture" in T_NITEXTURINGPROPERTY, but
+				// thats not alink
 				QModelIndex iSrc = model->getBlock( model->getLink( iTxt, "Base Texture/Source" ), T_NISOURCETEXTURE );
 				if ( iSrc.isValid() )
 				{
@@ -1457,13 +1460,13 @@ void GLView::savePixmap()
 	QSpinBox * pixWidth = new QSpinBox;
 	pixWidth->setRange( 0, 10000 );
 	pixWidth->setValue( width() );
-	lay->addWidget( new QLabel( tr("Width") ), 2, 0, 1, 1 );
+	lay->addWidget( new QLabel( tr(TA_WIDTH) ), 2, 0, 1, 1 );
 	lay->addWidget( pixWidth, 2, 1, 1, 1 );
 	
 	QSpinBox * pixHeight = new QSpinBox;
 	pixHeight->setRange( 0, 10000 );
 	pixHeight->setValue( height() );
-	lay->addWidget( new QLabel( tr("Height") ), 3, 0, 1, 1 );
+	lay->addWidget( new QLabel( tr(TA_HEIGHT) ), 3, 0, 1, 1 );
 	lay->addWidget( pixHeight, 3, 1, 1, 1 );
 
 	connect( autoSize, SIGNAL( toggled( bool ) ), pixWidth, SLOT( setDisabled( bool ) ) );

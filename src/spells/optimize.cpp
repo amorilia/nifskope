@@ -84,8 +84,8 @@ public:
 				QModelIndex iBlock = nif->getBlock( b );
 				if ( nif->isNiBlock( iBlock, T_NIMATERIALPROPERTY ) )
 				{
-					if ( nif->get<QString>( iBlock, TA_NAME ).contains( "Material" ) )
-						nif->set<QString>( iBlock, TA_NAME, "Material" );
+					if ( nif->get<QString>( iBlock, TA_NAME ).contains( TA_MATERIAL ) )
+						nif->set<QString>( iBlock, TA_NAME, TA_MATERIAL );
 					else if ( nif->get<QString>( iBlock, TA_NAME ).contains( "Default" ) )
 						nif->set<QString>( iBlock, TA_NAME, "Default" );
 				}
@@ -134,7 +134,7 @@ public:
 			
 		} while ( ! map.isEmpty() );
 		
-		QMessageBox::information( 0 , "NifSkope", QString("removed %1 properties").arg(numRemoved) );
+		QMessageBox::information( 0 , APP, QString("removed %1 properties").arg(numRemoved) );
 		return QModelIndex();
 	}
 };
@@ -161,7 +161,7 @@ public:
 	{
 		for ( int b = 0; b < nif->getBlockCount(); b++ )
 		{
-			QModelIndex iAVObj = nif->getBlock( b, "NiAVObject" );
+			QModelIndex iAVObj = nif->getBlock( b, T_NIAVOBJECT );
 			if ( iAVObj.isValid() )
 			{
 				QVector<qint32> props = nif->getLinkArray( iAVObj, TA_PROPERTIES );
@@ -270,7 +270,7 @@ public:
 		} while ( removed );
 		
 		if ( cnt > 0 )
-			QMessageBox::information(0, "NifSkope", QString( Spell::tr( "removed %1 nodes" ) ).arg(cnt));
+			QMessageBox::information(0, APP, QString( Spell::tr( "removed %1 nodes" ) ).arg(cnt));
 		
 		return QModelIndex();
 	}

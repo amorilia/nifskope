@@ -205,7 +205,7 @@ void NifModel::clear()
 		set<int>( getHeaderItem(), TA_HUV, NF_V20000005_DEFAULT_UV );
 		set<int>( getHeaderItem(), TA_HUV2, NF_V20000005_DEFAULT_UV2 );
 	}
-	//set<int>( getHeaderItem(), "Unknown Int 3", 11 );
+	//set<int>( getHeaderItem(), TA_UNKNOWNINT3, 11 );
 
 	if ( version < NF_V03030013 ) {
 		QVector<QString> copyright( QVector<QString> () 

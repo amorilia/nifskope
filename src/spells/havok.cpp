@@ -163,7 +163,7 @@ public:
 		}
 		
 		/* create the CVS block */
-		QModelIndex iCVS = nif->insertNiBlock( "bhkConvexVerticesShape" );
+		QModelIndex iCVS = nif->insertNiBlock( T_BHKCONVEXVERTICESSHAPE );
 		
 		/* set CVS verts */
 		nif->set<uint>( iCVS, TA_NUMVERTICES, convex_verts.count() );
@@ -171,7 +171,7 @@ public:
 		nif->setArray<Vector4>( iCVS, TA_VERTICES, convex_verts );
 		
 		/* set CVS norms */
-		nif->set<uint>( iCVS, "Num Normals", convex_norms.count() );
+		nif->set<uint>( iCVS, TA_NUMNORMALS, convex_norms.count() );
 		nif->updateArray( iCVS, TA_NORMALS );
 		nif->setArray<Vector4>( iCVS, TA_NORMALS, convex_norms );
 		
@@ -179,8 +179,8 @@ public:
 		nif->set<float>( iCVS, TA_RADIUS, 0.1 );
 		
 		// for arrow detection: [0, 0, -0, 0, 0, -0]
-		nif->set<float>( nif->getIndex( iCVS, "Unknown 6 Floats" ).child( 2, 0 ), -0.0 );
-		nif->set<float>( nif->getIndex( iCVS, "Unknown 6 Floats" ).child( 5, 0 ), -0.0 );
+		nif->set<float>( nif->getIndex( iCVS, TA_UNKNOWN6FLOATS ).child( 2, 0 ), -0.0 );
+		nif->set<float>( nif->getIndex( iCVS, TA_UNKNOWN6FLOATS ).child( 5, 0 ), -0.0 );
 		
 		QModelIndex iParent = nif->getBlock( nif->getParent( nif->getBlockNumber( index ) ) );
 		QModelIndex collisionLink = nif->getIndex( iParent, TA_COLLISIONOBJECT );
@@ -192,7 +192,7 @@ public:
 			collisionObject = nif->insertNiBlock( T_BHKCOLLISIONOBJECT );
 			
 			nif->setLink( collisionLink, nif->getBlockNumber( collisionObject ) );
-			nif->setLink( collisionObject, "Target", nif->getBlockNumber( iParent ) );
+			nif->setLink( collisionObject, TA_TARGET, nif->getBlockNumber( iParent ) );
 		}
 		
 		QModelIndex rigidBodyLink = nif->getIndex( collisionObject, TA_BODY );
@@ -218,7 +218,7 @@ public:
 			nif->removeNiBlock( nif->getBlockNumber( shape ) );
 		}
 		
-		QMessageBox::information( 0, "NifSkope", Spell::tr( "Created hull with %1 vertices, %2 normals" ).arg( convex_verts.count() ).arg( convex_norms.count() ) );
+		QMessageBox::information( 0, APP, Spell::tr( "Created hull with %1 vertices, %2 normals" ).arg( convex_verts.count() ).arg( convex_norms.count() ) );
 		
 		// returning iCVS here can crash NifSkope if a child array is selected
 		return index;
@@ -237,30 +237,30 @@ public:
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
 		return nif && (
-			nif->isNiBlock( nif->getBlock( index ), "bhkMalleableConstraint" )
-			|| nif->isNiBlock( nif->getBlock( index ), "bhkRagdollConstraint" )
-			|| nif->isNiBlock( nif->getBlock( index ), "bhkLimitedHingeConstraint" )
-			|| nif->isNiBlock( nif->getBlock( index ), "bhkHingeConstraint" )
-			|| nif->isNiBlock( nif->getBlock( index ), "bhkPrismaticConstraint" ) );
+			nif->isNiBlock( nif->getBlock( index ), T_BHKMALLEABLECONSTRAINT )
+			|| nif->isNiBlock( nif->getBlock( index ), T_BHKRAGDOLLCONSTRAINT )
+			|| nif->isNiBlock( nif->getBlock( index ), T_BHKLIMITEDHINGECONSTRAINT )
+			|| nif->isNiBlock( nif->getBlock( index ), T_BHKHINGECONSTRAINT )
+			|| nif->isNiBlock( nif->getBlock( index ), T_BHKPRISMATICCONSTRAINT ) );
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iConstraint = nif->getBlock( index );
 		QString name = nif->itemName( iConstraint );
-		if ( name == "bhkMalleableConstraint" )
+		if ( name == T_BHKMALLEABLECONSTRAINT )
 		{
-			if ( nif->getIndex( iConstraint, "Ragdoll" ).isValid() )
+			if ( nif->getIndex( iConstraint, TA_RAGDOLL ).isValid() )
 			{
-				name = "bhkRagdollConstraint";
+				name = T_BHKRAGDOLLCONSTRAINT;
 			}
-			else if ( nif->getIndex( iConstraint, "Limited Hinge" ).isValid() )
+			else if ( nif->getIndex( iConstraint, TA_LIMITEDHINGE ).isValid() )
 			{
-				name = "bhkLimitedHingeConstraint";
+				name = T_BHKLIMITEDHINGECONSTRAINT;
 			}
-			else if ( nif->getIndex( iConstraint, "Hinge" ).isValid() )
+			else if ( nif->getIndex( iConstraint, TA_HINGE ).isValid() )
 			{
-				name = "bhkHingeConstraint";
+				name = T_BHKHINGECONSTRAINT;
 			}
 		}
 		
@@ -276,56 +276,56 @@ public:
 		Transform transA = bodyTrans( nif, iBodyA );
 		Transform transB = bodyTrans( nif, iBodyB );
 
-		if ( name == "bhkLimitedHingeConstraint" )
+		if ( name == T_BHKLIMITEDHINGECONSTRAINT )
 		{
-			iConstraint = nif->getIndex( iConstraint, "Limited Hinge" );
+			iConstraint = nif->getIndex( iConstraint, TA_LIMITEDHINGE );
 			if ( ! iConstraint.isValid() )
 				return index;
 		}
 
-		if ( name == "bhkRagdollConstraint" )
+		if ( name == T_BHKRAGDOLLCONSTRAINT )
 		{
-			iConstraint = nif->getIndex( iConstraint, "Ragdoll" );
+			iConstraint = nif->getIndex( iConstraint, TA_RAGDOLL );
 			if ( ! iConstraint.isValid() )
 				return index;
 		}
 		
-		if ( name == "bhkHingeConstraint" )
+		if ( name == T_BHKHINGECONSTRAINT )
 		{
-			iConstraint = nif->getIndex( iConstraint, "Hinge" );
+			iConstraint = nif->getIndex( iConstraint, TA_HINGE );
 			if ( ! iConstraint.isValid() )
 				return index;
 		}
 
-		Vector3 pivot = Vector3( nif->get<Vector4>( iConstraint, "Pivot A" ) ) * havokConst;
+		Vector3 pivot = Vector3( nif->get<Vector4>( iConstraint, TA_PIVOTA ) ) * havokConst;
 		pivot = transA * pivot;
 		pivot = transB.rotation.inverted() * ( pivot - transB.translation ) / transB.scale / havokConst;
-		nif->set<Vector4>( iConstraint, "Pivot B", Vector4( pivot[0], pivot[1], pivot[2], 0 ) );
+		nif->set<Vector4>( iConstraint, TA_PIVOTB, Vector4( pivot[0], pivot[1], pivot[2], 0 ) );
 		
-		if ( name == "bhkLimitedHingeConstraint" )
+		if ( name == T_BHKLIMITEDHINGECONSTRAINT )
 		{
-			Vector3 axle = Vector3( nif->get<Vector4>( iConstraint, "Axle A" ) );
+			Vector3 axle = Vector3( nif->get<Vector4>( iConstraint, TA_AXLEA ) );
 			axle = transA.rotation * axle;
 			axle = transB.rotation.inverted() * axle;
-			nif->set<Vector4>( iConstraint, "Axle B", Vector4( axle[0], axle[1], axle[2], 0 ) );
+			nif->set<Vector4>( iConstraint, TA_AXLEB, Vector4( axle[0], axle[1], axle[2], 0 ) );
 		
-			axle = Vector3( nif->get<Vector4>( iConstraint, "Perp2 Axle In A2" ) );
+			axle = Vector3( nif->get<Vector4>( iConstraint, TA_PERP2AXLEINA2 ) );
 			axle = transA.rotation * axle;
 			axle = transB.rotation.inverted() * axle;
-			nif->set<Vector4>( iConstraint, "Perp2 Axle In B2", Vector4( axle[0], axle[1], axle[2], 0 ) );
+			nif->set<Vector4>( iConstraint, TA_PERP2AXLEINB2, Vector4( axle[0], axle[1], axle[2], 0 ) );
 		}
 
-		if ( name == "bhkRagdollConstraint" )
+		if ( name == T_BHKRAGDOLLCONSTRAINT )
 		{
-			Vector3 axle = Vector3( nif->get<Vector4>( iConstraint, "Plane A" ) );
+			Vector3 axle = Vector3( nif->get<Vector4>( iConstraint, TA_PLANEA ) );
 			axle = transA.rotation * axle;
 			axle = transB.rotation.inverted() * axle;
-			nif->set<Vector4>( iConstraint, "Plane B", Vector4( axle[0], axle[1], axle[2], 0 ) );
+			nif->set<Vector4>( iConstraint, TA_PLANEB, Vector4( axle[0], axle[1], axle[2], 0 ) );
 
-			axle = Vector3( nif->get<Vector4>( iConstraint, "Twist A" ) );
+			axle = Vector3( nif->get<Vector4>( iConstraint, TA_TWISTA ) );
 			axle = transA.rotation * axle;
 			axle = transB.rotation.inverted() * axle;
-			nif->set<Vector4>( iConstraint, "Twist B", Vector4( axle[0], axle[1], axle[2], 0 ) );
+			nif->set<Vector4>( iConstraint, TA_TWISTB, Vector4( axle[0], axle[1], axle[2], 0 ) );
 		}
 		
 		return index;
@@ -344,7 +344,7 @@ public:
 		
 		while ( ( l = nif->getParent( l ) ) >= 0 )
 		{
-			QModelIndex iAV = nif->getBlock( l, "NiAVObject" );
+			QModelIndex iAV = nif->getBlock( l, T_NIAVOBJECT );
 			if ( iAV.isValid() )
 				t = Transform( nif, iAV ) * t;
 		}
@@ -383,14 +383,14 @@ public:
 		Transform transA = spConstraintHelper::bodyTrans( nif, iBodyA );
 		Transform transB = spConstraintHelper::bodyTrans( nif, iBodyB );
 		
-		Vector3 pivotA( nif->get<Vector4>( iConstraint, "Pivot A" ) * 7 );
-		Vector3 pivotB( nif->get<Vector4>( iConstraint, "Pivot B" ) * 7 );
+		Vector3 pivotA( nif->get<Vector4>( iConstraint, TA_PIVOTA ) * 7 );
+		Vector3 pivotB( nif->get<Vector4>( iConstraint, TA_PIVOTB ) * 7 );
 		
 		float length = ( transA * pivotA - transB * pivotB ).length() / 7;
 		
-		nif->set<float>( iConstraint, "Length", length );
+		nif->set<float>( iConstraint, TA_LENGTH, length );
 		
-		return nif->getIndex( iConstraint, "Length" );
+		return nif->getIndex( iConstraint, TA_LENGTH );
 	}
 };
 
@@ -466,12 +466,12 @@ public:
 		nif->set<int>( iPackedShape, TA_NUMSUBSHAPES, 1 );
 		QModelIndex iSubShapes = nif->getIndex( iPackedShape, TA_SUBSHAPES );
 		nif->updateArray( iSubShapes );
-		nif->set<int>( iSubShapes.child( 0, 0 ), "Layer", 1 );
+		nif->set<int>( iSubShapes.child( 0, 0 ), TA_LAYER, 1 );
 		nif->set<int>( iSubShapes.child( 0, 0 ), TA_NUMVERTICES, vertices.count() );
-		nif->set<int>( iSubShapes.child( 0, 0 ), "Material", nif->get<int>( iShape, "Material" ) );
-		nif->setArray<float>( iPackedShape, "Unknown Floats", QVector<float>() << 0.0f << 0.0f << 0.1f << 0.0f << 1.0f << 1.0f << 1.0f << 1.0f << 0.1f );
+		nif->set<int>( iSubShapes.child( 0, 0 ), TA_MATERIAL, nif->get<int>( iShape, TA_MATERIAL ) );
+		nif->setArray<float>( iPackedShape, TA_UNKNOWNFLOATS, QVector<float>() << 0.0f << 0.0f << 0.1f << 0.0f << 1.0f << 1.0f << 1.0f << 1.0f << 0.1f );
 		nif->set<float>( iPackedShape, TA_SCALE, 1.0f );
-		nif->setArray<float>( iPackedShape, "Unknown Floats 2", QVector<float>() << 1.0f << 1.0f << 1.0f );
+		nif->setArray<float>( iPackedShape, TA_UNKNOWNFLOATS2, QVector<float>() << 1.0f << 1.0f << 1.0f );
 		
 		QModelIndex iPackedData = nif->insertNiBlock( T_HKPACKEDNITRISTRIPSDATA, nif->getBlockNumber( iPackedShape ) );
 		nif->setLink( iPackedShape, TA_DATA, nif->getBlockNumber( iPackedData ) );
@@ -505,4 +505,3 @@ public:
 };
 
 REGISTER_SPELL( spPackHavokStrips )
-

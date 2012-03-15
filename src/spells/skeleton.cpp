@@ -995,7 +995,7 @@ public:
 		catch ( QString err )
 		{
 			if ( ! err.isEmpty() )
-				QMessageBox::warning( 0, "NifSkope", err );
+				QMessageBox::warning( 0, APP, err );
 			return iShape;
 		}
 	}
@@ -1264,7 +1264,7 @@ public:
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		if ( nif->getLink( index, "Controller" ) != -1 )
+		if ( nif->getLink( index, TA_CONTROLLER ) != -1 )
 		{
 			int keyframeResponse = QMessageBox::question( 0, Spell::tr("Mirror Armature"), Spell::tr("Do you wish to flip or delete animation?"), Spell::tr("Flip"), Spell::tr("Delete"), Spell::tr("Cancel"));
 			if( keyframeResponse == 2 ) return index;
@@ -1433,7 +1433,7 @@ public:
 	void doKeyframes( NifModel * nif, QModelIndex & index )
 	{
 		// do stuff
-		QModelIndex keyframeData = nif->getBlock( nif->getLink( index, TA_DATA ), "NiKeyframeData" );
+		QModelIndex keyframeData = nif->getBlock( nif->getLink( index, TA_DATA ), T_NIKEYFRAMEDATA );
 		if ( ! keyframeData.isValid() ) return;
 		QModelIndex iQuats = nif->getIndex( keyframeData, "Quaternion Keys" );
 		if ( iQuats.isValid() )

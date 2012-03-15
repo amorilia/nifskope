@@ -92,13 +92,13 @@ public:
 				
 				foreach ( qint32 l, kf.getRootLinks() )
 				{
-					QModelIndex iSeq = kf.getBlock( l, "NiControllerSequence" );
+					QModelIndex iSeq = kf.getBlock( l, T_NICONTROLLERSEQUENCE );
 					if ( ! iSeq.isValid() )
 						throw QString( Spell::tr("this is not a normal .kf file; there should be only NiControllerSequences as root blocks") );
 					
-					QString rootName = kf.get<QString>( iSeq, "Target Name" );
+					QString rootName = kf.get<QString>( iSeq, TA_TARGETNAME );
 					if (rootName.isEmpty())
-						rootName = kf.get<QString>( iSeq, "Text Keys Name" );// 10.0.1.0
+						rootName = kf.get<QString>( iSeq, TA_TEXTKEYSNAME );// 10.0.1.0
 					QModelIndex ir = findRootTarget( nif, rootName );
 					
 					if ( ! ir.isValid() )
@@ -110,15 +110,15 @@ public:
 						throw QString( Spell::tr("the animation root nodes differ; bailing out...") );
 				}
 				
-				QPersistentModelIndex iMultiTransformer = findController( nif, iRoot, "NiMultiTargetTransformController" );
-				QPersistentModelIndex iCtrlManager = findController( nif, iRoot, "NiControllerManager" );
+				QPersistentModelIndex iMultiTransformer = findController( nif, iRoot, T_NIMULTITARGETTRANSFORMCONTROLLER );
+				QPersistentModelIndex iCtrlManager = findController( nif, iRoot, T_NICONTROLLERMANAGER );
 				
 				QList<qint32> seqLinks = kf.getRootLinks();
 				QStringList missingNodes;
 				
 				foreach ( qint32 lSeq, kf.getRootLinks() )
 				{
-					QModelIndex iSeq = kf.getBlock( lSeq, "NiControllerSequence" );
+					QModelIndex iSeq = kf.getBlock( lSeq, T_NICONTROLLERSEQUENCE );
 					
 					QList< QPersistentModelIndex > controlledNodes;
 					
@@ -127,7 +127,7 @@ public:
 					{
 						QString nodeName = kf.string( iCtrlBlcks.child( r, 0 ), TA_NODENAME, false );
 						if (nodeName.isEmpty())
-							nodeName = kf.string( iCtrlBlcks.child( r, 0 ), "Target Name", false );// 10.0.1.0
+							nodeName = kf.string( iCtrlBlcks.child( r, 0 ), TA_TARGETNAME, false );// 10.0.1.0
 						if (nodeName.isEmpty()) {
 							QModelIndex iNodeName = kf.getIndex( iCtrlBlcks.child( r, 0 ), TA_NODENAMEOFFSET );
 							nodeName = iNodeName.sibling( iNodeName.row(), NifModel::ValueCol ).data( NifSkopeDisplayRole ).toString();
@@ -148,20 +148,20 @@ public:
 					bool oldHoldUpdates = nif->holdUpdates(true);
 
 					if ( ! iMultiTransformer.isValid() )
-						iMultiTransformer = attachController( nif, iRoot, "NiMultiTargetTransformController", true );
+						iMultiTransformer = attachController( nif, iRoot, T_NIMULTITARGETTRANSFORMCONTROLLER, true );
 					if ( ! iCtrlManager.isValid() )
-						iCtrlManager = attachController( nif, iRoot, "NiControllerManager", true );
+						iCtrlManager = attachController( nif, iRoot, T_NICONTROLLERMANAGER, true );
 					
-					setLinkArray( nif, iMultiTransformer, "Extra Targets", controlledNodes );
+					setLinkArray( nif, iMultiTransformer, TA_EXTRATARGETS, controlledNodes );
 					
-					QPersistentModelIndex iObjPalette = nif->getBlock( nif->getLink( iCtrlManager, "Object Palette" ), "NiDefaultAVObjectPalette" );
+					QPersistentModelIndex iObjPalette = nif->getBlock( nif->getLink( iCtrlManager, TA_OBJECTPALETTE ), "NiDefaultAVObjectPalette" );
 					if ( ! iObjPalette.isValid() )
 					{
 						iObjPalette = nif->insertNiBlock( "NiDefaultAVObjectPalette", nif->getBlockNumber( iCtrlManager ) + 1, true );
-						nif->setLink( iCtrlManager, "Object Palette", nif->getBlockNumber( iObjPalette ) );
+						nif->setLink( iCtrlManager, TA_OBJECTPALETTE, nif->getBlockNumber( iObjPalette ) );
 					}
 					
-					setNameLinkArray( nif, iObjPalette, "Objs", controlledNodes );
+					setNameLinkArray( nif, iObjPalette, TA_OBJS, controlledNodes );
 
 					if (!oldHoldUpdates)
 						nif->holdUpdates(false);
@@ -174,19 +174,19 @@ public:
 				foreach ( qint32 lSeq, seqLinks )
 				{
 					qint32 nSeq = map.value( lSeq );
-					int numSeq = nif->get<int>( iCtrlManager, "Num Controller Sequences" );
-					nif->set<int>( iCtrlManager, "Num Controller Sequences", numSeq+1 );
-					nif->updateArray( iCtrlManager, "Controller Sequences" );
-					nif->setLink( nif->getIndex( iCtrlManager, "Controller Sequences" ).child( numSeq, 0 ), nSeq );
-					QModelIndex iSeq = nif->getBlock( nSeq, "NiControllerSequence" );
-					nif->setLink( iSeq, "Manager", nif->getBlockNumber( iCtrlManager ) );
+					int numSeq = nif->get<int>( iCtrlManager, TA_NUMCONTROLLERSEQUENCES );
+					nif->set<int>( iCtrlManager, TA_NUMCONTROLLERSEQUENCES, numSeq+1 );
+					nif->updateArray( iCtrlManager, TA_CONTROLLERSEQUENCES );
+					nif->setLink( nif->getIndex( iCtrlManager, TA_CONTROLLERSEQUENCES ).child( numSeq, 0 ), nSeq );
+					QModelIndex iSeq = nif->getBlock( nSeq, T_NICONTROLLERSEQUENCE );
+					nif->setLink( iSeq, TA_MANAGER, nif->getBlockNumber( iCtrlManager ) );
 
 					QModelIndex iCtrlBlcks = nif->getIndex( iSeq, TA_CONTROLLEDBLOCKS );
 					for ( int r = 0; r < nif->rowCount( iCtrlBlcks ); r++ )
 					{
 						QModelIndex iCtrlBlck = iCtrlBlcks.child( r, 0 );
-						if ( nif->getLink( iCtrlBlck, "Controller" ) == -1 )
-							nif->setLink( iCtrlBlck, "Controller", iMultiTransformerIdx );
+						if ( nif->getLink( iCtrlBlck, TA_CONTROLLER ) == -1 )
+							nif->setLink( iCtrlBlck, TA_CONTROLLER, iMultiTransformerIdx );
 					}
 				}
 
@@ -212,7 +212,7 @@ public:
 	
 	static QModelIndex findChildNode( const NifModel * nif, const QModelIndex & parent, const QString & name )
 	{
-		if ( ! nif->inherits( parent, "NiAVObject" ) )
+		if ( ! nif->inherits( parent, T_NIAVOBJECT ) )
 			return QModelIndex();
 		
 		QString thisName = nif->get<QString>( parent, TA_NAME );
@@ -267,10 +267,10 @@ public:
 		if ( ! iCtrl.isValid() )
 			return QModelIndex();
 		
-		qint32 oldctrl = nif->getLink( iNode, "Controller" );
-		nif->setLink( iNode, "Controller", nif->getBlockNumber( iCtrl ) );
-		nif->setLink( iCtrl, "Next Controller", oldctrl );
-		nif->setLink( iCtrl, "Target", nif->getBlockNumber( iNode ) );
+		qint32 oldctrl = nif->getLink( iNode, TA_CONTROLLER );
+		nif->setLink( iNode, TA_CONTROLLER, nif->getBlockNumber( iCtrl ) );
+		nif->setLink( iCtrl, TA_NEXTCONTROLLER, oldctrl );
+		nif->setLink( iCtrl, TA_TARGET, nif->getBlockNumber( iNode ) );
 		nif->set<int>( iCtrl, TA_FLAGS, 8 );
 		
 		return iCtrl;
@@ -324,7 +324,7 @@ public:
 		foreach ( QPersistentModelIndex idx, blocksToAdd )
 		{
 			nif->set<QString>( iArray.child( r, 0 ), TA_NAME, nif->get<QString>( idx, TA_NAME ) );
-			nif->setLink( iArray.child( r, 0 ), "AV Object", nif->getBlockNumber( idx ) );
+			nif->setLink( iArray.child( r, 0 ), TA_AVOBJECT, nif->getBlockNumber( idx ) );
 			r++;
 		}
 	}
@@ -349,16 +349,16 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex iBlock = nif->getBlock( index, "NiKeyframeData" );
-		return iBlock.isValid() && nif->get<int>( iBlock, "Rotation Type" ) != 4;
+		QModelIndex iBlock = nif->getBlock( index, T_NIKEYFRAMEDATA );
+		return iBlock.isValid() && nif->get<int>( iBlock, TA_ROTATIONTYPE ) != 4;
 	}
 	
 	/*
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
 		QModelIndex iQuats = nif->getIndex( index, "Quaternion Keys" );
-		int rotationType = nif->get<int>( index, "Rotation Type" );
-		nif->set<int>( index, "Rotation Type", 4 );
+		int rotationType = nif->get<int>( index, TA_ROTATIONTYPE );
+		nif->set<int>( index, TA_ROTATIONTYPE, 4 );
 		nif->updateArray( index, "XYZ Rotations" );
 		QModelIndex iRots = nif->getIndex( index, "XYZ Rotations" );
 

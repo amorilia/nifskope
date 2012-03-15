@@ -683,7 +683,7 @@ void Options::textureFolderAutoDetect()
 #ifndef FSENGINE
 			if ( ! dir.cd( TA_TEXTURES ) )
 			{
-				QMessageBox::information( dialog, "NifSkope",
+				QMessageBox::information( dialog, APP,
 					tr("<p>The texture folder was not found.</p>"
 					"<p>This may be because you haven't extracted the archive files yet.<br>"
 					"<a href='http://cs.elderscrolls.com/constwiki/index.php/BSA_Unpacker_Tutorial'>Here</a>, it is explained how to do that.</p>") );
@@ -773,7 +773,7 @@ void Options::textureFolderAutoDetect()
 #ifndef FSENGINE
          if ( ! dir.cd( TA_TEXTURES ) )
          {
-            QMessageBox::information( dialog, "NifSkope",
+            QMessageBox::information( dialog, APP,
                tr("<p>The texture folder was not found.</p>"
                "<p>This may be because you haven't extracted the archive files yet.<br>"
                "<a href='http://cs.elderscrolls.com/constwiki/index.php/BSA_Unpacker_Tutorial'>Here</a>, it is explained how to do that.</p>") );
@@ -805,7 +805,7 @@ void Options::textureFolderAutoDetect()
 	{
 		game_list = tr("Successfully detected the following games:\n") + game_list;
 	}
-	QMessageBox::information( dialog, "NifSkope", game_list );
+	QMessageBox::information( dialog, APP, game_list );
 
 
 }

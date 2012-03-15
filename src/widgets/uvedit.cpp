@@ -1479,7 +1479,7 @@ protected:
 void UVWidget::rotateSelection()
 {
 	bool ok;
-	float rotateFactor = QInputDialog::getDouble( this, "NifSkope", tr( "Enter rotation angle" ), 0.0, -360.0, 360.0, 2, &ok );
+	float rotateFactor = QInputDialog::getDouble( this, APP, tr( "Enter rotation angle" ), 0.0, -360.0, 360.0, 2, &ok );
 	if( ok )
 	{
 		undoStack->push( new UVWRotateCommand( this, rotateFactor ) );

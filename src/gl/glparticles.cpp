@@ -183,7 +183,7 @@ public:
 				{
 					Gravity g;
 					g.force = nif->get<float>( iExtra, "Force" );
-					g.type = nif->get<int>( iExtra, "Type" );
+					g.type = nif->get<int>( iExtra, TA_TYPE );
 					g.position = nif->get<Vector3>( iExtra, "Position" );
 					g.direction = nif->get<Vector3>( iExtra, "Direction" );
 					grav.append( g );

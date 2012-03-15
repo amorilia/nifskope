@@ -102,7 +102,7 @@ void Controllable::update( const NifModel * nif, const QModelIndex & i )
 		name = nif->get<QString>( iBlock, TA_NAME );
 		// sync the list of attached controllers
 		QList<Controller*> rem( controllers );
-		QModelIndex iCtrl = nif->getBlock( nif->getLink( iBlock, "Controller" ) );
+		QModelIndex iCtrl = nif->getBlock( nif->getLink( iBlock, TA_CONTROLLER ) );
 		while ( iCtrl.isValid() && nif->inherits( iCtrl, T_NITIMECONTROLLER ) )
 		{
 			bool add = true;
@@ -118,7 +118,7 @@ void Controllable::update( const NifModel * nif, const QModelIndex & i )
 			{
 				setController( nif, iCtrl );
 			}
-			iCtrl = nif->getBlock( nif->getLink( iCtrl, "Next Controller" ) );
+			iCtrl = nif->getBlock( nif->getLink( iCtrl, TA_NEXTCONTROLLER ) );
 		}
 		foreach ( Controller * ctrl, rem )
 		{
@@ -409,7 +409,7 @@ template <> bool Controller::interpolate( Matrix & value, const QModelIndex & ar
 	const NifModel * nif = static_cast<const NifModel *>( array.model() );
 	if ( nif && array.isValid() )
 	{
-		switch ( nif->get<int>( array, "Rotation Type" ) )
+		switch ( nif->get<int>( array, TA_ROTATIONTYPE ) )
 		{
 			case 4:
 			{

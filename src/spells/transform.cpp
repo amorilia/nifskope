@@ -132,7 +132,7 @@ bool spApplyTransformation::isApplicable( const NifModel * nif, const QModelInde
 
 QModelIndex spApplyTransformation::cast( NifModel * nif, const QModelIndex & index )
 {
-	if ( ( nif->getLink( index, "Controller" ) != -1 || nif->getLink( index, "Skin Instance" ) != -1 ) )
+	if ( ( nif->getLink( index, TA_CONTROLLER ) != -1 || nif->getLink( index, "Skin Instance" ) != -1 ) )
 		if ( QMessageBox::question( 0, Spell::tr("Apply Transformation"), Spell::tr("On animated and or skinned nodes Apply Transformation most likely won't work the way you expected it."), Spell::tr("Try anyway"), Spell::tr("Cancel") ) != 0 )
 			return index;
 	
@@ -143,7 +143,7 @@ QModelIndex spApplyTransformation::cast( NifModel * nif, const QModelIndex & ind
 		foreach ( int l, nif->getChildLinks( nif->getBlockNumber( index ) ) )
 		{
 			QModelIndex iChild = nif->getBlock( l );
-			if ( iChild.isValid() && nif->inherits( nif->itemName( iChild ), "NiAVObject" ) )
+			if ( iChild.isValid() && nif->inherits( nif->itemName( iChild ), T_NIAVOBJECT ) )
 			{
 				Transform tc( nif, iChild );
 				tc = tp * tc;

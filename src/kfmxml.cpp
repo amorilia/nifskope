@@ -242,7 +242,7 @@ bool KfmModel::loadXML()
 	QString result = KfmModel::parseXmlDescription( fname );
 	if ( ! result.isEmpty() )
 	{
-		QMessageBox::critical( 0, "NifSkope", result );
+		QMessageBox::critical( 0, APP, result );
 		return false;
 	}
 	return true;
