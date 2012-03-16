@@ -186,7 +186,7 @@ REGISTER_SPELL( spFileOffset )
 bool spCollapseArray::isApplicable( const NifModel * nif, const QModelIndex & index )
 {
 	if ( nif->isArray(index) && nif->evalCondition( index ) && index.isValid() &&
-			( nif->getBlockType( index ) == "Ref" || nif->getBlockType( index ) == "Ptr" ) )
+			( nif->getBlockType( index ) == TN_REF || nif->getBlockType( index ) == TN_PTR ) )
 	{
 		// copy from spUpdateArray when that changes
 		return true;

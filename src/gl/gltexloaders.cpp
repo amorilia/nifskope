@@ -1621,7 +1621,7 @@ bool texSaveNIF( NifModel * nif, const QString & filepath, QModelIndex & iData )
 		// ignore palette for now; what uses these? theoretically they don't exist past 4.2.2.0
 
 /*
-        <add name=TA_PALETTE type="Ref" template="NiPalette">Link to NiPalette, for 8-bit textures.</add>
+        <add name=TA_PALETTE type=TN_REF template="NiPalette">Link to NiPalette, for 8-bit textures.</add>
     </niobject>
 */
 		

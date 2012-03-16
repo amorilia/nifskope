@@ -439,6 +439,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TN_STRING "string"
 #define TN_MESHPRIMITIVETYPE "MeshPrimitiveType"
 #define TN_COMPONENTFORMAT "ComponentFormat"
+#define TN_REF "Ref"
+#define TN_PTR "Ptr"
 
 // display names - column headers
 #define DN_NAME "Name"
