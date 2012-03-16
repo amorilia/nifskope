@@ -612,4 +612,3 @@ void renderText(double x, double y, double z, const QString & str)
 	glCallLists(cstr.size(), GL_UNSIGNED_BYTE, cstr.constData());
 	glPopAttrib();
 }
-

@@ -125,7 +125,7 @@ public:
 	//! Helper function to get the morph data
 	QModelIndex getMorphData( const NifModel * nif, const QModelIndex & iMorpher )
 	{
-		return nif->getBlock( nif->getLink( iMorpher, TA_DATA ), "NiMorphData" );
+		return nif->getBlock( nif->getLink( iMorpher, TA_DATA ), T_NIMORPHDATA );
 	}
 	
 	//! Helper function to get the morph frame array
@@ -143,7 +143,7 @@ public:
 			QStringList list;
 			for ( int i = 0; i < nif->rowCount( iFrames ); i++ )
 			{
-				list << nif->get<QString>( iFrames.child( i, 0 ), "Frame Name" );
+				list << nif->get<QString>( iFrames.child( i, 0 ), TA_FRAMENAME );
 			}
 			return list;
 		}
@@ -154,4 +154,3 @@ public:
 };
 
 REGISTER_SPELL( spMorphFrameSave )
-

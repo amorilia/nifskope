@@ -253,7 +253,7 @@ void Mesh::update( const NifModel * nif, const QModelIndex & index )
 		// NiMesh presents a problem because we are almost guaranteed to have multiple "data" blocks
 		// for eg. vertices, indices, normals, texture data etc.
 #ifndef QT_NO_DEBUG
-		if ( nif->checkVersion( NF_V20050000, 0 ) && nif->inherits( iBlock, "NiMesh" ) )
+		if ( nif->checkVersion( NF_V20050000, 0 ) && nif->inherits( iBlock, T_NIMESH ) )
 		{
 			qWarning() << nif->get<ushort>( iBlock, TA_NUMSUBMESHES ) << " submeshes";
 			iData = nif->getIndex( iBlock, TA_DATAS );
@@ -350,7 +350,7 @@ void Mesh::transform()
 		upData = false;
 		
 		// update for NiMesh
-		if ( nif->checkVersion( NF_V20050000, 0 ) && nif->inherits( iBlock, "NiMesh" ) )
+		if ( nif->checkVersion( NF_V20050000, 0 ) && nif->inherits( iBlock, T_NIMESH ) )
 		{
 #ifndef QT_NO_DEBUG
 			// do stuff

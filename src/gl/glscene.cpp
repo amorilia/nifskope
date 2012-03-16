@@ -145,7 +145,7 @@ Node * Scene::getNode( const NifModel * nif, const QModelIndex & iNode )
 	
 	if ( nif->inherits( iNode, T_NINODE ) )
 	{
-		if ( nif->itemName( iNode ) == "NiLODNode" )
+		if ( nif->itemName( iNode ) == T_NILODNODE )
 			node = new LODNode( this, iNode );
 		else if ( nif->itemName( iNode ) == T_NIBILLBOARDNODE )
 			node = new BillboardNode( this, iNode );
@@ -156,18 +156,18 @@ Node * Scene::getNode( const NifModel * nif, const QModelIndex & iNode )
 	{
 		node = new Mesh( this, iNode );
 	}
-	else if ( nif->checkVersion( NF_V20050000, 0 ) && nif->itemName( iNode ) == "NiMesh" )
+	else if ( nif->checkVersion( NF_V20050000, 0 ) && nif->itemName( iNode ) == T_NIMESH )
 	{
 		node = new Mesh( this, iNode );
 	}
 	//else if ( nif->inherits( iNode, "AParticleNode" ) || nif->inherits( iNode, "AParticleSystem" ) )
-	else if ( nif->inherits( iNode, "NiParticles" ) ) // ... where did AParticleSystem go?
+	else if ( nif->inherits( iNode, T_NIPARTICLES ) ) // ... where did AParticleSystem go?
 	{
 		node = new Particles( this, iNode );
 	}
 	else if (nif->inherits( iNode, T_NIAVOBJECT))
 	{
-		if ( nif->itemName( iNode ) == "BSTreeNode" )
+		if ( nif->itemName( iNode ) == T_BSTREENODE )
 			node = new Node( this, iNode );
 	}
 
@@ -371,5 +371,3 @@ int Scene::bindTexture( const QModelIndex & iSource )
 
 	return textures->bind( iSource );
 }
-
-

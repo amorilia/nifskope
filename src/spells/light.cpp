@@ -100,7 +100,7 @@ public:
 	{
 		QModelIndex iBlock = nif->getBlock( index );
 		QModelIndex sibling = index.sibling( index.row(), 0 );
-		return index.isValid() && nif->inherits( iBlock, "NiLight" ) && ( iBlock == sibling || nif->getIndex( iBlock, TA_NAME ) == sibling );
+		return index.isValid() && nif->inherits( iBlock, T_NILIGHT ) && ( iBlock == sibling || nif->getIndex( iBlock, TA_NAME ) == sibling );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -112,20 +112,20 @@ public:
 		le->add( new NifVectorEdit( nif, nif->getIndex( iLight, TA_TRANSLATION ) ) );
 		le->add( new NifRotationEdit( nif, nif->getIndex( iLight, TA_ROTATION ) ) );
 		le->popLayout();
-		le->add( new NifFloatSlider( nif, nif->getIndex( iLight, "Dimmer" ), 0, 1.0 ) );
+		le->add( new NifFloatSlider( nif, nif->getIndex( iLight, TA_DIMMER ), 0, 1.0 ) );
 		le->pushLayout( new QHBoxLayout() );
 		le->add( new NifColorEdit( nif, nif->getIndex( iLight, TA_AMBIENTCOLOR ) ) );
 		le->add( new NifColorEdit( nif, nif->getIndex( iLight, TA_DIFFUSECOLOR ) ) );
 		le->add( new NifColorEdit( nif, nif->getIndex( iLight, TA_SPECULARCOLOR ) ) );
 		le->popLayout();
-		le->pushLayout( new QHBoxLayout(), "Point Light Parameter" );
-		le->add( new NifFloatEdit( nif, nif->getIndex( iLight, "Constant Attenuation" ) ) );
-		le->add( new NifFloatEdit( nif, nif->getIndex( iLight, "Linear Attenuation" ) ) );
-		le->add( new NifFloatEdit( nif, nif->getIndex( iLight, "Quadratic Attenuation" ) ) );
+		le->pushLayout( new QHBoxLayout(), TA_POINTLIGHTPARAMETER );
+		le->add( new NifFloatEdit( nif, nif->getIndex( iLight, TA_CONSTANTATTENUATION ) ) );
+		le->add( new NifFloatEdit( nif, nif->getIndex( iLight, TA_LINEARATTEANUATION ) ) );
+		le->add( new NifFloatEdit( nif, nif->getIndex( iLight, TA_QUADRICATTENUATION ) ) );
 		le->popLayout();
-		le->pushLayout( new QHBoxLayout(), "Spot Light Parameters" );
-		le->add( new NifFloatEdit( nif, nif->getIndex( iLight, "Cutoff Angle" ), 0, 90 ) );
-		le->add( new NifFloatEdit( nif, nif->getIndex( iLight, "Exponent" ), 0, 128 ) );
+		le->pushLayout( new QHBoxLayout(), TA_SPOTLIGHTPARAMETERS );
+		le->add( new NifFloatEdit( nif, nif->getIndex( iLight, TA_CUTOFFANGLE ), 0, 90 ) );
+		le->add( new NifFloatEdit( nif, nif->getIndex( iLight, TA_EXPONENT ), 0, 128 ) );
 		le->popLayout();
 		le->show();
 		

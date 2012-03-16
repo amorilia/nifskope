@@ -629,8 +629,8 @@ QModelIndex spUpdateCenterRadius::cast( NifModel * nif, const QModelIndex & inde
 		Oblivion and CT_volatile meshes require a
 		different center algorithm
 	*/
-	if( ( ( nif->getVersionNumber() & 0x14000000 ) && ( nif->getUserVersion() == 11 ) )
-		|| ( nif->get<ushort>(iData, "Consistency Flags") & 0x8000 ) )
+	if( ( ( nif->getVersionNumber() & NF_V20000000 ) && ( nif->getUserVersion() == 11 ) )
+		|| ( nif->get<ushort>(iData, TA_CONSISTENCYFLAGS) & 0x8000 ) )
 	{
 		/* is a Oblivion mesh! */
 		float xMin(FLT_MAX), xMax(-FLT_MAX);

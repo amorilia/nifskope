@@ -46,6 +46,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NF_V10000100 0x0A000100
 #define NF_V20020000 0x14020000
 #define NF_V20010003 0x14010003
+#define NF_V20000000 0x14000000
 #define NF_V10010000 0x0A010000
 #define NF_V10020000 0x0A020000
 #define NF_V10000000 0x0A000000
@@ -248,6 +249,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define T_BHKSTIFFSPRINGCONSTRAINT "bhkStiffSpringConstraint"
 #define T_BSFURNITUREMARKER "BSFurnitureMarker"
 #define T_NIRANGELODDATA "NiRangeLODData"
+#define T_NILIGHT "NiLight"
+#define T_NIMORPHDATA "NiMorphData"
+#define T_NILODNODE "NiLODNode"
+#define T_NIMESH "NiMesh"
+#define T_NIPARTICLES "NiParticles"
+#define T_BSTREENODE "BSTreeNode"
 // main tags: compounds
 #define C_TEXDESC "TexDesc"
 // tag <add
@@ -566,6 +573,32 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TA_LODLEVELS "LOD Levels"
 #define TA_NEAREXTENT "Near Extent"
 #define TA_FAREXTENT "Far Extent"
+#define TA_DIMMER "Dimmer"
+#define TA_POINTLIGHTPARAMETER "Point Light Parameter"
+#define TA_CONSTANTATTENUATION "Constant Attenuation"
+#define TA_LINEARATTEANUATION "Linear Attenuation"
+#define TA_QUADRICATTENUATION "Quadratic Attenuation"
+#define TA_SPOTLIGHTPARAMETERS "Spot Light Parameters"
+#define TA_CUTOFFANGLE "Cutoff Angle"
+#define TA_EXPONENT "Exponent"
+#define TA_FRAMENAME "Frame Name"
+#define TA_HASVERTEXCOLORS "Has Vertex Colors"
+#define TA_BSNUMUVSETS "BS Num UV Sets"
+#define TA_CONSISTENCYFLAGS "Consistency Flags"
+"Emitter"
+"Emit Start Time"
+"Emit Stop Time"
+"Emit Rate"
+"Start Random"
+"Speed"
+"Speed Random"
+"Lifetime"
+"Lifetime Random"
+"Vertical Direction"
+"Vertical Angle"
+"Horizontal Direction"
+"Horizontal Angle"
+"Size"
 // NiBlocks - artificial blocks
 #define B_NIHEADER "NiHeader"
 #define B_NIFOOTER "NiFooter"
