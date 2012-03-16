@@ -69,7 +69,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( nif->getVersion() == "4.0.0.2" && nif->itemType( index ) == B_NIBLOCK && nif->get<QString>( index, TA_NAME ) == "Bip01" ); //&& QFile::exists( SKEL_DAT ) );
+		return ( nif->getVersion() == STR_V04000002 && nif->itemType( index ) == B_NIBLOCK && nif->get<QString>( index, TA_NAME ) == "Bip01" ); //&& QFile::exists( SKEL_DAT ) );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -176,7 +176,7 @@ public:
 	bool doShape( NifModel * nif, const QModelIndex & index, const Transform & tparent, const TransMap & world, const TransMap & bones )
 	{
 		QModelIndex iShapeData = nif->getBlock( nif->getLink( index, TA_DATA ) );
-		QModelIndex iSkinInstance = nif->getBlock( nif->getLink( index, "Skin Instance" ), T_NISKININSTANCE );
+		QModelIndex iSkinInstance = nif->getBlock( nif->getLink( index, TA_SKININSTANCE ), T_NISKININSTANCE );
 		if ( ! iSkinInstance.isValid() || ! iShapeData.isValid() )
 			return false;
 		QStringList names;
@@ -232,7 +232,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( nif->getVersion() == "4.0.0.2" && nif->itemType( index ) == B_NIBLOCK && nif->get<QString>( index, TA_NAME ) == "Bip01" );
+		return ( nif->getVersion() == STR_V04000002 && nif->itemType( index ) == B_NIBLOCK && nif->get<QString>( index, TA_NAME ) == "Bip01" );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -298,7 +298,7 @@ public:
 	{
 		if ( nif->isNiBlock( iShape, T_NITRISHAPE ) || nif->isNiBlock( iShape, T_NITRISTRIPS ) )
 		{
-			QModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), T_NISKININSTANCE );
+			QModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, TA_SKININSTANCE ), T_NISKININSTANCE );
 			if ( iSkinInst.isValid() )
 			{
 				return nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), T_NISKINDATA ).isValid();
@@ -358,7 +358,7 @@ public:
 			} else if ( iShapeType == T_NITRISTRIPS ) {
 				iData = nif->getBlock( nif->getLink( iShape, TA_DATA ), T_NITRISTRIPSDATA );
 			}
-			QPersistentModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), T_NISKININSTANCE );
+			QPersistentModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, TA_SKININSTANCE ), T_NISKININSTANCE );
 			QPersistentModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), T_NISKINDATA );
 			QModelIndex iSkinPart = nif->getBlock( nif->getLink( iSkinInst, TA_SKINPARTITION ), T_NISKINPARTITION );
 			if ( ! iSkinPart.isValid() )
@@ -373,13 +373,13 @@ public:
 			int numBones = nif->rowCount( iBoneList );
 			for ( int bone = 0; bone < numBones; bone++ )
 			{
-				QModelIndex iVertexWeights = nif->getIndex( iBoneList.child( bone, 0 ), "Vertex Weights" );
+				QModelIndex iVertexWeights = nif->getIndex( iBoneList.child( bone, 0 ), TA_VERTEXWEIGHTS );
 				for ( int r = 0; r < nif->rowCount( iVertexWeights ); r++ )
 				{
 					int vertex = nif->get<int>( iVertexWeights.child( r, 0 ), TA_INDEX );
-					float weight = nif->get<float>( iVertexWeights.child( r, 0 ), "Weight" );
+					float weight = nif->get<float>( iVertexWeights.child( r, 0 ), TA_WEIGHT );
 					if ( vertex >= weights.count() )
-						throw QString( Spell::tr("bad NiSkinData - vertex count does not match") );
+						throw QString( Spell::tr("bad "T_NISKINDATA" - vertex count does not match") );
 					weights[vertex].append( boneweight( bone, weight ) );
 				}
 			}
@@ -397,7 +397,7 @@ public:
 			}
 			
 			if ( minBones <= 0 )
-				throw QString( Spell::tr("bad NiSkinData - some vertices have no weights at all") );
+				throw QString( Spell::tr("bad "T_NISKINDATA" - some vertices have no weights at all") );
 			
 			// query max bones per vertex/partition
 			
@@ -472,15 +472,15 @@ public:
 
 			QMap<Triangle, quint32> trimap;
 			quint32 defaultPart = 0;
-			if (nif->inherits(iSkinInst, "BSDismemberSkinInstance"))
+			if (nif->inherits(iSkinInst, T_BSDISMEMBERSKININSTANCE))
 			{
 				// First find a partition to dump dangling faces.  Torso is prefered if available.
-				quint32 nparts = nif->get<uint>(iSkinInst, "Num Partitions");
-				QModelIndex iPartData = nif->getIndex( iSkinInst, "Partitions" );
+				quint32 nparts = nif->get<uint>(iSkinInst, TA_NUMPARTITIONS);
+				QModelIndex iPartData = nif->getIndex( iSkinInst, TA_PARTITIONS );
 				for (quint32 i=0; i<nparts; ++i) {
 					QModelIndex iPart = iPartData.child(i,0);
 					if (!iPart.isValid()) continue;
-					if ( nif->get<uint>(iPart, "Body Part") == 0 /* Torso */) {
+					if ( nif->get<uint>(iPart, TA_BODYPART) == 0 /* Torso */) {
 						defaultPart = i;
 						break;
 					}
@@ -488,7 +488,7 @@ public:
 				defaultPart = qMin(nparts-1, defaultPart);
 
 				// enumerate existing partitions and select faces into same partition
-				quint32 nskinparts = nif->get<int>( iSkinPart, "Num Skin Partition Blocks" );
+				quint32 nskinparts = nif->get<int>( iSkinPart, TA_NUMSKINPARTITIONBLOCKS );
 				iPartData = nif->getIndex( iSkinPart, TA_SKINPARTITIONBLOCKS );
 				for (quint32 i=0; i<nskinparts; ++i) {
 					QModelIndex iPart = iPartData.child(i,0);
@@ -496,9 +496,9 @@ public:
 
 					quint32 finalPart = qMin(nparts-1, i);
 
-					QVector<int> vertmap = nif->getArray<int>( iPart, "Vertex Map" );
+					QVector<int> vertmap = nif->getArray<int>( iPart, TA_VERTEXMAP );
 
-					quint8 hasFaces = nif->get<quint8>(iPart, "Has Faces");
+					quint8 hasFaces = nif->get<quint8>(iPart, TA_HASFACES);
 					quint8 numStrips = nif->get<quint8>(iPart, TA_NUMSTRIPS);				  
 					QVector<Triangle> partTriangles;
 					if ( hasFaces && numStrips == 0 ) {
@@ -808,20 +808,20 @@ public:
 			
 			// start writing NiSkinPartition
 			
-			nif->set<int>( iSkinPart, "Num Skin Partition Blocks", parts.count() );
+			nif->set<int>( iSkinPart, TA_NUMSKINPARTITIONBLOCKS, parts.count() );
 			nif->updateArray( iSkinPart, TA_SKINPARTITIONBLOCKS );
 			
 			QModelIndex iBSSkinInstPartData;
-			if (nif->inherits(iSkinInst, "BSDismemberSkinInstance"))
+			if (nif->inherits(iSkinInst, T_BSDISMEMBERSKININSTANCE))
 			{
-				quint32 nparts = nif->get<uint>(iSkinInst, "Num Partitions");
-				iBSSkinInstPartData = nif->getIndex( iSkinInst, "Partitions" );
+				quint32 nparts = nif->get<uint>(iSkinInst, TA_NUMPARTITIONS);
+				iBSSkinInstPartData = nif->getIndex( iSkinInst, TA_PARTITIONS );
 				// why is QList.count() signed? cast to squash warning
 				if (nparts != (quint32) parts.count())
 				{
-					qWarning() << "BSDismemberSkinInstance partition count does not match Skin Partition count.  Adjusting to fit.";
-					nif->set<uint>(iSkinInst, "Num Partitions", parts.count());
-					nif->updateArray( iSkinInst, "Partitions" );
+					qWarning() << T_BSDISMEMBERSKININSTANCE" partition count does not match Skin Partition count.  Adjusting to fit.";
+					nif->set<uint>(iSkinInst, TA_NUMPARTITIONS, parts.count());
+					nif->updateArray( iSkinInst, TA_PARTITIONS );
 				}
 			}
 
@@ -838,7 +838,7 @@ public:
 				if (iBSSkinInstPartData.isValid()) {
 					if (bones != prevPartBones) {
 						prevPartBones = bones;
-						nif->set<uint>(iBSSkinInstPartData.child(p,0), "Part Flag", 257);
+						nif->set<uint>(iBSSkinInstPartData.child(p,0), TA_PARTFLAG, 257);
 					}
 				}
 				
@@ -907,9 +907,9 @@ public:
 
 				nif->set<int>( iPart, TA_NUMVERTICES, vertices.count() );
 				nif->set<int>( iPart, TA_NUMTRIANGLES, numTriangles );
-				nif->set<int>( iPart, "Num Bones", bones.count() );
+				nif->set<int>( iPart, TA_NUMBONES, bones.count() );
 				nif->set<int>( iPart, TA_NUMSTRIPS, strips.count() );
-				nif->set<int>( iPart, "Num Weights Per Vertex", maxBones );
+				nif->set<int>( iPart, TA_NUMWEIGHTSPERVERTEX, maxBones );
 				
 				// fill in bone map
 				
@@ -919,15 +919,15 @@ public:
 				
 				// fill in vertex map
 				
-				nif->set<int>( iPart, "Has Vertex Map", 1 );
-				QModelIndex iVertexMap = nif->getIndex( iPart, "Vertex Map" );
+				nif->set<int>( iPart, TA_HASVERTEXMAP, 1 );
+				QModelIndex iVertexMap = nif->getIndex( iPart, TA_VERTEXMAP );
 				nif->updateArray( iVertexMap );
 				nif->setArray<int>( iVertexMap, vertices );
 				
 				// fill in vertex weights
 				
 				nif->set<int>( iPart, TA_HASVERTEXWEIGHTS, 1 );
-				QModelIndex iVWeights = nif->getIndex( iPart, "Vertex Weights" );
+				QModelIndex iVWeights = nif->getIndex( iPart, TA_VERTEXWEIGHTS );
 				nif->updateArray( iVWeights );
 				for ( int v = 0; v < nif->rowCount( iVWeights ); v++ )
 				{
@@ -938,7 +938,7 @@ public:
 						nif->set<float>( iVertex.child( b, 0 ), list.count() > b ? list[ b ].second : 0.0 );
 				}
 
-				nif->set<int>( iPart, "Has Faces", 1 );
+				nif->set<int>( iPart, TA_HASFACES, 1 );
 
 				if ( make_strips == true )
 				{
@@ -975,8 +975,8 @@ public:
 				
 				// fill in vertex bones
 				
-				nif->set<int>( iPart, "Has Bone Indices", 1 );
-				QModelIndex iVBones = nif->getIndex( iPart, "Bone Indices" );
+				nif->set<int>( iPart, TA_HASBONEINDICES, 1 );
+				QModelIndex iVBones = nif->getIndex( iPart, TA_BONEINDICES );
 				nif->updateArray( iVBones );
 				for ( int v = 0; v < nif->rowCount( iVBones ); v++ )
 				{
@@ -1183,7 +1183,7 @@ public:
 		QModelIndex iMesh = nif->getBlock( nif->getParent( nif->getBlockNumber( iSkinInstance ) ) );
 		QModelIndex iMeshData = nif->getBlock( nif->getLink( iMesh, TA_DATA ) );
 		int skelRoot = nif->getLink( iSkinInstance, TA_SKELETONROOT );
-		if ( ! nif->inherits( iMeshData, "NiTriBasedGeomData" ) || skelRoot < 0 || skelRoot != nif->getParent( nif->getBlockNumber( iMesh ) ) )
+		if ( ! nif->inherits( iMeshData, T_NITRIBASEDGEOMDATA ) || skelRoot < 0 || skelRoot != nif->getParent( nif->getBlockNumber( iMesh ) ) )
 			return iSkinData;
 		
 		Transform meshTrans( nif, iMesh );
@@ -1209,7 +1209,7 @@ public:
 			Vector3 center;
 			float radius = 0;
 			
-			QModelIndex iWeightList = nif->getIndex( iBoneDataList.child( b, 0 ), "Vertex Weights" );
+			QModelIndex iWeightList = nif->getIndex( iBoneDataList.child( b, 0 ), TA_VERTEXWEIGHTS );
 			for ( int w = 0; w < nif->rowCount( iWeightList ); w++ )
 			{
 				int v = nif->get<int>( iWeightList.child( w, 0 ), TA_INDEX );
@@ -1235,8 +1235,8 @@ public:
 			center = ( mn + mx ) / 2;
 			radius = qMax( ( mn - center ).length(), ( mx - center ).length() );
 			
-			nif->set<Vector3>( iBoneDataList.child( b, 0 ), "Bounding Sphere Offset", center );
-			nif->set<float>( iBoneDataList.child( b, 0 ), "Bounding Sphere Radius", radius );
+			nif->set<Vector3>( iBoneDataList.child( b, 0 ), TA_BOUNDINGSPHEREOFFSET, center );
+			nif->set<float>( iBoneDataList.child( b, 0 ), TA_BOUNDINGSPHERERADIUS, radius );
 		}
 		
 		return iSkinData;
@@ -1258,7 +1258,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( nif->getVersion() == "4.0.0.2" && nif->itemType( index ) == B_NIBLOCK )
+		return ( nif->getVersion() == STR_V04000002 && nif->itemType( index ) == B_NIBLOCK )
 			&& ( ( nif->get<QString>( index, TA_NAME ).startsWith( "Bip01 L" ) ) || ( nif->get<QString>( index, TA_NAME ).startsWith( "Bip01 R" ) ) );
 	}
 	
@@ -1275,7 +1275,7 @@ public:
 				while ( n < nif->getBlockCount() )
 				{
 					QModelIndex iBlock = nif->getBlock( n );
-					if ( nif->itemName( iBlock ).indexOf( "NiKeyframe" ) >= 0 )
+					if ( nif->itemName( iBlock ).indexOf( T_NIKEYFRAME ) >= 0 )
 						nif->removeNiBlock( n );
 					else
 						n++;
@@ -1348,7 +1348,7 @@ public:
 					// Change SkinInstance bones
 					doShapes( nif, iChild );
 				}
-				else if ( nif->inherits( iChild, "NiKeyframeController" ) )
+				else if ( nif->inherits( iChild, T_NIKEYFRAMECONTROLLER ) )
 				{
 					// Flip keyframe data, fun
 					doKeyframes( nif, iChild );
@@ -1361,7 +1361,7 @@ public:
 	{
 		//qWarning() << "Entering doShapes";
 		QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ) );
-		QModelIndex iSkinInstance = nif->getBlock( nif->getLink( index, "Skin Instance" ), T_NISKININSTANCE );
+		QModelIndex iSkinInstance = nif->getBlock( nif->getLink( index, TA_SKININSTANCE ), T_NISKININSTANCE );
 		if ( iData.isValid() && iSkinInstance.isValid() )
 		{
 			// from spScaleVertices
@@ -1420,9 +1420,9 @@ public:
 				tlocal.rotation.fromEuler( -x, -y, PI+z );
 				
 				// Fix offset Z
-				Vector3 offset = nif->get<Vector3>( iBone, "Bounding Sphere Offset" );
+				Vector3 offset = nif->get<Vector3>( iBone, TA_BOUNDINGSPHEREOFFSET );
 				offset = Vector3( offset[0], offset[1], -offset[2] );
-				nif->set<Vector3>( iBone, "Bounding Sphere Offset", offset );
+				nif->set<Vector3>( iBone, TA_BOUNDINGSPHEREOFFSET, offset );
 				
 				// Apply
 				tlocal.writeBack( nif, iBone );
@@ -1435,14 +1435,14 @@ public:
 		// do stuff
 		QModelIndex keyframeData = nif->getBlock( nif->getLink( index, TA_DATA ), T_NIKEYFRAMEDATA );
 		if ( ! keyframeData.isValid() ) return;
-		QModelIndex iQuats = nif->getIndex( keyframeData, "Quaternion Keys" );
+		QModelIndex iQuats = nif->getIndex( keyframeData, TA_QUATERNIONKEYS );
 		if ( iQuats.isValid() )
 		{
 			for ( int q = 0; q < nif->rowCount( iQuats ); q++ )
 			{
 				QModelIndex iQuat = iQuats.child( q, 0 );
 				
-				Quat value = nif->get<Quat>( iQuat, "Value" );
+				Quat value = nif->get<Quat>( iQuat, TA_VALUE );
 				Matrix tlocal;
 				tlocal.fromQuat( value );
 				
@@ -1452,23 +1452,23 @@ public:
 				
 				value = tlocal.toQuat();
 				
-				nif->set<Quat>( iQuat, "Value", value );
+				nif->set<Quat>( iQuat, TA_VALUE, value );
 			}
 		}
 
-		QModelIndex iTransKeys = nif->getIndex( keyframeData, "Translations" );
+		QModelIndex iTransKeys = nif->getIndex( keyframeData, TA_TRANSLATIONS );
 		if ( iTransKeys.isValid() )
 		{
-			iTransKeys = nif->getIndex( iTransKeys, "Keys" );
+			iTransKeys = nif->getIndex( iTransKeys, TA_KEYS );
 			if ( iTransKeys.isValid() )
 			{
 				for ( int k = 0; k < nif->rowCount( iTransKeys ); k++ )
 				{
 					QModelIndex iKey = iTransKeys.child( k, 0 );
 
-					Vector3 value = nif->get<Vector3>( iKey, "Value" );
+					Vector3 value = nif->get<Vector3>( iKey, TA_VALUE );
 					value = Vector3( value[0], value[1], -value[2] );
-					nif->set<Vector3>( iKey, "Value", value );
+					nif->set<Vector3>( iKey, TA_VALUE, value );
 				}
 			}
 		}
@@ -1476,4 +1476,3 @@ public:
 };
 
 REGISTER_SPELL( spMirrorSkeleton )
-

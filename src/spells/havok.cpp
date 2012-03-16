@@ -364,7 +364,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & idx )
 	{
-		return nif && nif->isNiBlock( nif->getBlock( idx ), "bhkStiffSpringConstraint" );
+		return nif && nif->isNiBlock( nif->getBlock( idx ), T_BHKSTIFFSPRINGCONSTRAINT );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & idx )

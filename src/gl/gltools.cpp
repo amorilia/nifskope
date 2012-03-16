@@ -47,13 +47,13 @@ BoneWeights::BoneWeights( const NifModel * nif, const QModelIndex & index, int b
 	radius = nif->get<float>( index, TA_RADIUS );
 	bone = b;
 	
-	QModelIndex idxWeights = nif->getIndex( index, "Vertex Weights" );
+	QModelIndex idxWeights = nif->getIndex( index, TA_VERTEXWEIGHTS );
 	if ( idxWeights.isValid() )
 	{
 		for ( int c = 0; c < nif->rowCount( idxWeights ); c++ )
 		{
 			QModelIndex idx = idxWeights.child( c, 0 );
-			weights.append( VertexWeight( nif->get<int>( idx, TA_INDEX ), nif->get<float>( idx, "Weight" ) ) );
+			weights.append( VertexWeight( nif->get<int>( idx, TA_INDEX ), nif->get<float>( idx, TA_WEIGHT ) ) );
 		}
 	}
 	else // create artificial ones, TODO: should they weight nothing* instead?
@@ -64,9 +64,9 @@ BoneWeights::BoneWeights( const NifModel * nif, const QModelIndex & index, int b
 
 SkinPartition::SkinPartition( const NifModel * nif, const QModelIndex & index )
 {
-	numWeightsPerVertex = nif->get<int>( index, "Num Weights Per Vertex" );
+	numWeightsPerVertex = nif->get<int>( index, TA_NUMWEIGHTSPERVERTEX );
 	
-	vertexMap = nif->getArray<int>( index, "Vertex Map" );
+	vertexMap = nif->getArray<int>( index, TA_VERTEXMAP );
 	
 	if ( vertexMap.isEmpty() )
 	{
@@ -77,8 +77,8 @@ SkinPartition::SkinPartition( const NifModel * nif, const QModelIndex & index )
 	
 	boneMap = nif->getArray<int>( index, TA_BONES );
 	
-	QModelIndex iWeights = nif->getIndex( index, "Vertex Weights" );
-	QModelIndex iBoneIndices = nif->getIndex( index, "Bone Indices" );
+	QModelIndex iWeights = nif->getIndex( index, TA_VERTEXWEIGHTS );
+	QModelIndex iBoneIndices = nif->getIndex( index, TA_BONEINDICES );
 	
 	weights.resize( vertexMap.count() * numWeightsPerVertex );
 	

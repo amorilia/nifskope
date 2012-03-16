@@ -78,12 +78,12 @@ public:
 				interpolator = 0;
 			}
 			
-			if ( nif->isNiBlock( iBlock, "NiBSplineCompTransformInterpolator" ) )
+			if ( nif->isNiBlock( iBlock, T_NIBSPLINECOMPTRANSFORMINTERPOLATOR ) )
 			{
 				iInterpolator = iBlock;
 				interpolator = new BSplineTransformInterpolator(this);
 			}
-			else if ( nif->isNiBlock( iBlock, "NiTransformInterpolator" ) )
+			else if ( nif->isNiBlock( iBlock, T_NITRANSFORMINTERPOLATOR ) )
 			{
 				iInterpolator = iBlock;
 				interpolator = new TransformInterpolator(this);
@@ -173,11 +173,11 @@ public:
 					it.value().second = 0;
 				}
 				
-				if ( nif->isNiBlock( iInterpolator, "NiBSplineCompTransformInterpolator" ) )
+				if ( nif->isNiBlock( iInterpolator, T_NIBSPLINECOMPTRANSFORMINTERPOLATOR ) )
 				{
 					it.value().second = new BSplineTransformInterpolator( this );
 				}
-				else if ( nif->isNiBlock( iInterpolator, "NiTransformInterpolator" ) )
+				else if ( nif->isNiBlock( iInterpolator, T_NITRANSFORMINTERPOLATOR ) )
 				{
 					it.value().second = new TransformInterpolator( this );
 				}
@@ -225,11 +225,11 @@ public:
 							
 							QMap<QString,float> tags = scene->animTags[ name ];
 							
-							QModelIndex iKeys = nif->getBlock( nif->getLink( iSeq, "Text Keys" ), "NiTextKeyExtraData" );
-							QModelIndex iTags = nif->getIndex( iKeys, "Text Keys" );
+							QModelIndex iKeys = nif->getBlock( nif->getLink( iSeq, TA_TEXTKEYS ), T_NITEXTKEYEXTRADATA );
+							QModelIndex iTags = nif->getIndex( iKeys, TA_TEXTKEYS );
 							for ( int r = 0; r < nif->rowCount( iTags ); r++ )
 							{
-								tags.insert( nif->get<QString>( iTags.child( r, 0 ), "Value" ), nif->get<float>( iTags.child( r, 0 ), "Time" ) );
+								tags.insert( nif->get<QString>( iTags.child( r, 0 ), TA_VALUE ), nif->get<float>( iTags.child( r, 0 ), TA_TIME ) );
 							}
 							
 							scene->animTags[ name ] = tags;
@@ -265,7 +265,7 @@ public:
 				{
 					start = nif->get<float>( iSeq, TA_STARTTIME );
 					stop = nif->get<float>( iSeq, TA_STOPTIME );
-					phase = nif->get<float>( iSeq, "Phase" );
+					phase = nif->get<float>( iSeq, TA_PHASE );
 					frequency = nif->get<float>( iSeq, TA_FREQUENCY );
 					
 					QModelIndex iCtrlBlcks = nif->getIndex( iSeq, TA_CONTROLLEDBLOCKS );
@@ -273,38 +273,38 @@ public:
 					{
 						QModelIndex iCB = iCtrlBlcks.child( r, 0 );
 						
-						QModelIndex iInterpolator = nif->getBlock( nif->getLink( iCB, TA_INTERPOLATOR ), "NiInterpolator" );
+						QModelIndex iInterpolator = nif->getBlock( nif->getLink( iCB, TA_INTERPOLATOR ), T_NIINTERPOLATOR );
 						
 						QString nodename = nif->get<QString>( iCB, TA_NODENAME );
 						if ( nodename.isEmpty() ) {
 							QModelIndex idx = nif->getIndex( iCB, TA_NODENAMEOFFSET );
 							nodename = idx.sibling( idx.row(), NifModel::ValueCol ).data( NifSkopeDisplayRole ).toString();
 						}
-						QString proptype = nif->get<QString>( iCB, "Property Type" );
+						QString proptype = nif->get<QString>( iCB, TA_PROPERTYTYPE );
 						if ( proptype.isEmpty() ) {
-							QModelIndex idx = nif->getIndex( iCB, "Property Type Offset" );
+							QModelIndex idx = nif->getIndex( iCB, TA_PROPERTYTYPEOFFSET );
 							proptype = idx.sibling( idx.row(), NifModel::ValueCol ).data( NifSkopeDisplayRole ).toString();
 						}
-						QString ctrltype = nif->get<QString>( iCB, "Controller Type" );
+						QString ctrltype = nif->get<QString>( iCB, TA_CONTROLLERTYPE );
 						if ( ctrltype.isEmpty() ) {
-							QModelIndex idx = nif->getIndex( iCB, "Controller Type Offset" );
+							QModelIndex idx = nif->getIndex( iCB, TA_CONTROLLERTYPEOFFSET );
 							ctrltype = idx.sibling( idx.row(), NifModel::ValueCol ).data( NifSkopeDisplayRole ).toString();
 						}
-						QString var1 = nif->get<QString>( iCB, "Variable 1" );
+						QString var1 = nif->get<QString>( iCB, TA_VARIABLE1 );
 						if ( var1.isEmpty() ) {
 							QModelIndex idx = nif->getIndex( iCB, "Variable 1 Offset" );
 							var1 = idx.sibling( idx.row(), NifModel::ValueCol ).data( NifSkopeDisplayRole ).toString();
 						}
-						QString var2 = nif->get<QString>( iCB, "Variable 2" );
+						QString var2 = nif->get<QString>( iCB, TA_VARIABLE2 );
 						if ( var2.isEmpty() ) {
-							QModelIndex idx = nif->getIndex( iCB, "Variable 2 Offset" );
+							QModelIndex idx = nif->getIndex( iCB, TA_VARIABLE2OFFSET );
 							var2 = idx.sibling( idx.row(), NifModel::ValueCol ).data( NifSkopeDisplayRole ).toString();
 						}
 						Node * node = target->findChild( nodename );
 						if ( ! node )
 							continue;
 						
-						if ( ctrltype == "NiTransformController" && multiTargetTransformer )
+						if ( ctrltype == T_NITRANSFORMCONTROLLER && multiTargetTransformer )
 						{
 							if ( multiTargetTransformer->setInterpolator( node, iInterpolator ) )
 							{
@@ -358,11 +358,11 @@ public:
 	{
 		if ( Controller::update( nif, index ) )
 		{
-			iTranslations = nif->getIndex( iData, "Translations" );
-			iRotations = nif->getIndex( iData, "Rotations" );
+			iTranslations = nif->getIndex( iData, TA_TRANSLATIONS );
+			iRotations = nif->getIndex( iData, TA_ROTATIONS );
 			if ( ! iRotations.isValid() )
 				iRotations = iData;
-			iScales = nif->getIndex( iData, "Scales" );
+			iScales = nif->getIndex( iData, TA_SCALES );
 			return true;
 		}
 		return false;
@@ -401,7 +401,7 @@ public:
 		if ( Controller::update( nif, index ) )
 		{
 			// iData already points to the NiVisData
-			// note that nif.xml needs to have "Keys" not "Vis Keys" for interpolate() to work
+			// note that nif.xml needs to have TA_KEYS not "Vis Keys" for interpolate() to work
 			//iKeys = nif->getIndex( iData, TA_DATA );
 			return true;
 		}
@@ -618,7 +618,7 @@ void Node::makeParent( Node * newParent )
 void Node::setController( const NifModel * nif, const QModelIndex & iController )
 {
 	QString cname = nif->itemName( iController );
-	if ( cname == "NiTransformController" )
+	if ( cname == T_NITRANSFORMCONTROLLER )
 	{
 		Controller * ctrl = new TransformController( this, iController );
 		ctrl->update( nif, iController );
@@ -636,13 +636,13 @@ void Node::setController( const NifModel * nif, const QModelIndex & iController 
 		ctrl->update( nif, iController );
 		controllers.append( ctrl );
 	}
-	else if ( cname == "NiKeyframeController" )
+	else if ( cname == T_NIKEYFRAMECONTROLLER )
 	{
 		Controller * ctrl = new KeyframeController( this, iController );
 		ctrl->update( nif, iController );
 		controllers.append( ctrl );
 	}
-	else if ( cname == "NiVisController" )
+	else if ( cname == T_NIVISCONTROLLER )
 	{
 		Controller * ctrl = new VisibilityController( this, iController );
 		ctrl->update( nif, iController );
@@ -757,7 +757,7 @@ void Node::transform()
 	const NifModel * nif = static_cast<const NifModel *>( iBlock.model() );
 	if ( iBlock.isValid() && nif )
 	{
-		QModelIndex iObject = nif->getBlock( nif->getLink( iBlock, "Collision Data" ) );
+		QModelIndex iObject = nif->getBlock( nif->getLink( iBlock, TA_COLLISIONDATA ) );
 		if ( ! iObject.isValid() )
 			iObject = nif->getBlock( nif->getLink( iBlock, TA_COLLISIONOBJECT ) );
 		if ( iObject.isValid() )
@@ -927,7 +927,7 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 	//qWarning() << "draw shape" << nif->getBlockNumber( iShape ) << nif->itemName( iShape );
 	
 	QString name = nif->itemName( iShape );
-	if ( name == "bhkListShape" )
+	if ( name == T_BHKLISTSHAPE )
 	{
 		QModelIndex iShapes = nif->getIndex( iShape, TA_SUBSHAPES );
 		if ( iShapes.isValid() )
@@ -950,15 +950,15 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 			}
 		}
 	}
-	else if ( name == "bhkTransformShape" || name == "bhkConvexTransformShape" )
+	else if ( name == T_BHKTRANSFORMSHAPE || name == T_BHKCONVEXTRANSFORMSHAPE )
 	{
 		glPushMatrix();
-		Matrix4 tm = nif->get<Matrix4>( iShape, "Transform" );
+		Matrix4 tm = nif->get<Matrix4>( iShape, TA_TRANSFORM );
 		glMultMatrix( tm );
 		drawHvkShape( nif, nif->getBlock( nif->getLink( iShape, TA_SHAPE ) ), stack, scene, origin_color3fv );
 		glPopMatrix();
 	}
-	else if ( name == "bhkSphereShape" )
+	else if ( name == T_BHKSPHERESHAPE )
 	{
 		//glLoadName( nif->getBlockNumber( iShape ) );
 		if (Node::SELECTING) {
@@ -967,37 +967,37 @@ void drawHvkShape( const NifModel * nif, const QModelIndex & iShape, QStack<QMod
 		}
 		drawSphere( Vector3(), nif->get<float>( iShape, TA_RADIUS ) );
 	}
-	else if ( name == "bhkMultiSphereShape" )
+	else if ( name == T_BHKMULTISPHERESHAPE )
 	{
 		//glLoadName( nif->getBlockNumber( iShape ) );
 		if (Node::SELECTING) {
 			int s_nodeId = ID2COLORKEY( nif->getBlockNumber( iShape ) );
 			glColor4ubv( (GLubyte *)&s_nodeId );
 		}
-		QModelIndex iSpheres = nif->getIndex( iShape, "Spheres" );
+		QModelIndex iSpheres = nif->getIndex( iShape, TA_SPHERES );
 		for ( int r = 0; r < nif->rowCount( iSpheres ); r++ )
 		{
 			drawSphere( nif->get<Vector3>( iSpheres.child( r, 0 ), TA_CENTER ), nif->get<float>( iSpheres.child( r, 0 ), TA_RADIUS ) );
 		}
 	}
-	else if ( name == "bhkBoxShape" )
+	else if ( name == T_BHKBOXSHAPE )
 	{
 		//glLoadName( nif->getBlockNumber( iShape ) );
 		if (Node::SELECTING) {
 			int s_nodeId = ID2COLORKEY( nif->getBlockNumber( iShape ) );
 			glColor4ubv( (GLubyte *)&s_nodeId );
 		}
-		Vector3 v = nif->get<Vector3>( iShape, "Dimensions" );
+		Vector3 v = nif->get<Vector3>( iShape, TA_DIMENSION );
 		drawBox( v, - v );
 	}
-	else if ( name == "bhkCapsuleShape" )
+	else if ( name == T_BHKCAPSULESHAPE )
 	{
 		//glLoadName( nif->getBlockNumber( iShape ) );
 		if (Node::SELECTING) {
 			int s_nodeId = ID2COLORKEY( nif->getBlockNumber( iShape ) );
 			glColor4ubv( (GLubyte *)&s_nodeId );
 		}
-		drawCapsule( nif->get<Vector3>( iShape, "First Point" ), nif->get<Vector3>( iShape, "Second Point" ), nif->get<float>( iShape, TA_RADIUS ) );
+		drawCapsule( nif->get<Vector3>( iShape, TA_FIRSTPOINT ), nif->get<Vector3>( iShape, TA_SECONDPOINT ), nif->get<float>( iShape, TA_RADIUS ) );
 	}
 	else if ( name == T_BHKNITRISTRIPSSHAPE )
 	{
@@ -1258,14 +1258,14 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 		const Vector3 pivotB( nif->get<Vector4>( iHinge, TA_PIVOTB ) );
 		
 		const Vector3 axleA( nif->get<Vector4>( iHinge, TA_AXLEA ) );
-		const Vector3 axleA1( nif->get<Vector4>( iHinge, "Perp2 Axle In A1" ) );
+		const Vector3 axleA1( nif->get<Vector4>( iHinge, TA_PERP2AXLEINA1 ) );
 		const Vector3 axleA2( nif->get<Vector4>( iHinge, TA_PERP2AXLEINA2 ) );
 		
 		const Vector3 axleB( nif->get<Vector4>( iHinge, TA_AXLEB ) );
 		const Vector3 axleB2( nif->get<Vector4>( iHinge, TA_PERP2AXLEINB2 ) );
 		
-		const float minAngle = nif->get<float>( iHinge, "Min Angle" );
-		const float maxAngle = nif->get<float>( iHinge, "Max Angle" );
+		const float minAngle = nif->get<float>( iHinge, TA_MINANGLE );
+		const float maxAngle = nif->get<float>( iHinge, TA_MAXANGLE );
 		
 		glPushMatrix();
 		glMultMatrix( tBodies.value( 0 ) );
@@ -1307,7 +1307,7 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 		const Vector3 pivotA( nif->get<Vector4>( iHinge, TA_PIVOTA ) );
 		const Vector3 pivotB( nif->get<Vector4>( iHinge, TA_PIVOTB ) );
 		
-		const Vector3 axleA1( nif->get<Vector4>( iHinge, "Perp2 Axle In A1" ) );
+		const Vector3 axleA1( nif->get<Vector4>( iHinge, TA_PERP2AXLEINA1 ) );
 		const Vector3 axleA2( nif->get<Vector4>( iHinge, TA_PERP2AXLEINA2 ) );
 		const Vector3 axleA( Vector3::crossproduct( axleA1, axleA2 ) );
 		
@@ -1329,7 +1329,7 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 		}
 		else if ( nif->checkVersion( NF_V20020007, 0 ) )
 		{
-			Vector3 axleB1temp( nif->get<Vector4>( iHinge, "Perp2 Axle In B1" ) );
+			Vector3 axleB1temp( nif->get<Vector4>( iHinge, TA_PERP2AXLEINB1 ) );
 			Vector3 axleB2temp( nif->get<Vector4>( iHinge, TA_PERP2AXLEINB2 ) );
 		}
 		
@@ -1357,7 +1357,7 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 		glBegin( GL_LINES ); glVertex( pivotB ); glVertex( pivotB + axleB ); glEnd();
 		drawSolidArc( pivotB, axleB / 7, axleB2, axleB1, minAngle, maxAngle, 1.01f, 16 );
 	}
-	else if ( name == "bhkStiffSpringConstraint" )
+	else if ( name == T_BHKSTIFFSPRINGCONSTRAINT )
 	{
 		const Vector3 pivotA = tBodies.value( 0 ) * Vector3( nif->get<Vector4>( iConstraint, TA_PIVOTA ) );
 		const Vector3 pivotB = tBodies.value( 1 ) * Vector3( nif->get<Vector4>( iConstraint, TA_PIVOTB ) );
@@ -1381,10 +1381,10 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 		const Vector3 twistA( nif->get<Vector4>( iRagdoll, TA_TWISTA ) );
 		const Vector3 twistB( nif->get<Vector4>( iRagdoll, TA_TWISTB ) );
 		
-		const float coneAngle( nif->get<float>( iRagdoll, "Cone Max Angle" ) );
+		const float coneAngle( nif->get<float>( iRagdoll, TA_CONEMAXANGLE ) );
 		
-		const float minPlaneAngle( nif->get<float>( iRagdoll, "Plane Min Angle" ) );
-		const float maxPlaneAngle( nif->get<float>( iRagdoll, "Plane Max Angle" ) );
+		const float minPlaneAngle( nif->get<float>( iRagdoll, TA_PLANEMINANGLE ) );
+		const float maxPlaneAngle( nif->get<float>( iRagdoll, TA_PLANEMAXANGLE ) );
 		
 		// Unused? GCC complains
 		/*
@@ -1423,11 +1423,11 @@ void drawHvkConstraint( const NifModel * nif, const QModelIndex & iConstraint, c
 		const Vector3 pivotA( nif->get<Vector4>( iConstraint, TA_PIVOTA ) );
 		const Vector3 pivotB( nif->get<Vector4>( iConstraint, TA_PIVOTB ) );
 
-		const Vector3 planeNormal( nif->get<Vector4>( iConstraint, "Plane" ) );
-		const Vector3 slidingAxis( nif->get<Vector4>( iConstraint, "Sliding Axis" ) );
+		const Vector3 planeNormal( nif->get<Vector4>( iConstraint, TA_PLANE ) );
+		const Vector3 slidingAxis( nif->get<Vector4>( iConstraint, TA_SLIDINGAXIS ) );
 
-		const float minDistance = nif->get<float>( iConstraint, "Min Distance" );
-		const float maxDistance = nif->get<float>( iConstraint, "Max Distance" );
+		const float minDistance = nif->get<float>( iConstraint, TA_MINDISTANCE );
+		const float maxDistance = nif->get<float>( iConstraint, TA_MAXDISTANCE );
 
 		const Vector3 d1 = pivotA + slidingAxis * minDistance;
 		const Vector3 d2 = pivotA + slidingAxis * maxDistance;
@@ -1496,9 +1496,9 @@ void Node::drawHavok()
 		return;
 
 	//Check if there's any old style collision bounding box set
-	if ( nif->get<bool>( iBlock, "Has Bounding Box" ) == true )
+	if ( nif->get<bool>( iBlock, TA_HASBOUNDINGBOX ) == true )
 	{
-		QModelIndex iBox = nif->getIndex( iBlock, "Bounding Box" );
+		QModelIndex iBox = nif->getIndex( iBlock, TA_BOUNDINGBOX );
 		
 		Transform bt;
 		
@@ -1536,12 +1536,12 @@ void Node::drawHavok()
 	{
 		for ( int d = 0; d < nif->rowCount( iExtraDataList ); d++ )
 		{
-			QModelIndex iBound = nif->getBlock( nif->getLink( iExtraDataList.child( d, 0 ) ), "BSBound" );
+			QModelIndex iBound = nif->getBlock( nif->getLink( iExtraDataList.child( d, 0 ) ), T_BSBOUND );
 			if ( ! iBound.isValid() )
 				continue;
 			
 			Vector3 center = nif->get<Vector3>( iBound, TA_CENTER );
-			Vector3 dim = nif->get<Vector3>( iBound, "Dimensions" );
+			Vector3 dim = nif->get<Vector3>( iBound, TA_DIMENSION );
 			
 			glPushMatrix();
 			glLoadMatrix( scene->view );
@@ -1565,7 +1565,7 @@ void Node::drawHavok()
 		}
 	}
 	
-	QModelIndex iObject = nif->getBlock( nif->getLink( iBlock, "Collision Data" ) );
+	QModelIndex iObject = nif->getBlock( nif->getLink( iBlock, TA_COLLISIONDATA ) );
 	if ( ! iObject.isValid() )
 		iObject = nif->getBlock( nif->getLink( iBlock, TA_COLLISIONOBJECT ) );
 	if ( ! iObject.isValid() )
@@ -1636,7 +1636,7 @@ void Node::drawHavok()
 	
 	glPopMatrix();
 	
-	foreach ( qint32 l, nif->getLinkArray( iBody, "Constraints" ) )
+	foreach ( qint32 l, nif->getLinkArray( iBody, TA_CONSTRAINTS ) )
 	{
 		QModelIndex iConstraint = nif->getBlock( l );
 		if ( nif->inherits( iConstraint, T_BHKCONSTRAINT ) )
@@ -1648,9 +1648,9 @@ void drawFurnitureMarker( const NifModel *nif, const QModelIndex &iPosition )
 {
 	QString name = nif->itemName( iPosition );
 	Vector3 offs = nif->get<Vector3>( iPosition, TA_OFFSET );
-	quint16 orient = nif->get<quint16>( iPosition, "Orientation" );
-	quint8 ref1 = nif->get<quint8>( iPosition, "Position Ref 1" );
-	quint8 ref2 = nif->get<quint8>( iPosition, "Position Ref 2" );
+	quint16 orient = nif->get<quint16>( iPosition, TA_ORIENTATION );
+	quint8 ref1 = nif->get<quint8>( iPosition, TA_POSITIONREF1 );
+	quint8 ref2 = nif->get<quint8>( iPosition, TA_POSITIONREF2 );
 
 	if ( ref1 != ref2 )
 	{
@@ -1760,11 +1760,11 @@ void Node::drawFurn()
 	
 	for ( int p = 0; p < nif->rowCount( iExtraDataList ); p++ )
 	{// DONE: never seen Furn in nifs, so there may be a need of a fix here later - saw one, fixed a bug
-		QModelIndex iFurnMark = nif->getBlock( nif->getLink( iExtraDataList.child( p, 0 ) ), "BSFurnitureMarker" );
+		QModelIndex iFurnMark = nif->getBlock( nif->getLink( iExtraDataList.child( p, 0 ) ), T_BSFURNITUREMARKER );
 		if ( ! iFurnMark.isValid() )
 			continue;
 	
-		QModelIndex iPositions = nif->getIndex( iFurnMark, "Positions" );		
+		QModelIndex iPositions = nif->getIndex( iFurnMark, TA_POSITIONS );		
 		if ( !iPositions.isValid() )
 			break;
 			
@@ -1827,9 +1827,9 @@ BoundSphere Node::bounds() const
 		return boundsphere;
 
 	// old style collision bounding box
-	if ( nif->get<bool>( iBlock, "Has Bounding Box" ) == true )
+	if ( nif->get<bool>( iBlock, TA_HASBOUNDINGBOX ) == true )
 	{
-		QModelIndex iBox = nif->getIndex( iBlock, "Bounding Box" );
+		QModelIndex iBox = nif->getIndex( iBlock, TA_BOUNDINGBOX );
 		Vector3 trans = nif->get<Vector3>( iBox, TA_TRANSLATION );
 		Vector3 rad = nif->get<Vector3>( iBox, TA_RADIUS );
 		boundsphere |= BoundSphere(trans, rad.length());
@@ -1842,12 +1842,12 @@ BoundSphere Node::bounds() const
 	{
 		for ( int d = 0; d < nif->rowCount( iExtraDataList ); d++ )
 		{
-			QModelIndex iBound = nif->getBlock( nif->getLink( iExtraDataList.child( d, 0 ) ), "BSBound" );
+			QModelIndex iBound = nif->getBlock( nif->getLink( iExtraDataList.child( d, 0 ) ), T_BSBOUND );
 			if ( ! iBound.isValid() )
 				continue;
 			
 			Vector3 center = nif->get<Vector3>( iBound, TA_CENTER );
-			Vector3 dim = nif->get<Vector3>( iBound, "Dimensions" );
+			Vector3 dim = nif->get<Vector3>( iBound, TA_DIMENSION );
 			boundsphere |= BoundSphere(center, dim.length());
 		}
 	}
@@ -1873,21 +1873,21 @@ void LODNode::update( const NifModel * nif, const QModelIndex & index )
 	if ( ( iBlock.isValid() && index == iBlock ) || ( iData.isValid() && index == iData ) )
 	{
 		ranges.clear();
-		iData = nif->getBlock( nif->getLink( iBlock, "LOD Level Data" ), "NiRangeLODData" );
+		iData = nif->getBlock( nif->getLink( iBlock, TA_LODLEVELDATA ), T_NIRANGELODDATA );
 		QModelIndex iLevels;
 		if ( iData.isValid() )
 		{
-			center = nif->get<Vector3>( iData, "LOD Center" );
-			iLevels = nif->getIndex( iData, "LOD Levels" );
+			center = nif->get<Vector3>( iData, TA_LODCENTER );
+			iLevels = nif->getIndex( iData, TA_LODLEVELS );
 		}
 		else
 		{
-			center = nif->get<Vector3>( iBlock, "LOD Center" );
-			iLevels = nif->getIndex( iBlock, "LOD Levels" );
+			center = nif->get<Vector3>( iBlock, TA_LODCENTER );
+			iLevels = nif->getIndex( iBlock, TA_LODLEVELS );
 		}
 		if ( iLevels.isValid() )
 			for ( int r = 0; r < nif->rowCount( iLevels ); r++ )
-				ranges.append( qMakePair<float,float>( nif->get<float>( iLevels.child( r, 0 ), "Near Extent" ), nif->get<float>( iLevels.child( r, 0 ), "Far Extent" ) ) );
+				ranges.append( qMakePair<float,float>( nif->get<float>( iLevels.child( r, 0 ), TA_NEAREXTENT ), nif->get<float>( iLevels.child( r, 0 ), TA_FAREXTENT ) ) );
 	}
 }
 

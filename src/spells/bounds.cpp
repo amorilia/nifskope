@@ -51,50 +51,50 @@ public:
 
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return (nif->itemName( index ) == "BSBound")
-			|| (nif->itemName( index.parent() ) == "BSBound" )
-			|| (nif->get<bool>( index, "Has Bounding Box" ) == true)
-			|| (nif->itemName( index ) == "Bounding Box")
-			|| (nif->itemName( index.parent() ) == "Bounding Box");
+		return (nif->itemName( index ) == T_BSBOUND)
+			|| (nif->itemName( index.parent() ) == T_BSBOUND )
+			|| (nif->get<bool>( index, TA_HASBOUNDINGBOX ) == true)
+			|| (nif->itemName( index ) == TA_BOUNDINGBOX)
+			|| (nif->itemName( index.parent() ) == TA_BOUNDINGBOX);
 	}
 
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
 		NifBlockEditor * edit = new NifBlockEditor( nif, nif->getBlock( index ) );
-		if ( nif->get<bool>( index, "Has Bounding Box" ) == true || nif->itemName( index ) == "Bounding Box" || nif->itemName( index.parent() ) == "Bounding Box" )
+		if ( nif->get<bool>( index, TA_HASBOUNDINGBOX ) == true || nif->itemName( index ) == TA_BOUNDINGBOX || nif->itemName( index.parent() ) == TA_BOUNDINGBOX )
 		{
 			QModelIndex iBound;
-			if ( nif->itemName( index ) == "Bounding Box" )
+			if ( nif->itemName( index ) == TA_BOUNDINGBOX )
 			{
 				iBound = index;
 			}
-			else if ( nif->itemName( index.parent() ) == "Bounding Box" )
+			else if ( nif->itemName( index.parent() ) == TA_BOUNDINGBOX )
 			{
 				iBound = index.parent();
 			}
 			else
 			{
-				iBound = nif->getIndex( index, "Bounding Box" );
+				iBound = nif->getIndex( index, TA_BOUNDINGBOX );
 			}
 			
 			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, TA_TRANSLATION ) ) );
 			edit->add( new NifRotationEdit( nif, nif->getIndex( iBound, TA_ROTATION ) ) );
 			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, TA_RADIUS ) ) );
 		}
-		else if ( nif->itemName( index ) == "BSBound" || nif->itemName( index.parent() ) == "BSBound" )
+		else if ( nif->itemName( index ) == T_BSBOUND || nif->itemName( index.parent() ) == T_BSBOUND )
 		{
 			QModelIndex iBound;
-			if ( nif->itemName( index ) == "BSBound" )
+			if ( nif->itemName( index ) == T_BSBOUND )
 			{
 				iBound = index;
 			}
-			else if ( nif->itemName( index.parent() ) == "BSBound" )
+			else if ( nif->itemName( index.parent() ) == T_BSBOUND )
 			{
 				iBound = index.parent();
 			}
 
 			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, TA_CENTER ) ) );
-			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, "Dimensions" ) ) );
+			edit->add( new NifVectorEdit( nif, nif->getIndex( iBound, TA_DIMENSION ) ) );
 		}
 		edit->show();
 		return index;

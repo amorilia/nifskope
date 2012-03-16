@@ -224,7 +224,7 @@ bool KfmModel::setHeaderString( const QString & s )
 		}
 		else
 		{
-			msg( Message() << tr("version") << version2string( version ) << tr("not supported yet") );
+			msg( Message() << tr(TAG_VERSION) << version2string( version ) << tr("not supported yet") );
 			return false;
 		}
 	}

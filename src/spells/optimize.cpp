@@ -89,12 +89,12 @@ public:
 					else if ( nif->get<QString>( iBlock, TA_NAME ).contains( "Default" ) )
 						nif->set<QString>( iBlock, TA_NAME, "Default" );
 				}
-				if ( nif->inherits( iBlock, "BSShaderProperty" ) || nif->isNiBlock( iBlock, T_BSSHADERTEXTURESET) )
+				if ( nif->inherits( iBlock, T_BSSHADERPROPERTY ) || nif->isNiBlock( iBlock, T_BSSHADERTEXTURESET) )
 				{
 					// these need to be unique
 					continue;
 				}
-				if ( nif->inherits( iBlock, "NiProperty" ) || nif->inherits( iBlock, T_NISOURCETEXTURE ) )
+				if ( nif->inherits( iBlock, T_NIPROPERTY ) || nif->inherits( iBlock, T_NISOURCETEXTURE ) )
 				{
 					QBuffer data;
 					data.open( QBuffer::WriteOnly );
@@ -169,7 +169,7 @@ public:
 				while ( it.hasNext() )
 				{
 					qint32 & l = it.next();
-					QModelIndex iProp = nif->getBlock( l, "NiProperty" );
+					QModelIndex iProp = nif->getBlock( l, T_NIPROPERTY );
 					if ( iProp.isValid() && nif->getParent( l ) != b )
 					{
 						QMap<qint32,qint32> map;
@@ -413,8 +413,8 @@ public:
 			return false;
 		}
 		
-		QModelIndex iDataA = nif->getBlock( nif->getLink( iTriA, TA_DATA ), "NiTriBasedGeomData" );
-		QModelIndex iDataB = nif->getBlock( nif->getLink( iTriB, TA_DATA ), "NiTriBasedGeomData" );
+		QModelIndex iDataA = nif->getBlock( nif->getLink( iTriA, TA_DATA ), T_NITRIBASEDGEOMDATA );
+		QModelIndex iDataB = nif->getBlock( nif->getLink( iTriB, TA_DATA ), T_NITRIBASEDGEOMDATA );
 		
 		return dataMatches( nif, iDataA, iDataB );
 	}
@@ -444,8 +444,8 @@ public:
 	{
 		nif->set<quint32>( iTriB, TA_FLAGS, nif->get<quint32>( iTriB, TA_FLAGS ) | 1 );
 		
-		QModelIndex iDataA = nif->getBlock( nif->getLink( iTriA, TA_DATA ), "NiTriBasedGeomData" );
-		QModelIndex iDataB = nif->getBlock( nif->getLink( iTriB, TA_DATA ), "NiTriBasedGeomData" );
+		QModelIndex iDataA = nif->getBlock( nif->getLink( iTriA, TA_DATA ), T_NITRIBASEDGEOMDATA );
+		QModelIndex iDataB = nif->getBlock( nif->getLink( iTriB, TA_DATA ), T_NITRIBASEDGEOMDATA );
 		
 		int numA = nif->get<int>( iDataA, TA_NUMVERTICES );
 		int numB = nif->get<int>( iDataB, TA_NUMVERTICES );

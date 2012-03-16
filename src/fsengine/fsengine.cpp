@@ -109,7 +109,7 @@ FileFlags FSOverlayEngine::fileFlags( FileFlags type = FileInfoAll ) const
 			if ( ! caseSensitive() )
 				name = name.toLower();
 			
-			//qDebug() << "name" << name;
+			//qDebug() << A_NAME << name;
 			
 			if ( overlayDirs[ base ].contains( name ) )
 			{
@@ -294,7 +294,7 @@ public:
 					if ( x >= 0 )
 						bn.remove( 0, x + 1 );
 #ifndef QT_NO_DEBUG
-					qDebug() << "name" << bn;
+					qDebug() << A_NAME << bn;
 #endif
 					return bn;
 				}	break;

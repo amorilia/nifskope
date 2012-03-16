@@ -59,12 +59,12 @@ public:
 		if ( !nif->checkVersion( NF_V20020007, NF_V20020007 ) || (nif->getUserVersion() != 11) )
 			return false;
 		
-		return !index.isValid() || nif->getBlock( index, "NiGeometryData" ).isValid();
+		return !index.isValid() || nif->getBlock( index, T_NIGEOMETRYDATA ).isValid();
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		if ( index.isValid() && nif->getBlock( index, "NiGeometryData" ).isValid() )
+		if ( index.isValid() && nif->getBlock( index, T_NIGEOMETRYDATA ).isValid() )
 		{
 			nif->set<int>(index, "Unknown ID", 0);        
 		}
@@ -73,7 +73,7 @@ public:
 			// set all blocks
 			for ( int n = 0; n < nif->getBlockCount(); n++ ) {
 				QModelIndex iBlock = nif->getBlock( n );
-				if ( nif->getBlock( iBlock, "NiGeometryData" ).isValid() ) 
+				if ( nif->getBlock( iBlock, T_NIGEOMETRYDATA ).isValid() ) 
 				{
 					cast(nif, iBlock);
 				}

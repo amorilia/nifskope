@@ -356,26 +356,26 @@ public:
 	/*
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
 	{
-		QModelIndex iQuats = nif->getIndex( index, "Quaternion Keys" );
+		QModelIndex iQuats = nif->getIndex( index, TA_QUATERNIONKEYS );
 		int rotationType = nif->get<int>( index, TA_ROTATIONTYPE );
 		nif->set<int>( index, TA_ROTATIONTYPE, 4 );
-		nif->updateArray( index, "XYZ Rotations" );
-		QModelIndex iRots = nif->getIndex( index, "XYZ Rotations" );
+		nif->updateArray( index, TA_XYZROTATIONS );
+		QModelIndex iRots = nif->getIndex( index, TA_XYZROTATIONS );
 
 		for( int i = 0; i < 3; i++ )
 		{
 			QModelIndex iRot = iRots.child( i, 0 );
 			nif->set<int>( iRot, "Num Keys", nif->get<int>(index, "Num Rotation Keys") );
-			nif->set<int>( iRot, "Interpolation", rotationType );
-			nif->updateArray( iRot, "Keys" );
+			nif->set<int>( iRot, TA_INTERPOLATION, rotationType );
+			nif->updateArray( iRot, TA_KEYS );
 		}
 
 		for ( int q = 0; q < nif->rowCount( iQuats ); q++ )
 		{
 			QModelIndex iQuat = iQuats.child( q, 0 );
 			
-			float time = nif->get<float>( iQuat, "Time" );
-			Quat value = nif->get<Quat>( iQuat, "Value" );
+			float time = nif->get<float>( iQuat, TA_TIME );
+			Quat value = nif->get<Quat>( iQuat, TA_VALUE );
 
 			Matrix tlocal;
 			tlocal.fromQuat( value );
@@ -387,7 +387,7 @@ public:
 			QModelIndex yRot = iRots.child( 1, 0 );
 			QModelIndex zRot = iRots.child( 2, 0 );
 		
-			xRot = nif->getIndex( xRot, "Keys" );
+			xRot = nif->getIndex( xRot, TA_KEYS );
 
 		}
 

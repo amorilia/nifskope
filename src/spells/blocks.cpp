@@ -104,12 +104,12 @@ void blockLink( NifModel * nif, const QModelIndex & index, const QModelIndex & i
 	if ( nif->inherits( index, T_NINODE ) && nif->inherits( iBlock, T_NIAVOBJECT ) )
 	{
 		addLink( nif, index, TA_CHILDREN, nif->getBlockNumber( iBlock ) );
-		if ( nif->inherits( iBlock, "NiDynamicEffect" ) )
+		if ( nif->inherits( iBlock, T_NIDYNAMICEFFECT ) )
 		{
-			addLink( nif, index, "Effects", nif->getBlockNumber( iBlock ) );
+			addLink( nif, index, TA_EFFECTS, nif->getBlockNumber( iBlock ) );
 		}
 	}
-	else if ( nif->inherits( index, T_NIAVOBJECT ) && nif->inherits( iBlock, "NiProperty" ) )
+	else if ( nif->inherits( index, T_NIAVOBJECT ) && nif->inherits( iBlock, T_NIPROPERTY ) )
 	{
 		addLink( nif, index, TA_PROPERTIES, nif->getBlockNumber( iBlock ) );
 	}
@@ -120,16 +120,16 @@ void blockLink( NifModel * nif, const QModelIndex & index, const QModelIndex & i
 	{
 		addLink( nif, index, TA_PROPERTIES, nif->getBlockNumber( iBlock ) );
 	}
-	else if ( nif->inherits( iBlock, "BSShaderProperty") )
+	else if ( nif->inherits( iBlock, T_BSSHADERPROPERTY) )
 	{
 		addLink( nif, index, TA_PROPERTIES, nif->getBlockNumber( iBlock ) );
 	}
 
-	else if ( nif->inherits( index, T_NIAVOBJECT ) && nif->inherits( iBlock, "NiExtraData" ) )
+	else if ( nif->inherits( index, T_NIAVOBJECT ) && nif->inherits( iBlock, T_NIEXTRADATA ) )
 	{
 		addLink( nif, index, TA_EXTRADATALIST, nif->getBlockNumber( iBlock ) );
 	}
-	else if ( nif->inherits( index, "NiObjectNET") && nif->inherits( iBlock, T_NITIMECONTROLLER ) )
+	else if ( nif->inherits( index, T_NIOBJECTNET) && nif->inherits( iBlock, T_NITIMECONTROLLER ) )
 	{
 		if ( nif->getLink( index, TA_CONTROLLER ) > 0 )
 		{
@@ -245,7 +245,7 @@ public:
 			if ( act->text() == T_BSXFLAGS ) {
 				nif->set<QString>( nif->getIndex( newindex, TA_NAME ), "BSX" );
 			}
-			else if ( act->text() == "BSBound" ) {
+			else if ( act->text() == T_BSBOUND ) {
 				nif->set<QString>( nif->getIndex( newindex, TA_NAME ), "BBX" );
 			}
 			// return index to new block
@@ -276,7 +276,7 @@ public:
 		QStringList ids = nif->allNiBlocks();
 		ids.sort();
 		foreach ( QString id, ids )
-			if ( nif->inherits( id, "NiProperty" ) )
+			if ( nif->inherits( id, T_NIPROPERTY ) )
 				menu.addAction( id );
 		if ( menu.actions().isEmpty() )
 			return index;
@@ -314,7 +314,7 @@ public:
 		QStringList ids = nif->allNiBlocks();
 		ids.sort();
 		foreach ( QString id, ids )
-			if ( nif->inherits( id, T_NIAVOBJECT ) && ! nif->inherits( id, "NiDynamicEffect" ) )
+			if ( nif->inherits( id, T_NIAVOBJECT ) && ! nif->inherits( id, T_NIDYNAMICEFFECT ) )
 				menu.addAction( id );
 		
 		QAction * act = menu.exec( QCursor::pos() );
@@ -350,7 +350,7 @@ public:
 		QStringList ids = nif->allNiBlocks();
 		ids.sort();
 		foreach ( QString id, ids )
-			if ( nif->inherits( id, "NiDynamicEffect" ) )
+			if ( nif->inherits( id, T_NIDYNAMICEFFECT ) )
 				menu.addAction( id );
 		
 		QAction * act = menu.exec( QCursor::pos() );
@@ -359,14 +359,14 @@ public:
 			QPersistentModelIndex iParent = index;
 			QModelIndex iLight = nif->insertNiBlock( act->text(), nif->getBlockNumber( index ) + 1 );
 			addLink( nif, iParent, TA_CHILDREN, nif->getBlockNumber( iLight ) );
-			addLink( nif, iParent, "Effects", nif->getBlockNumber( iLight ) );
+			addLink( nif, iParent, TA_EFFECTS, nif->getBlockNumber( iLight ) );
 
 			if ( nif->checkVersion(0, NF_V04000002) ) {
 				nif->set<int>( iLight, "Num Affected Node List Pointers", 1 );
 				nif->updateArray( iLight, "Affected Node List Pointers" );
 			}
 
-			if ( act->text() == "NiTextureEffect" ) {
+			if ( act->text() == T_NITEXTUREEFFECT ) {
 				nif->set<int>( iLight, TA_FLAGS, 4 );
 				QModelIndex iSrcTex = nif->insertNiBlock( T_NISOURCETEXTURE, nif->getBlockNumber( iLight ) + 1 );
 				nif->setLink( iLight, TA_SOURCETEXTURE, nif->getBlockNumber( iSrcTex ) );
@@ -390,7 +390,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->isNiBlock( index ) && nif->inherits( index, "NiObjectNET" ) && nif->checkVersion( 0x0a000100, 0 );
+		return nif->isNiBlock( index ) && nif->inherits( index, T_NIOBJECTNET ) && nif->checkVersion( NF_V10000100, 0 );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -399,7 +399,7 @@ public:
 		QStringList ids = nif->allNiBlocks();
 		ids.sort();
 		foreach ( QString id, ids )
-			if ( nif->inherits( id, "NiExtraData" ) )
+			if ( nif->inherits( id, T_NIEXTRADATA ) )
 				menu.addAction( id );
 		QAction * act = menu.exec( QCursor::pos() );
 		if ( act )
@@ -411,7 +411,7 @@ public:
 			if ( act->text() == T_BSXFLAGS ) {
 				nif->set<QString>( nif->getIndex( iExtra, TA_NAME ), "BSX" );
 			}
-			else if ( act->text() == "BSBound" ) {
+			else if ( act->text() == T_BSBOUND ) {
 				nif->set<QString>( nif->getIndex( iExtra, TA_NAME ), "BBX" );
 			}
 			
@@ -1383,4 +1383,3 @@ public:
 };
 
 REGISTER_SPELL( spAttachParentNode )
-

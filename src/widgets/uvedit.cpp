@@ -845,7 +845,7 @@ bool UVWidget::setNifData( NifModel * nifModel, const QModelIndex & nifIndex )
 	textures->setNifFolder( nif->getFolder() );
 	
 	iShapeData = nif->getBlock( nif->getLink( iShape, TA_DATA ) );
-	if( nif->inherits( iShapeData, "NiTriBasedGeomData" ) )
+	if( nif->inherits( iShapeData, T_NITRIBASEDGEOMDATA ) )
 	{
 		iTexCoords = nif->getIndex( iShapeData, TA_UVSETS ).child( 0, 0 );
 		if( ! iTexCoords.isValid() || ! nif->rowCount( iTexCoords ) )
@@ -1607,4 +1607,3 @@ void UVWidget::duplicateCoordSet()
 	// reconnect data changed signal
 	connect( nif, SIGNAL( dataChanged( const QModelIndex &, const QModelIndex & ) ), this, SLOT( nifDataChanged( const QModelIndex & ) ) );
 }
-

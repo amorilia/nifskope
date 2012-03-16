@@ -84,15 +84,15 @@ public:
 	NifXmlHandler()
 	{
 		depth = 0;
-		tags.insert( "niftoolsxml", tagFile );
-		tags.insert( "version", tagVersion );
-		tags.insert( "compound", tagCompound );
-		tags.insert( "niobject", tagBlock );
-		tags.insert( "add", tagAdd );
-		tags.insert( "basic", tagBasic );
-		tags.insert( "enum", tagEnum );
-		tags.insert( "option", tagOption );
-		tags.insert( "bitflags", tagBitFlag );
+		tags.insert( TAG_NIFTOOLSXML, tagFile );
+		tags.insert( TAG_VERSION, tagVersion );
+		tags.insert( TAG_COMPOUND, tagCompound );
+		tags.insert( TAG_NIOBJECT, tagBlock );
+		tags.insert( TAG_ADD, tagAdd );
+		tags.insert( TAG_BASIC, tagBasic );
+		tags.insert( TAG_ENUM, tagEnum );
+		tags.insert( TAG_OPTION, tagOption );
+		tags.insert( TAG_BITFLAGS, tagBitFlag );
 		blk = 0;
 	}
 
@@ -168,10 +168,10 @@ public:
 					case tagCompound:
 					case tagBlock:
 					{
-						if ( ! list.value("nifskopetype").isEmpty() )
+						if ( ! list.value(A_NIFSKOPETYPE).isEmpty() )
 						{
-							QString alias = list.value( "name" );
-							QString type = list.value( "nifskopetype" );
+							QString alias = list.value( A_NAME );
+							QString type = list.value( A_NIFSKOPETYPE );
 							if ( alias != type )
 								if ( ! NifValue::registerAlias( alias, type ) )
 									err( tr("failed to register alias %1 for type %2").arg(alias).arg(type) );
@@ -180,9 +180,9 @@ public:
 						}
 						else
 						{
-							QString id = list.value( "name" );
+							QString id = list.value( A_NAME );
 							if ( x == tagCompound && NifValue::isValid( NifValue::type( id ) ) )
-								err( tr("compound %1 is already registered as internal type").arg( list.value( "name" ) ) );
+								err( tr("compound %1 is already registered as internal type").arg( list.value( A_NAME ) ) );
 							
 							if ( id.isEmpty() )
 								err( tr("compound and niblocks must have a name") );
@@ -192,11 +192,11 @@ public:
 							
 							if ( ! blk ) blk = new NifBlock;
 							blk->id = id;
-							blk->abstract = ( list.value( "abstract" ) == "1" );
+							blk->abstract = ( list.value( A_ABSTRACT ) == "1" );
 							
 							if ( x == tagBlock )
 							{
-								blk->ancestor = list.value( "inherit" );
+								blk->ancestor = list.value( A_INHERIT );
 								if ( ! blk->ancestor.isEmpty() )
 								{
 									if ( ! NifModel::blocks.contains( blk->ancestor ) )
@@ -207,8 +207,8 @@ public:
 					}	break;
 					case tagBasic:
 					{
-						QString alias = list.value( "name" );
-						QString type = list.value( "nifskopetype" );
+						QString alias = list.value( A_NAME );
+						QString type = list.value( A_NIFSKOPETYPE );
 						if ( alias.isEmpty() || type.isEmpty() )
 							err( tr("basic definition must have a name and a nifskopetype") );
 						if ( alias != type )
@@ -220,9 +220,9 @@ public:
 					case tagEnum:
 					case tagBitFlag:
 					{
-						typId = list.value( "name" );
+						typId = list.value( A_NAME );
 						typTxt = QString();
-						QString storage = list.value( "storage" );
+						QString storage = list.value( A_STORAGE );
 						if ( typId.isEmpty() || storage.isEmpty() )
 							err( tr("enum definition must have a name and a known storage type") );
 						if ( ! NifValue::registerAlias( typId, storage ) )
@@ -232,14 +232,14 @@ public:
 					}	break;
 					case tagVersion:
 					{
-						int v = NifModel::version2number( list.value( "num" ).trimmed() );
-						if ( v != 0 && ! list.value( "num" ).isEmpty() )
+						int v = NifModel::version2number( list.value( A_NUM ).trimmed() );
+						if ( v != 0 && ! list.value( A_NUM ).isEmpty() )
 							NifModel::supportedVersions.append( v );
 						else
-							err( tr("invalid version tag") );
+							err( tr("invalid "TAG_VERSION" tag") );
 					}	break;
 					default:
-						err( tr("expected basic, enum, compound, niobject or version got %1 instead").arg(tagid) );
+						err( tr("expected "TAG_BASIC", "TAG_ENUM", "TAG_COMPOUND", "TAG_NIOBJECT" or "TAG_VERSION" got %1 instead").arg(tagid) );
 				}	break;
 			case tagVersion:
 				//err( tr("version tag must not contain any sub tags") );
@@ -255,38 +255,32 @@ public:
 						// ns type optimizers come here
 						// we really shouldn't be doing this
 						// but it will work for now until we find a better solution
-						QString type = list.value( "type" );
-						QString nstype = list.value( "nifskopetype" );
+						QString type = list.value( A_TYPE );
+						QString nstype = list.value( A_NIFSKOPETYPE );
 						if (!nstype.isEmpty() && nstype != type) {
 							if ( NifValue::type( nstype ) == NifValue::tNone )
 								err( "failed to locate alias " + nstype );
 							type = nstype;
 						}
-						
-						if ( type == "KeyArray" ) type = "ns keyarray";
-						else if ( type == "VectorKeyArray" ) type = "ns keyvecarray";
-						else if ( type == "TypedVectorKeyArray" ) type = "ns keyvecarraytyp";
-						else if ( type == "RotationKeyArray" ) type = "ns keyrotarray";
-						
 						// now allocate
 						data = NifData(
-							list.value( "name" ),
+							list.value( A_NAME ),
 							type,
-							list.value( "template" ),
+							list.value( A_TEMPLATE ),
 							NifValue( NifValue::type( type ) ),
-							list.value( "arg" ),
-							list.value( "arr1" ),
-							list.value( "arr2" ),
-							list.value( "cond" ),
-							NifModel::version2number( list.value( "ver1" ) ),
-							NifModel::version2number( list.value( "ver2" ) ),
-							( list.value( "abstract" ) == "1" )
+							list.value( A_ARG ),
+							list.value( A_ARR1 ),
+							list.value( A_ARR2 ),
+							list.value( A_COND ),
+							NifModel::version2number( list.value( A_VER1 ) ),
+							NifModel::version2number( list.value( A_VER2 ) ),
+							( list.value( A_ABSTRACT ) == "1" )
 						);
 						if ( data.isAbstract() )
 						{
 							data.value.setAbstract( true );
 						}
-						QString defval = list.value( "default" );
+						QString defval = list.value( A_DEFAULT );
 						if ( ! defval.isEmpty() )
 						{
 							bool ok;
@@ -298,9 +292,9 @@ public:
 							}
 						}
 
-						QString vercond = list.value( "vercond" );
+						QString vercond = list.value( A_VERCOND );
 
-						QString userver = list.value( "userver" );
+						QString userver = list.value( A_USERVER );
 						if ( ! userver.isEmpty() )
 						{
 							if ( ! vercond.isEmpty() )
@@ -331,8 +325,8 @@ public:
 				switch ( x )
 				{
 					case tagOption:
-						optId = list.value( "name" );
-						optVal = list.value( "value" );
+						optId = list.value( A_NAME );
+						optVal = list.value( A_VALUE );
 						optTxt = QString();
 						
 						if ( optId.isEmpty() || optVal.isEmpty() )
@@ -514,16 +508,16 @@ public:
 bool NifModel::loadXML()
 {
 	QDir dir( QApplication::applicationDirPath() );
-	QString fname = dir.filePath( "nif.xml" ); // last resort
+	QString fname = dir.filePath( NIF_XML ); // last resort
         // Try local copy first, docsys, relative from nifskope/release, relative from ../nifskope-build/release, linux data dir
 	QStringList xmlList( QStringList()
-			<< "nif.xml"
-                        << "docsys/nifxml/nif.xml"
-                        << "../docsys/nifxml/nif.xml"
-                        << "../../docsys/nifxml/nif.xml"
-                        << "../nifskope/docsys/nifxml/nif.xml"
-                        << "../../nifskope/docsys/nifxml/nif.xml"
-			<< "/usr/share/nifskope/nif.xml" );
+			<< NIF_XML
+                        << XML_SP1""NIF_XML
+                        << XML_SP2""NIF_XML
+                        << XML_SP3""NIF_XML
+                        << XML_SP4""NIF_XML
+                        << XML_SP5""NIF_XML
+			<< XML_SP6""NIF_XML );
 	foreach( QString str, xmlList )
 	{
 		if ( dir.exists( str ) )

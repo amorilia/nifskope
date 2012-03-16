@@ -132,7 +132,7 @@ bool spApplyTransformation::isApplicable( const NifModel * nif, const QModelInde
 
 QModelIndex spApplyTransformation::cast( NifModel * nif, const QModelIndex & index )
 {
-	if ( ( nif->getLink( index, TA_CONTROLLER ) != -1 || nif->getLink( index, "Skin Instance" ) != -1 ) )
+	if ( ( nif->getLink( index, TA_CONTROLLER ) != -1 || nif->getLink( index, TA_SKININSTANCE ) != -1 ) )
 		if ( QMessageBox::question( 0, Spell::tr("Apply Transformation"), Spell::tr("On animated and or skinned nodes Apply Transformation most likely won't work the way you expected it."), Spell::tr("Try anyway"), Spell::tr("Cancel") ) != 0 )
 			return index;
 	
@@ -316,7 +316,7 @@ public:
 		if ( Transform::canConstruct( nif, index ) )
 			return true;
 		
-		QModelIndex iTransform = nif->getIndex( index, "Transform" );
+		QModelIndex iTransform = nif->getIndex( index, TA_TRANSFORM );
 		if ( ! iTransform.isValid() )
 			iTransform = index;
 		
@@ -334,7 +334,7 @@ public:
 		}
 		else
 		{
-			QModelIndex iTransform = nif->getIndex( index, "Transform" );
+			QModelIndex iTransform = nif->getIndex( index, TA_TRANSFORM );
 			if ( ! iTransform.isValid() )
 				iTransform = index;
 			edit->add( new NifMatrix4Edit( nif, iTransform ) );
@@ -355,7 +355,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->inherits( index, "NiGeometry" );
+		return nif->inherits( index, T_NIGEOMETRY );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -396,7 +396,7 @@ public:
 
 		settings.setValue( "scale normals", chkNormals->isChecked() );
 		
-		QModelIndex iData = nif->getBlock( nif->getLink( nif->getBlock( index ), TA_DATA ), "NiGeometryData" );
+		QModelIndex iData = nif->getBlock( nif->getLink( nif->getBlock( index ), TA_DATA ), T_NIGEOMETRYDATA );
 		
 		QVector<Vector3> vertices = nif->getArray<Vector3>( iData, TA_VERTICES );
 		QMutableVectorIterator<Vector3> it( vertices );
@@ -428,5 +428,3 @@ public:
 };
 
 REGISTER_SPELL( spScaleVertices )
-
-

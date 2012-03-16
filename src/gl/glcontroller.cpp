@@ -193,7 +193,7 @@ bool Controller::update( const NifModel * nif, const QModelIndex & index )
 	{
 		start = nif->get<float>( index, TA_STARTTIME );
 		stop = nif->get<float>( index, TA_STOPTIME );
-		phase = nif->get<float>( index, "Phase" );
+		phase = nif->get<float>( index, TA_PHASE );
 		frequency = nif->get<float>( index, TA_FREQUENCY );
 		
 		int flags = nif->get<int>( index, TA_FLAGS );
@@ -269,13 +269,13 @@ bool Controller::timeIndex( float time, const NifModel * nif, const QModelIndex 
 	int count;
 	if ( array.isValid() && ( count = nif->rowCount( array ) ) > 0 )
 	{
-		if ( time <= nif->get<float>( array.child( 0, 0 ), "Time" ) )
+		if ( time <= nif->get<float>( array.child( 0, 0 ), TA_TIME ) )
 		{
 			i = j = 0;
 			x = 0.0;
 			return true;
 		}
-		if ( time >= nif->get<float>( array.child( count - 1, 0 ), "Time" ) )
+		if ( time >= nif->get<float>( array.child( count - 1, 0 ), TA_TIME ) )
 		{
 			i = j = count - 1;
 			x = 0.0;
@@ -285,12 +285,12 @@ bool Controller::timeIndex( float time, const NifModel * nif, const QModelIndex 
 		if ( i < 0 || i >= count )
 			i = 0;
 		
-		float tI = nif->get<float>( array.child( i, 0 ), "Time" );
+		float tI = nif->get<float>( array.child( i, 0 ), TA_TIME );
 		if ( time > tI )
 		{
 			j = i + 1;
 			float tJ;
-			while ( time >= ( tJ = nif->get<float>( array.child( j, 0 ), "Time" ) ) )
+			while ( time >= ( tJ = nif->get<float>( array.child( j, 0 ), TA_TIME ) ) )
 			{
 				i = j++;
 				tI = tJ;
@@ -302,7 +302,7 @@ bool Controller::timeIndex( float time, const NifModel * nif, const QModelIndex 
 		{
 			j = i - 1;
 			float tJ;
-			while ( time <= ( tJ = nif->get<float>( array.child( j, 0 ), "Time" ) ) )
+			while ( time <= ( tJ = nif->get<float>( array.child( j, 0 ), TA_TIME ) ) )
 			{
 				i = j--;
 				tI = tJ;
@@ -326,21 +326,21 @@ template <typename T> bool interpolate( T & value, const QModelIndex & array, fl
 	const NifModel * nif = static_cast<const NifModel *>( array.model() );
 	if ( nif && array.isValid() )
 	{
-		QModelIndex frames = nif->getIndex( array, "Keys" );
+		QModelIndex frames = nif->getIndex( array, TA_KEYS );
 		int next;
 		float x;
 		if ( Controller::timeIndex( time, nif, frames, last, next, x ) )
 		{
-			T v1 = nif->get<T>( frames.child( last, 0 ), "Value" );
-			T v2 = nif->get<T>( frames.child( next, 0 ), "Value" );
+			T v1 = nif->get<T>( frames.child( last, 0 ), TA_VALUE );
+			T v2 = nif->get<T>( frames.child( next, 0 ), TA_VALUE );
 			
-			switch ( nif->get<int>( array, "Interpolation" ) )
+			switch ( nif->get<int>( array, TA_INTERPOLATION ) )
 			{
 				/*
 				case 2:
 				{
-					float t1 = nif->get<float>( frames.child( last, 0 ), "Forward" );
-					float t2 = nif->get<float>( frames.child( next, 0 ), "Backward" );
+					float t1 = nif->get<float>( frames.child( last, 0 ), TA_FORWARD );
+					float t2 = nif->get<float>( frames.child( next, 0 ), TA_BACKWARD );
 					
 					float x2 = x * x;
 					float x3 = x2 * x;
@@ -392,10 +392,10 @@ template <> bool Controller::interpolate( bool & value, const QModelIndex & arra
 	const NifModel * nif = static_cast<const NifModel *>( array.model() );
 	if ( nif && array.isValid() )
 	{
-		QModelIndex frames = nif->getIndex( array, "Keys" );
+		QModelIndex frames = nif->getIndex( array, TA_KEYS );
 		if ( timeIndex( time, nif, frames, last, next, x ) )
 		{
-			value = nif->get<int>( frames.child( last, 0 ), "Value" );
+			value = nif->get<int>( frames.child( last, 0 ), TA_VALUE );
 			return true;
 		}
 	}
@@ -413,7 +413,7 @@ template <> bool Controller::interpolate( Matrix & value, const QModelIndex & ar
 		{
 			case 4:
 			{
-				QModelIndex subkeys = nif->getIndex( array, "XYZ Rotations" );
+				QModelIndex subkeys = nif->getIndex( array, TA_XYZROTATIONS );
 				if ( subkeys.isValid() )
 				{
 					float r[3];
@@ -428,11 +428,11 @@ template <> bool Controller::interpolate( Matrix & value, const QModelIndex & ar
 			}	break;
 			default:
 			{
-				QModelIndex frames = nif->getIndex( array, "Quaternion Keys" );
+				QModelIndex frames = nif->getIndex( array, TA_QUATERNIONKEYS );
 				if ( timeIndex( time, nif, frames, last, next, x ) )
 				{
-					Quat v1 = nif->get<Quat>( frames.child( last, 0 ), "Value" );
-					Quat v2 = nif->get<Quat>( frames.child( next, 0 ), "Value" );
+					Quat v1 = nif->get<Quat>( frames.child( last, 0 ), TA_VALUE );
+					Quat v2 = nif->get<Quat>( frames.child( next, 0 ), TA_VALUE );
 					if (Quat::dotproduct( v1, v2 ) < 0)
 						v1.negate ();// don't take the long path
 					Quat v3 = Quat::slerp(x, v1, v2);
@@ -614,11 +614,11 @@ bool TransformInterpolator::update( const NifModel * nif, const QModelIndex & in
 {
 	if ( Interpolator::update( nif, index ) )
 	{
-		QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ), "NiTransformData" );
-		iTranslations = nif->getIndex( iData, "Translations" );
-		iRotations = nif->getIndex( iData, "Rotations" );
+		QModelIndex iData = nif->getBlock( nif->getLink( index, TA_DATA ), T_NITRANSFORMDATA );
+		iTranslations = nif->getIndex( iData, TA_TRANSLATIONS );
+		iRotations = nif->getIndex( iData, TA_ROTATIONS );
 		if ( ! iRotations.isValid() ) iRotations = iData;
-		iScales = nif->getIndex( iData, "Scales" );
+		iScales = nif->getIndex( iData, TA_SCALES );
 		return true;
 	}
 	return false;
@@ -646,27 +646,27 @@ bool BSplineTransformInterpolator::update( const NifModel * nif, const QModelInd
       start = nif->get<float>( index, TA_STARTTIME);
       stop = nif->get<float>( index, TA_STOPTIME);
 
-      iSpline = nif->getBlock( nif->getLink( index, "Spline Data" ) );
-      iBasis = nif->getBlock( nif->getLink( index, "Basis Data") );
+      iSpline = nif->getBlock( nif->getLink( index, TA_SPLINEDATA ) );
+      iBasis = nif->getBlock( nif->getLink( index, TA_BASISDATA) );
 
       if (iSpline.isValid())
-         iControl = nif->getIndex( iSpline, "Short Control Points");
+         iControl = nif->getIndex( iSpline, TA_SHORTCONTROLPOINTS);
       if (iBasis.isValid())
-          nCtrl = nif->get<uint>( iBasis, "Num Control Points" );
+          nCtrl = nif->get<uint>( iBasis, TA_NUMCONTROLPOINTS );
 
       lTrans = nif->getIndex( index, TA_TRANSLATION);
       lRotate = nif->getIndex( index, TA_ROTATION);
       lScale = nif->getIndex( index, TA_SCALE);
 
-      lTransOff = nif->get<uint>( index, "Translation Offset");
-      lRotateOff = nif->get<uint>( index, "Rotation Offset");
-      lScaleOff = nif->get<uint>( index, "Scale Offset");
-      lTransMult = nif->get<float>( index, "Translation Multiplier");
-      lRotateMult = nif->get<float>( index, "Rotation Multiplier");
-      lScaleMult = nif->get<float>( index, "Scale Multiplier");
-      lTransBias = nif->get<float>( index, "Translation Bias");
-      lRotateBias = nif->get<float>( index, "Rotation Bias");
-      lScaleBias = nif->get<float>( index, "Scale Bias");
+      lTransOff = nif->get<uint>( index, TA_TRANSLATIONOFFSET);
+      lRotateOff = nif->get<uint>( index, TA_ROTATIONOFFSET);
+      lScaleOff = nif->get<uint>( index, TA_SCALEOFFSET);
+      lTransMult = nif->get<float>( index, TA_TRANSLATIONMULTIPLIER);
+      lRotateMult = nif->get<float>( index, TA_ROTATIONMULTIPLIER);
+      lScaleMult = nif->get<float>( index, TA_SCALEMULTIPLIER);
+      lTransBias = nif->get<float>( index, TA_TRANSLATIONBIAS);
+      lRotateBias = nif->get<float>( index, TA_ROTATIONBIAS);
+      lScaleBias = nif->get<float>( index, TA_SCALEBIAS);
 
       return true;
    }

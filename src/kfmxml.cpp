@@ -54,7 +54,7 @@ public:
 	KfmXmlHandler()
 	{
 		depth = 0;
-		elements << "niftoolsxml" << "version" << "compound" << "add";
+		elements << TAG_NIFTOOLSXML << TAG_VERSION << TAG_COMPOUND << TAG_ADD;
 		blk = 0;
 	}
 	
@@ -101,17 +101,17 @@ public:
 				switch ( x )
 				{
 					case 1:
-						v = KfmModel::version2number( list.value( "num" ).trimmed() );
-						if ( v != 0 && ! list.value( "num" ).isEmpty() )
+						v = KfmModel::version2number( list.value( A_NUM ).trimmed() );
+						if ( v != 0 && ! list.value( A_NUM ).isEmpty() )
 							KfmModel::supportedVersions.append( v );
 						else
 							err( tr("invalid version string") );
 						break;
 					case 2:
-						if ( x == 2 && NifValue::isValid( NifValue::type( list.value( "name" ) ) ) )
-							err( tr("compound %1 is already registered as internal type").arg(list.value( "name" )) );
+						if ( x == 2 && NifValue::isValid( NifValue::type( list.value( A_NAME ) ) ) )
+							err( tr("compound %1 is already registered as internal type").arg(list.value( A_NAME )) );
 						if ( ! blk ) blk = new NifBlock;
-						blk->id = list.value( "name" );
+						blk->id = list.value( A_NAME );
 						break;
 				}
 				break;
@@ -122,17 +122,17 @@ public:
 				if ( x == 3 )
 				{
 					NifData		data(
-						list.value( "name" ),
-						list.value( "type" ),
-						list.value( "template" ),
-						NifValue( NifValue::type( list.value( "type" ) ) ),
-						list.value( "arg" ),
-						list.value( "arr1" ),
-						list.value( "arr2" ),
-						list.value( "cond" ),
-						KfmModel::version2number( list.value( "ver1" ) ),
-						KfmModel::version2number( list.value( "ver2" ) ),
-						( list.value( "abstract" ) == "1" )
+						list.value( A_NAME ),
+						list.value( A_TYPE ),
+						list.value( A_TEMPLATE ),
+						NifValue( NifValue::type( list.value( A_TYPE ) ) ),
+						list.value( A_ARG ),
+						list.value( A_ARR1 ),
+						list.value( A_ARR2 ),
+						list.value( A_COND ),
+						KfmModel::version2number( list.value( A_VER1 ) ),
+						KfmModel::version2number( list.value( A_VER2 ) ),
+						( list.value( A_ABSTRACT ) == "1" )
 					);
 					if ( data.name().isEmpty() || data.type().isEmpty() ) err( tr("add needs at least name and type attributes") );
 					if ( blk )	blk->types.append( data );
@@ -221,16 +221,16 @@ public:
 bool KfmModel::loadXML()
 {
 	QDir dir( QApplication::applicationDirPath() );
-	QString fname = dir.filePath( "kfm.xml" ); // last resort
+	QString fname = dir.filePath( KFM_XML ); // last resort
         // Try local copy first, docsys, relative from nifskope/release, relative from ../nifskope-build/release linux data dir
 	QStringList xmlList( QStringList()
-			<< "kfm.xml"
-                        << "docsys/kfmxml/kfm.xml"
-                        << "../docsys/kfmxml/kfm.xml"
-                        << "../../docsys/kfmxml/kfm.xml"
-                        << "../nifskope/docsys/kfmxml/kfm.xml"
-                        << "../../nifskope/docsys/kfmxml/kfm.xml"
-			<< "/usr/share/nifskope/kfm.xml" );
+			<< KFM_XML
+                        << XML_SP1""KFM_XML
+                        << XML_SP2""KFM_XML
+                        << XML_SP3""KFM_XML
+                        << XML_SP4""KFM_XML
+                        << XML_SP5""KFM_XML
+			<< XML_SP6""KFM_XML );
 	foreach( QString str, xmlList )
 	{
 		if ( dir.exists( str ) )

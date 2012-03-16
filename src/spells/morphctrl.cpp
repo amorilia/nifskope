@@ -113,7 +113,7 @@ public:
 		if ( nif->inherits( iMesh, T_NITRIBASEDGEOM ) )
 		{
 			QModelIndex iData = nif->getBlock( nif->getLink( iMesh, TA_DATA ) );
-			if ( nif->inherits( iData, "NiTriBasedGeomData" ) )
+			if ( nif->inherits( iData, T_NITRIBASEDGEOMDATA ) )
 				return iData;
 			else
 				return QModelIndex();

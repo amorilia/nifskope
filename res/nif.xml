@@ -1068,15 +1068,6 @@
         <add name="TBC" type="TBC" cond="ARG == 3">The TBC of the key.</add>
     </compound>
 
-<!-- no longer used
-    <compound name="RotationKeyArray" istemplate="1">
-        Rotation key array.
-        <add name="Num Keys" type="uint">Number of keys.</add>
-        <add name="Key Type" type="KeyType" cond="Num Keys != 0">Key type (LINEAR_KEY, QUADRATIC_KEY, TBC_KEY, or XYZ_ROTATION_KEY).</add>
-        <add name="Keys" type="QuatKey" arg="Key Type" template="TEMPLATE" arr1="Num Keys">The rotation keys.</add>
-    </compound>
--->
-
     <compound name="TexCoord" niflibtype="TexCoord" nifskopetype="vector2">
         Texture coordinates (u,v). As in OpenGL; image origin is in the lower left corner.
         <add name="u" type="float">First coordinate.</add>

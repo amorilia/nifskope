@@ -51,10 +51,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static QModelIndex getShape( const NifModel * nif, const QModelIndex & index )
 {
 	QModelIndex iShape = nif->getBlock( index );
-	if ( nif->isNiBlock( iShape, "NiTriBasedGeomData" ) )
+	if ( nif->isNiBlock( iShape, T_NITRIBASEDGEOMDATA ) )
 		iShape = nif->getBlock( nif->getParent( nif->getBlockNumber( iShape ) ) );
 	if ( nif->isNiBlock( iShape, T_NITRISHAPE ) || nif->isNiBlock( index, T_NITRISTRIPS ) )
-		if ( nif->getBlock( nif->getLink( iShape, TA_DATA ), "NiTriBasedGeomData" ).isValid() )
+		if ( nif->getBlock( nif->getLink( iShape, TA_DATA ), T_NITRIBASEDGEOMDATA ).isValid() )
 			return iShape;
 	return QModelIndex();
 }
@@ -199,17 +199,17 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 		
 		// process NiSkinData
 		
-		QModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, "Skin Instance" ), T_NISKININSTANCE );
+		QModelIndex iSkinInst = nif->getBlock( nif->getLink( iShape, TA_SKININSTANCE ), T_NISKININSTANCE );
 		
 		QModelIndex iSkinData = nif->getBlock( nif->getLink( iSkinInst, TA_DATA ), T_NISKINDATA );
 		QModelIndex iBones = nif->getIndex( iSkinData, TA_BONELIST );
 		for ( int b = 0; b < nif->rowCount( iBones ); b++ )
 		{
 			QVector< QPair<int,float> > weights;
-			QModelIndex iWeights = nif->getIndex( iBones.child( b, 0 ), "Vertex Weights" );
+			QModelIndex iWeights = nif->getIndex( iBones.child( b, 0 ), TA_VERTEXWEIGHTS );
 			for ( int w = 0; w < nif->rowCount( iWeights ); w++ )
 			{
-				weights.append( QPair<int,float>( nif->get<int>( iWeights.child( w, 0 ), TA_INDEX ), nif->get<float>( iWeights.child( w, 0 ), "Weight" ) ) );
+				weights.append( QPair<int,float>( nif->get<int>( iWeights.child( w, 0 ), TA_INDEX ), nif->get<float>( iWeights.child( w, 0 ), TA_WEIGHT ) ) );
 			}
 			
 			for ( int x = weights.count() - 1; x >= 0; x-- )
@@ -231,7 +231,7 @@ static void removeWasteVertices( NifModel * nif, const QModelIndex & iData, cons
 			for ( int w = 0; w < weights.count(); w++ )
 			{
 				nif->set<int>( iWeights.child( w, 0 ), TA_INDEX, weights[w].first );
-				nif->set<float>( iWeights.child( w, 0 ), "Weight", weights[w].second );
+				nif->set<float>( iWeights.child( w, 0 ), TA_WEIGHT, weights[w].second );
 			}
 		}
 		
@@ -261,7 +261,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return nif->itemType( index ).toLower() == "texcoord" || nif->inherits( index, "NiTriBasedGeomData" );
+		return nif->itemType( index ).toLower() == "texcoord" || nif->inherits( index, T_NITRIBASEDGEOMDATA );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -611,7 +611,7 @@ REGISTER_SPELL( spRemoveWasteVertices )
  */
 bool spUpdateCenterRadius::isApplicable( const NifModel * nif, const QModelIndex & index )
 {
-	return nif->getBlock( index, "NiGeometryData" ).isValid();
+	return nif->getBlock( index, T_NIGEOMETRYDATA ).isValid();
 }
 
 QModelIndex spUpdateCenterRadius::cast( NifModel * nif, const QModelIndex & index )

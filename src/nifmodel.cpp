@@ -1033,7 +1033,7 @@ QVariant NifModel::data( const QModelIndex & idx, int role ) const
 			buddy = getIndex( index, TA_FILENAME );
 		else if ( item->name() == T_NISTRINGEXTRADATA )
 			buddy = getIndex( index, TA_STRINGDATA );
-		//else if ( item->name() == "NiTransformInterpolator" && role == Qt::DisplayRole)
+		//else if ( item->name() == T_NITRANSFORMINTERPOLATOR && role == Qt::DisplayRole)
 		//	return QString(tr("TODO: find out who is referring me"));
 		else
 			buddy = getIndex( index, TA_NAME );

@@ -294,7 +294,7 @@ public:
 		QStringList collideModes = QStringList()
 			<< Spell::tr(STR_NOTHING)
 			<< Spell::tr(TA_TRIANGLES)
-			<< Spell::tr("Bounding Box")
+			<< Spell::tr(TA_BOUNDINGBOX)
 			<< Spell::tr("Continue");
 		
 		QComboBox * cmbCollision = dlgCombo( vbox, Spell::tr("Collision Detection"), collideModes );
@@ -390,7 +390,7 @@ public:
 		QStringList collideModes = QStringList()
 			<< Spell::tr(STR_NOTHING)
 			<< Spell::tr(TA_TRIANGLES)
-			<< Spell::tr("Bounding Box")
+			<< Spell::tr(TA_BOUNDINGBOX)
 			<< Spell::tr("Continue");
 		
 		QComboBox * cmbCollision = dlgCombo( vbox, Spell::tr("Collision Detection"), collideModes );
@@ -533,7 +533,7 @@ public:
 		QStringList collideModes = QStringList()
 			<< Spell::tr(STR_NOTHING) // 0
 			<< Spell::tr(TA_TRIANGLES) // 2
-			<< Spell::tr("Bounding Box") // 4
+			<< Spell::tr(TA_BOUNDINGBOX) // 4
 			<< Spell::tr("Continue"); // 6
 		QStringList billboardModes = QStringList()
 			<< Spell::tr("Always Face Camera") // 0
