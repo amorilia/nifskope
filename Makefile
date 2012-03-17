@@ -102,8 +102,8 @@ src/gl/dds/BlockDXT.o: Common.h Stream.h ColorBlock.h BlockDXT.h
 src/gl/glmesh.o: ns_base.h glscene.h glmesh.h glcontroller.h gltools.h options.h GL/glext.h
 src/gl/glmarker.o: glmarker.h
 src/gl/GLee.o: stdio.h stdlib.h string.h GLee.h Carbon/Carbon.h
-src/gl/glparticles.o: glscene.h glcontroller.h glparticles.h math.h
-src/gl/glscene.o: glscene.h glcontroller.h glnode.h glmesh.h glparticles.h gltex.h options.h
+src/gl/glparticles.o: ns_base.h glscene.h glcontroller.h glparticles.h math.h
+src/gl/glscene.o: ns_base.h glscene.h glcontroller.h glnode.h glmesh.h glparticles.h gltex.h options.h
 src/gl/gltex.o: ns_base.h GLee.h glscene.h gltex.h gltexloaders.h options.h fsengine/fsmanager.h fsengine/fsengine.h
 src/gl/glcontroller.o: ns_base.h glcontroller.h glscene.h options.h
 src/gl/gltools.o: ns_base.h gltools.h nifmodel.h
@@ -134,7 +134,7 @@ src/spells/mesh.o: ns_base.h mesh.h
 src/spells/transform.o: ns_base.h transform.h config.h widgets/nifeditors.h
 src/spells/moppcode.o: ns_base.h spellbook.h
 src/spells/skeleton.o: ns_base.h spellbook.h skeleton.h gl/gltools.h NvTriStrip/qtwrapper.h
-src/spells/normals.o: spellbook.h NvTriStrip/qtwrapper.h
+src/spells/normals.o: ns_base.h spellbook.h NvTriStrip/qtwrapper.h
 src/spells/fo3only.o: spellbook.h
 src/spells/morphctrl.o: ns_base.h spellbook.h
 src/spells/flags.o: ns_base.h spellbook.h

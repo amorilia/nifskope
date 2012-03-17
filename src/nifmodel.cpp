@@ -2101,7 +2101,7 @@ bool NifModel::load( NifItem * parent, NifIStream & stream, bool fast )
 		// these values are always little-endian
 		if( (child->name() == TA_HBLOCKSNUM) || (child->name() == TA_HUV) || (child->name() == TA_HUV2) )
 		{
-			if( version >= NF_V20000004 && get<quint8>( getHeaderItem(), "Endian Type" ) == 0 )
+			if( version >= NF_V20000004 && get<quint8>( getHeaderItem(), TA_ENDIANTYPE ) == 0 )
 			{
 				child->value().setCount( qFromBigEndian( child->value().toCount() ) );
 			}
@@ -2712,4 +2712,3 @@ void NifModel::updateModel( UpdateType value )
 	if (value & utFooter) updateFooter();
 	if (value & utLinks)  emit linksChanged();
 }
-

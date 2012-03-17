@@ -413,7 +413,7 @@ Options::Options()
       LightFrontal->setChecked( cfg.value( "Frontal", true ).toBool() );
       connect( LightFrontal, SIGNAL( toggled( bool ) ), this, SIGNAL( sigChanged() ) );
 
-      QWidget * pos = colorPage->pushLayout( tr("Position"), Qt::Horizontal, 1 );
+      QWidget * pos = colorPage->pushLayout( tr(TA_POSITION), Qt::Horizontal, 1 );
       pos->setDisabled( LightFrontal->isChecked() );
       connect( LightFrontal, SIGNAL( toggled( bool ) ), pos, SLOT( setDisabled( bool ) ) );
 

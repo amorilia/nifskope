@@ -567,7 +567,7 @@ class spTextureTemplate : public Spell
 		file->setFilter( QStringList() << FMASK_TGA );
 		lay->addWidget( file, 0, 0, 1, 2 );
 
-		lay->addWidget( new QLabel( "Size" ), 1, 0 );
+		lay->addWidget( new QLabel( TA_SIZE ), 1, 0 );
 		QComboBox * size = new QComboBox;
 		lay->addWidget( size, 1, 1 );
 		for ( int i = 6; i < 12; i++ )

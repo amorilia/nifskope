@@ -108,55 +108,55 @@ public:
 		
 		if ( Controller::update( nif, index ) || ( index.isValid() && iExtras.contains( index ) ) )
 		{
-			emitNode = target->scene->getNode( nif, nif->getBlock( nif->getLink( iBlock, "Emitter" ) ) );
-			emitStart = nif->get<float>( iBlock, "Emit Start Time" );
-			emitStop = nif->get<float>( iBlock, "Emit Stop Time" );
-			emitRate = nif->get<float>( iBlock, "Emit Rate" );
-			emitRadius = nif->get<Vector3>( iBlock, "Start Random" );
+			emitNode = target->scene->getNode( nif, nif->getBlock( nif->getLink( iBlock, TA_EMITTER ) ) );
+			emitStart = nif->get<float>( iBlock, TA_EMITSTARTTIME );
+			emitStop = nif->get<float>( iBlock, TA_EMITSTOPTIME );
+			emitRate = nif->get<float>( iBlock, TA_EMITRATE );
+			emitRadius = nif->get<Vector3>( iBlock, TA_STARTRANDOM );
 			emitAccu = 0;
 			emitLast = emitStart;
 			
-			spd = nif->get<float>( iBlock, "Speed" );
-			spdRnd = nif->get<float>( iBlock, "Speed Random" );
+			spd = nif->get<float>( iBlock, TA_SPEED );
+			spdRnd = nif->get<float>( iBlock, TA_SPEEDRANDOM );
 			
-			ttl = nif->get<float>( iBlock, "Lifetime" );
-			ttlRnd = nif->get<float>( iBlock, "Lifetime Random" );
+			ttl = nif->get<float>( iBlock, TA_LIFETIME );
+			ttlRnd = nif->get<float>( iBlock, TA_LIFETIMERANDOM );
 			
-			inc = nif->get<float>( iBlock, "Vertical Direction" );
-			incRnd = nif->get<float>( iBlock, "Vertical Angle" );
+			inc = nif->get<float>( iBlock, TA_VERTICALDIRECTION );
+			incRnd = nif->get<float>( iBlock, TA_VERTICALANGLE );
 			
-			dec = nif->get<float>( iBlock, "Horizontal Direction" );
-			decRnd = nif->get<float>( iBlock, "Horizontal Angle" );
+			dec = nif->get<float>( iBlock, TA_HORIZONTALDIRECTION );
+			decRnd = nif->get<float>( iBlock, TA_HORIZONTALANGLE );
 			
-			size = nif->get<float>( iBlock, "Size" );
+			size = nif->get<float>( iBlock, TA_SIZE );
 			grow = 0.0;
 			fade = 0.0;
 			
 			list.clear();
 			
-			QModelIndex iParticles = nif->getIndex( iBlock, "Particles" );
+			QModelIndex iParticles = nif->getIndex( iBlock, TA_PARTICLES );
 			if ( iParticles.isValid() )
 			{
-				emitMax = nif->get<int>( iBlock, "Num Particles" );
-				int active = nif->get<int>( iBlock, "Num Valid" );
-				//iParticles = nif->getIndex( iParticles, "Particles" );
+				emitMax = nif->get<int>( iBlock, TA_NUMPARTICLES );
+				int active = nif->get<int>( iBlock, TA_NUMVALID );
+				//iParticles = nif->getIndex( iParticles, TA_PARTICLES );
 				//if ( iParticles.isValid() )
 				//{
 					for ( int p = 0; p < active && p < nif->rowCount( iParticles ); p++ )
 					{
 						Particle particle;
-						particle.velocity = nif->get<Vector3>( iParticles.child( p, 0 ), "Velocity" );
-						particle.lifetime = nif->get<float>( iParticles.child( p, 0 ), "Lifetime" );
-						particle.lifespan = nif->get<float>( iParticles.child( p, 0 ), "Lifespan" );
-						particle.lasttime = nif->get<float>( iParticles.child( p, 0 ), "Timestamp" );
-						particle.vertex = nif->get<int>( iParticles.child( p, 0 ), "Vertex ID" );
+						particle.velocity = nif->get<Vector3>( iParticles.child( p, 0 ), TA_VELOCITY );
+						particle.lifetime = nif->get<float>( iParticles.child( p, 0 ), TA_LIFETIME );
+						particle.lifespan = nif->get<float>( iParticles.child( p, 0 ), TA_LIFESPAN );
+						particle.lasttime = nif->get<float>( iParticles.child( p, 0 ), TA_TIMESTAMP );
+						particle.vertex = nif->get<int>( iParticles.child( p, 0 ), TA_VERTEXID );
 						// Display saved particle start on initial load
 						list.append( particle );
 					}
 				//}
 			}
 			
-			if ( ( nif->get<int>( iBlock, "Emit Flags" ) & 1 ) == 0 )
+			if ( ( nif->get<int>( iBlock, TA_EMITFLAGS ) & 1 ) == 0 )
 			{
 				emitRate = emitMax / ( ttl + ttlRnd / 2 );
 			}
@@ -164,32 +164,32 @@ public:
 			iExtras.clear();
 			grav.clear();
 			iColorKeys = QModelIndex();
-			QModelIndex iExtra = nif->getBlock( nif->getLink( iBlock, "Particle Extra" ) );
+			QModelIndex iExtra = nif->getBlock( nif->getLink( iBlock, TA_PARTICLEEXTRA ) );
 			while ( iExtra.isValid() )
 			{
 				iExtras.append( iExtra );
 				
 				QString name = nif->itemName( iExtra );
-				if ( name == "NiParticleGrowFade" )
+				if ( name == T_NIPARTICLEGROWFADE )
 				{
-					grow = nif->get<float>( iExtra, "Grow" );
-					fade = nif->get<float>( iExtra, "Fade" );
+					grow = nif->get<float>( iExtra, TA_GROW );
+					fade = nif->get<float>( iExtra, TA_FADE );
 				}
-				else if ( name == "NiParticleColorModifier" )
+				else if ( name == T_NIPARTICLECOLORMODIFIER )
 				{
-					iColorKeys = nif->getIndex( nif->getBlock( nif->getLink( iExtra, "Color Data" ), "NiColorData" ), TA_DATA );
+					iColorKeys = nif->getIndex( nif->getBlock( nif->getLink( iExtra, TA_COLORDATA ), T_NICOLORDATA ), TA_DATA );
 				}
-				else if ( name == "NiGravity" )
+				else if ( name == T_NIGRAVITY )
 				{
 					Gravity g;
-					g.force = nif->get<float>( iExtra, "Force" );
+					g.force = nif->get<float>( iExtra, TA_FORCE );
 					g.type = nif->get<int>( iExtra, TA_TYPE );
-					g.position = nif->get<Vector3>( iExtra, "Position" );
-					g.direction = nif->get<Vector3>( iExtra, "Direction" );
+					g.position = nif->get<Vector3>( iExtra, TA_POSITION );
+					g.direction = nif->get<Vector3>( iExtra, TA_DIRECTION );
 					grav.append( g );
 				}
 				
-				iExtra = nif->getBlock( nif->getLink( iExtra, "Next Modifier" ) );
+				iExtra = nif->getBlock( nif->getLink( iExtra, TA_NEXTMODIFIER ) );
 			}
 			return true;
 		}
@@ -351,8 +351,8 @@ void Particles::update( const NifModel * nif, const QModelIndex & index )
 			if ( ! iChild.isValid() ) continue;
 			QString name = nif->itemName( iChild );
 			
-			//if ( name == "NiParticlesData" || name == "NiRotatingParticlesData" || name == "NiAutoNormalParticlesData" )
-			if ( nif->inherits( iChild, "NiParticlesData" ) )
+			//if ( name == T_NIPARTICLESDATA || name == "NiRotatingParticlesData" || name == "NiAutoNormalParticlesData" )
+			if ( nif->inherits( iChild, T_NIPARTICLESDATA ) )
 			{
 				iData = iChild;
 				upData = true;
@@ -363,7 +363,7 @@ void Particles::update( const NifModel * nif, const QModelIndex & index )
 
 void Particles::setController( const NifModel * nif, const QModelIndex & index )
 {
-	if ( nif->itemName( index ) == "NiParticleSystemController" || nif->itemName( index ) == "NiBSPArrayController" )
+	if ( nif->itemName( index ) == T_NIPARTICLESYSTEMCONTROLLER || nif->itemName( index ) == T_NIBSPARRAYCONTROLLER )
 	{
 		Controller * ctrl = new ParticleController( this, index );
 		ctrl->update( nif, index );
@@ -388,10 +388,10 @@ void Particles::transform()
 		
 		verts = nif->getArray<Vector3>( nif->getIndex( iData, TA_VERTICES ) );
 		colors = nif->getArray<Color4>( nif->getIndex( iData, TA_VERTEXCOLORS ) );
-		sizes = nif->getArray<float>( nif->getIndex( iData, "Sizes" ) );
+		sizes = nif->getArray<float>( nif->getIndex( iData, TA_SIZES ) );
 		
-		active = nif->get<int>( iData, "Num Valid" );
-		size = nif->get<float>( iData, "Active Radius" );
+		active = nif->get<int>( iData, TA_NUMVALID );
+		size = nif->get<float>( iData, TA_ACTIVERADIUS );
 	}
 	
 	Node::transform();

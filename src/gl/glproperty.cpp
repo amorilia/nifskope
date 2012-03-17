@@ -1140,4 +1140,3 @@ int BSShaderLightingProperty::getId( const QString & id )
 	else
 		return -1;
 }
-
