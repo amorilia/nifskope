@@ -443,7 +443,7 @@ Transform operator*( const Transform & t1, const Transform & t2 )
 
 bool Transform::canConstruct( const NifModel * nif, const QModelIndex & parent )
 {
-	QModelIndex skinTransform = nif->getIndex( parent, "Skin Transform" );
+	QModelIndex skinTransform = nif->getIndex( parent, TA_SKINTRANSFORM );
 	return nif && (
 		(
 			parent.isValid() && nif->getIndex( parent, TA_ROTATION ).isValid()
@@ -460,7 +460,7 @@ bool Transform::canConstruct( const NifModel * nif, const QModelIndex & parent )
 
 Transform::Transform( const NifModel * nif, const QModelIndex & transform )
 {
-	QModelIndex skinTransform = nif->getIndex( transform, "Skin Transform" );
+	QModelIndex skinTransform = nif->getIndex( transform, TA_SKINTRANSFORM );
 	if( !skinTransform.isValid() )
 	{
 		skinTransform = transform;
@@ -472,7 +472,7 @@ Transform::Transform( const NifModel * nif, const QModelIndex & transform )
 
 void Transform::writeBack( NifModel * nif, const QModelIndex & transform ) const
 {
-	QModelIndex skinTransform = nif->getIndex( transform, "Skin Transform" );
+	QModelIndex skinTransform = nif->getIndex( transform, TA_SKINTRANSFORM );
 	if( !skinTransform.isValid() )
 	{
 		skinTransform = transform;
@@ -505,4 +505,3 @@ Matrix4 Transform::toMatrix4() const
 	m( 3, 3 ) = 1.0;
 	return m;
 }
-

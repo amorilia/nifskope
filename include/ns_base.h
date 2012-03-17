@@ -625,6 +625,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TA_SIZES "Sizes"
 #define TA_ACTIVERADIUS "Active Radius"
 #define TA_ENDIANTYPE "Endian Type"
+#define TA_SKINTRANSFORM "Skin Transform"
 // NiBlocks - artificial blocks
 #define B_NIHEADER "NiHeader"
 #define B_NIFOOTER "NiFooter"
