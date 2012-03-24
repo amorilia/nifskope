@@ -69,7 +69,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( nif->getVersion() == STR_V04000002 && nif->itemType( index ) == B_NIBLOCK && nif->get<QString>( index, TA_NAME ) == "Bip01" ); //&& QFile::exists( SKEL_DAT ) );
+		return ( nif->getVersionNumber() == NF_V04000002 && nif->itemType( index ) == B_NIBLOCK && nif->get<QString>( index, TA_NAME ) == "Bip01" ); //&& QFile::exists( SKEL_DAT ) );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -232,7 +232,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( nif->getVersion() == STR_V04000002 && nif->itemType( index ) == B_NIBLOCK && nif->get<QString>( index, TA_NAME ) == "Bip01" );
+		return ( nif->getVersionNumber() == NF_V04000002 && nif->itemType( index ) == B_NIBLOCK && nif->get<QString>( index, TA_NAME ) == "Bip01" );
 	}
 	
 	QModelIndex cast( NifModel * nif, const QModelIndex & index )
@@ -1258,7 +1258,7 @@ public:
 	
 	bool isApplicable( const NifModel * nif, const QModelIndex & index )
 	{
-		return ( nif->getVersion() == STR_V04000002 && nif->itemType( index ) == B_NIBLOCK )
+		return ( nif->getVersionNumber() == NF_V04000002 && nif->itemType( index ) == B_NIBLOCK )
 			&& ( ( nif->get<QString>( index, TA_NAME ).startsWith( "Bip01 L" ) ) || ( nif->get<QString>( index, TA_NAME ).startsWith( "Bip01 R" ) ) );
 	}
 	

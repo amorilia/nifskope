@@ -3,7 +3,23 @@
 This is version 2.0.0 of NifSkope.
 
 changes since 2.0.0:
+... building build requirements:
+	- "int" should be 4 bytes
+	- "unsigned int" should be 4 bytes
+... building the test suite:
+	- make unittest && ./test_main
+... getting Qt out of many places
+	- carefully with implicit "char * const" and "std::string" and "QString"!
+	- "include/ns_utils.h"
+... coding convention
+	- "#include" goes to headers, code uses its interface only
+... reduce repeating code
+	- nifmodel.h, kfmmodel.h:
+		- static QString version2string( quint32 );
+		- QString getVersion() const { return version2string( version ); }
+		- ver2str( quint32 v ) const { return version2string( v ); }
 ... get magic strings and numbers into a header
+	- "include/ns_base.h"
 * Remove all relative paths from "#include" directives
 * Set up "GNU Make" build system
 * Reorganize file and directory structure

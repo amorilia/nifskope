@@ -684,7 +684,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 					}
 					nif->setLink( iBaseMap, TA_SOURCE, nif->getBlockNumber( iTexSource ) );
 					
-					nif->set<int>( iTexSource, TA_PIXELLAYOUT, nif->getVersion() == STR_V20000005 ? 6 : 5 );
+					nif->set<int>( iTexSource, TA_PIXELLAYOUT, nif->getVersionNumber() == NF_V20000005 ? 6 : 5 );
 					nif->set<int>( iTexSource, TA_USEMIPMAPS, 2 );
 					nif->set<int>( iTexSource, TA_ALPHAFORMAT, 3 );
 					nif->set<int>( iTexSource, TA_UNKNOWNBYTE, 1 );

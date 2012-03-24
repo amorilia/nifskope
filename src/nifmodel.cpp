@@ -30,8 +30,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#include "ns_base.h"
-
 #include "nifmodel.h"
 #include "niftypes.h"
 #include "options.h"
@@ -48,37 +46,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //! \file nifmodel.cpp NifModel implementation, NifModelEval
 
-NifModel::NifModel( QObject * parent ) : BaseModel( parent )
+NifModel::NifModel(QObject *parent) : BaseModel (parent)
 {
-	clear();
-}
-
-QString NifModel::version2string( quint32 v )
-{
-	if ( v == 0 )	return QString();
-	QString s;
-	if ( v < NF_V03030013 ) {
-		//This is an old-style 2-number version with one period
-		s = QString::number( ( v >> 24 ) & 0xff, 10 ) + NF_VSEPARATOR
-		+ QString::number( ( v >> 16 ) & 0xff, 10 );
-
-		quint32 sub_num1 = ((v >> 8) & 0xff);
-		quint32 sub_num2 = (v & 0xff);
-		if ( sub_num1 > 0 || sub_num2 > 0 ) {
-			s = s + QString::number( sub_num1, 10 );
-		}
-
-		if ( sub_num2 > 0 ) {
-			s = s + QString::number( sub_num2, 10 );
-		}
-	} else {
-		//This is a new-style 4-number version with 3 periods
-		s = QString::number( ( v >> 24 ) & 0xff, 10 ) + NF_VSEPARATOR
-			+ QString::number( ( v >> 16 ) & 0xff, 10 ) + NF_VSEPARATOR
-			+ QString::number( ( v >> 8 ) & 0xff, 10 ) + NF_VSEPARATOR
-			+ QString::number( v & 0xff, 10 );
-	}
-	return s;
+	clear ();
 }
 
 quint32 NifModel::version2number( const QString & s )
@@ -196,7 +166,7 @@ void NifModel::clear()
 		header_string = NF_H2;
 	}
 
-	header_string += version2string(version);
+	header_string += ver2str (version);
 
 	set<QString>( getHeaderItem(), TA_HSTRING, header_string );
 
@@ -1185,8 +1155,8 @@ QVariant NifModel::data( const QModelIndex & idx, int role ) const
 				case Arr1Col:	return item->arr1();
 				case Arr2Col:	return item->arr2();
 				case CondCol:	return item->cond();
-				case Ver1Col:	return version2string( item->ver1() );
-				case Ver2Col:	return version2string( item->ver2() );
+				case Ver1Col:	return ver2str (item->ver1 ());
+				case Ver2Col:	return ver2str (item->ver2 ());
 				case VerCondCol: return item->vercond();
 				default:		return QVariant();
 			}
@@ -1223,8 +1193,8 @@ QVariant NifModel::data( const QModelIndex & idx, int role ) const
 				case Arr1Col:	return item->arr1();
 				case Arr2Col:	return item->arr2();
 				case CondCol:	return item->cond();
-				case Ver1Col:	return version2string( item->ver1() );
-				case Ver2Col:	return version2string( item->ver2() );
+				case Ver1Col:	return ver2str (item->ver1 ());
+				case Ver2Col:	return ver2str (item->ver2 ());
 				case VerCondCol: return item->vercond();
 				default:		return QVariant();
 			}
@@ -1537,7 +1507,7 @@ bool NifModel::setHeaderString( const QString & s )
 
 		if ( ! isVersionSupported( version ) )
 		{
-			msg( Message() << tr("version %1 (%2) is not supported yet").arg(version2string( version )).arg(v) );
+			msg( Message() << tr("version %1 (%2) is not supported yet").arg(ver2str (version)).arg(v) );
 			return false;
 		}
 
@@ -1579,7 +1549,7 @@ bool NifModel::load( QIODevice & device )
 	}
 	if ( !header || !load( header, stream, true ) )
 	{
-		msg( Message() << tr("failed to load file header (version %1, %2)").arg(version, 0, 16).arg(version2string(version)));
+		msg( Message() << tr("failed to load file header (version %1, %2)").arg(version, 0, 16).arg(ver2str (version)));
 		return false;
 	}
 

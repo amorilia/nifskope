@@ -31,6 +31,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***** END LICENCE BLOCK *****/
 
 #include "ns_base.h"
+#include "ns_utils.h"
 
 #include "nifvalue.h"
 #include "nifmodel.h"
@@ -748,7 +749,7 @@ QString NifValue::toString() const
 				;
 		}
 		case tFileVersion:
-			return NifModel::version2string( val.u32 );
+			return TMP_S2Q(nifver2str (val.u32));
 		case tTriangle:
 		{
 			Triangle * tri = static_cast<Triangle*>( val.data );

@@ -54,16 +54,16 @@ CFLAGS   =
 LDFLAGS  = $(LIBS)
 APP      = nifskope
 
-GLOBAL_SRC = $(shell find $(WORK_DIR)/ -type f -name '*.cpp' | grep -v -e '$(QHULLDIR)/' -e '\.moc.cpp$$' -e '\.qrc.cpp$$')
+GLOBAL_SRC = $(shell find $(WORK_DIR)/ -type f -name '*.cpp' | grep -v -e '$(QHULLDIR)/' -e '\.moc.cpp$$' -e '\.qrc.cpp$$' -e 'test/')
 GLOBAL_OBJ = $(patsubst %.cpp,%.o,$(GLOBAL_SRC))
 
-MOC_MODULES = $(patsubst %.h,%.moc.cpp,$(shell grep -l -R Q_OBJECT * | grep -v 'qhull/' | grep \.h$$))
+MOC_MODULES = $(patsubst %.h,%.moc.cpp,$(shell grep -l -R Q_OBJECT * | grep -v -e 'qhull/' -e 'test/' | grep \.h$$))
 MOC_OBJS = $(patsubst %.cpp,%.o,$(MOC_MODULES))
 
 RCC_QRC = $(patsubst %.qrc,%.qrc.cpp,$(wildcard $(RESDIR)/*.qrc))
 RCC_OBJ = $(patsubst %.cpp,%.o,$(RCC_QRC))
 
-.PHONY: all test $(APP) clean
+.PHONY: all test $(APP) clean unittest
 
 all: $(APP)
 
@@ -88,6 +88,11 @@ test: $(GLOBAL_SRC)
 	@echo "RCC_QRC:" $(RCC_QRC)
 	@echo "RCC_OBJ:" $(RCC_OBJ)
 
+TEST_OBJS = src/ns_utils.o test/test_main.o
+TEST_APP = test_main
+unittest: $(TEST_OBJS)
+	$(CC) $(TEST_OBJS) $(LDFLAGS) -o $(TEST_APP)
+
 clean:
 	rm -f $(APP) $(GLOBAL_OBJ) $(MOC_OBJS) $(RCC_OBJ)
 
@@ -111,7 +116,8 @@ src/gl/gltexloaders.o: ns_base.h GLee.h gltexloaders.h dds/dds_api.h dds/DirectD
 src/gl/glnode.o: ns_base.h glscene.h glmarker.h glnode.h glcontroller.h options.h NvTriStrip/qtwrapper.h furniture.h constraints.h
 src/gl/renderer.o: ns_base.h GLee.h renderer.h gltex.h glmesh.h glscene.h glproperty.h options.h
 src/gl/glproperty.o: ns_base.h glproperty.h glcontroller.h glscene.h options.h
-src/nifmodel.o: ns_base.h nifmodel.h niftypes.h options.h config.h spellbook.h
+src/ns_utils.o: ns_utils.h
+src/nifmodel.o: nifmodel.h niftypes.h options.h config.h spellbook.h
 src/options.o: ns_base.h options.h config.h widgets/colorwheel.h widgets/fileselect.h widgets/floatslider.h widgets/groupbox.h
 src/message.o: message.h
 src/qhull.o: qhull.h math.h qhull/src/qhull_a.h
@@ -119,8 +125,8 @@ src/NvTriStrip/VertexCache.o: VertexCache.h
 src/NvTriStrip/qtwrapper.o: qtwrapper.h NvTriStrip.h
 src/NvTriStrip/NvTriStripObjects.o: assert.h string.h stdio.h NvTriStripObjects.h VertexCache.h
 src/NvTriStrip/NvTriStrip.o: NvTriStripObjects.h NvTriStrip.h string.h
-src/kfmmodel.o: ns_base.h kfmmodel.h
-src/nifvalue.o: ns_base.h nifvalue.h nifmodel.h config.h options.h
+src/kfmmodel.o: kfmmodel.h
+src/nifvalue.o: ns_base.h ns_utils.h nifvalue.h nifmodel.h config.h options.h
 src/basemodel.o: ns_base.h basemodel.h niftypes.h options.h
 src/kfmxml.o: ns_base.h kfmmodel.h
 src/nifdelegate.o: nifmodel.h nifproxy.h kfmmodel.h spellbook.h widgets/valueedit.h widgets/nifcheckboxlist.h options.h
@@ -194,7 +200,7 @@ src/gl/glproperty.h: GLee.h glcontrolable.h
 src/gl/furniture.h: glmarker.h
 src/gl/constraints.h: glmarker.h
 src/qhull.h: niftypes.h
-src/nifmodel.h: ns_base.h basemodel.h
+src/nifmodel.h: ns_base.h ns_utils.h basemodel.h
 src/nifvalue.h: niftypes.h
 src/NvTriStrip/qtwrapper.h: niftypes.h
 src/NvTriStrip/NvTriStripObjects.h: assert.h VertexCache.h
@@ -209,7 +215,7 @@ src/spells/misc.h: spellbook.h
 src/spells/texture.h: widgets/nifeditors.h
 src/spells/transform.h: spellbook.h
 src/fsengine/bsa.h: fsengine.h
-src/kfmmodel.h: basemodel.h
+src/kfmmodel.h: ns_base.h ns_utils.h basemodel.h
 src/widgets/nifcheckboxlist.h: nifvalue.h nifmodel.h
 src/widgets/valueedit.h: nifvalue.h
 src/widgets/nifeditors.h: nifmodel.h
@@ -283,8 +289,10 @@ nifview.h: src/widgets/nifview.h
 xmlcheck.h: src/widgets/xmlcheck.h
 nifskope.h: src/nifskope.h
 include/nifitem.h: nifvalue.h nifexpr.h
+include/ns_utils.h: ns_base.h
 hacking.h: include/hacking.h
 ns_base.h: include/ns_base.h
 nifitem.h: include/nifitem.h
+ns_utils.h: include/ns_utils.h
 %.h:
 	

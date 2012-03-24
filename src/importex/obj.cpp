@@ -751,7 +751,7 @@ void importObj( NifModel * nif, const QModelIndex & index )
 					
 					if (!cBSShaderPPLightingProperty)
 					{// no need of NiTexturingProperty when BSShaderPPLightingProperty is present
-						nif->set<int>( iTexSource, TA_PIXELLAYOUT, nif->getVersion() == STR_V20000005 ? 6 : 5 );
+						nif->set<int>( iTexSource, TA_PIXELLAYOUT, nif->getVersionNumber() == NF_V20000005 ? 6 : 5 );
 						nif->set<int>( iTexSource, TA_USEMIPMAPS, 2 );
 						nif->set<int>( iTexSource, TA_ALPHAFORMAT, 3 );
 						nif->set<int>( iTexSource, TA_UNKNOWNBYTE, 1 );

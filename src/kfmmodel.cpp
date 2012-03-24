@@ -30,8 +30,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
-#include "ns_base.h"
-
 #include "kfmmodel.h"
 
 KfmModel::KfmModel( QObject * parent ) : BaseModel( parent )
@@ -46,16 +44,6 @@ QModelIndex KfmModel::getKFMroot() const
 	else
 		return QModelIndex();
 }
-
-QString KfmModel::version2string( quint32 v )
-{
-	if ( v == 0 )	return QString();
-	QString s = QString::number( ( v >> 24 ) & 0xff, 16 ) + "."
-		+ QString::number( ( v >> 16 ) & 0xff, 16 ) + "."
-		+ QString::number( ( v >> 8 ) & 0xff, 16 ) + "."
-		+ QString::number( v & 0xff, 16 );
-	return s;
-}	
 
 quint32 KfmModel::version2number( const QString & s )
 {
@@ -224,7 +212,7 @@ bool KfmModel::setHeaderString( const QString & s )
 		}
 		else
 		{
-			msg( Message() << tr(TAG_VERSION) << version2string( version ) << tr("not supported yet") );
+			msg( Message() << tr(TAG_VERSION) << ver2str (version) << tr("not supported yet") );
 			return false;
 		}
 	}

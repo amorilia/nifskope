@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NIFMODEL_H
 
 #include "ns_base.h"
+#include "ns_utils.h"
 
 #include "basemodel.h"
 
@@ -197,13 +198,12 @@ public:
 	static bool isVersionSupported( quint32 );
 	
 	// version conversion
-	static QString version2string( quint32 );
 	static quint32 version2number( const QString & );
 	
 	//! Check whether the current nif file version lies in the range [since, until]
 	bool checkVersion( quint32 since, quint32 until ) const;
 
-	QString getVersion() const { return version2string( version ); }
+	OVERRIDE QString ver2str(quint32 v) const { return TMP_S2Q(nifver2str (v)); }
 	quint32 getVersionNumber() const { return version; }
 	quint32 getUserVersion() const { return get<int>(getHeader(), TA_HUV); }
 	
@@ -261,7 +261,6 @@ protected:
 	
 	bool		setHeaderString( const QString & );
 	
-	QString		ver2str( quint32 v ) const { return version2string( v ); }
 	quint32		str2ver( QString s ) const { return version2number( s ); }
 	
 	bool		evalVersion( NifItem * item, bool chkParents = false ) const;

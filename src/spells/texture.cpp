@@ -328,7 +328,7 @@ QModelIndex addTexture( NifModel * nif, const QModelIndex & index, const QString
 	QModelIndex iSrcTex = nif->insertNiBlock( T_NISOURCETEXTURE, nif->getBlockNumber( iTexProp ) + 1 );
 	nif->setLink( iTex, TA_SOURCE, nif->getBlockNumber( iSrcTex ) );
 
-	nif->set<int>( iSrcTex, TA_PIXELLAYOUT, ( nif->getVersion() == STR_V20000005 && name == TA_BASETEXTURE ? 6 : 5 ) );
+	nif->set<int>( iSrcTex, TA_PIXELLAYOUT, ( nif->getVersionNumber() == NF_V20000005 && name == TA_BASETEXTURE ? 6 : 5 ) );
 	nif->set<int>( iSrcTex, TA_USEMIPMAPS, 2 );
 	nif->set<int>( iSrcTex, TA_ALPHAFORMAT, 3 );
 	nif->set<int>( iSrcTex, TA_UNKNOWNBYTE, 1 );
