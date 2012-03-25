@@ -577,7 +577,7 @@ bool NifValue::fromString( const QString & s )
 			static_cast<Color4*>( val.data )->fromQColor( QColor( s ) );
 			return true;
 		case tFileVersion:
-			val.u32 = NifModel::version2number( s );
+			val.u32 = nifstr2ver (TMP_Q2S(s));
 			return val.u32 != 0;
 		case tVector2:
 			static_cast<Vector2*>( val.data )->fromString( s );

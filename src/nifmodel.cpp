@@ -51,49 +51,6 @@ NifModel::NifModel(QObject *parent) : BaseModel (parent)
 	clear ();
 }
 
-quint32 NifModel::version2number( const QString & s )
-{
-	if ( s.isEmpty() )	return 0;
-
-	if ( s.contains( NF_VSEPARATOR ) )
-	{
-		QStringList l = s.split( NF_VSEPARATOR );
-
-		quint32 v = 0;
-
-		if ( l.count() > 4 ) {
-			//Should probaby post a warning here or something.  Version # has more than 3 dots in it.
-			return 0;
-		} else if ( l.count() == 2 ) {
-			//This is an old style version number.  Take each digit following the first one at a time.
-			//The first one is the major version
-			v += l[0].toInt() << (3 * 8);
-
-			if ( l[1].size() >= 1 ) {
-				v += l[1].mid(0, 1).toInt() << (2 * 8);
-			}
-			if ( l[1].size() >= 2 ) {
-				v += l[1].mid(1, 1).toInt() << (1 * 8);
-			}
-			if ( l[1].size() >= 3 ) {
-				v += l[1].mid(2, -1).toInt();
-			}
-			return v;
-		} else {
-			//This is a new style version number with dots separating the digits
-			for ( int i = 0; i < 4 && i < l.count(); i++ ) {
-				v += l[i].toInt( 0, 10 ) << ( (3-i) * 8 );
-			}
-			return v;
-		}
-
-	} else {
-		bool ok;
-		quint32 i = s.toUInt( &ok );
-		return ( i == 0xffffffff ? 0 : i );
-	}
-}
-
 // Helper class for evaluating condition expressions
 class NifModelEval
 {
@@ -150,7 +107,7 @@ void NifModel::clear()
 	root->killChildren();
 	insertType( root, NifData( B_NIHEADER, T_HEADER ) );
 	insertType( root, NifData( B_NIFOOTER, T_FOOTER ) );
-	version = version2number( Options::startupVersion() );
+	version = str2ver( Options::startupVersion() );
 	if( !isVersionSupported(version) ) {
 		msg( Message() << tr("Unsupported 'Startup Version' %1 specified, reverting to 20.0.0.5").arg( Options::startupVersion() ).toAscii() );
 		version = NF_V20000005;
@@ -1396,10 +1353,10 @@ bool NifModel::setData( const QModelIndex & index, const QVariant & value, int r
 			item->setCond( value.toString() );
 			break;
 		case NifModel::Ver1Col:
-			item->setVer1( NifModel::version2number( value.toString() ) );
+			item->setVer1( NifModel::str2ver( value.toString() ) );
 			break;
 		case NifModel::Ver2Col:
-			item->setVer2( NifModel::version2number( value.toString() ) );
+			item->setVer2( NifModel::str2ver( value.toString() ) );
 			break;
 		case NifModel::VerCondCol:
 			item->setVerCond( value.toString() );
@@ -1503,7 +1460,7 @@ bool NifModel::setHeaderString( const QString & s )
 			}
 		}
 
-		version = version2number( v );
+		version = str2ver( v );
 
 		if ( ! isVersionSupported( version ) )
 		{

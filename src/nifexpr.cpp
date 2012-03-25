@@ -30,6 +30,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ***** END LICENCE BLOCK *****/
 
+#include "ns_base.h"
+#include "ns_utils.h"
+
 #include "nifexpr.h"
 #include "basemodel.h"
 
@@ -54,50 +57,6 @@ static bool matchGroup(const QString & cond, int offset, int& startpos, int& end
    if (startpos != -1 || endpos != -1)
       throw "expression syntax error (non-matching brackets?)";
    return false;
-}
-
-
-static quint32 version2number( const QString & s )
-{
-   if ( s.isEmpty() )	return 0;
-
-   if ( s.contains( "." ) )
-   {
-      QStringList l = s.split( "." );
-
-      quint32 v = 0;
-
-      if ( l.count() > 4 ) {
-         //Should probaby post a warning here or something.  Version # has more than 3 dots in it.
-         return 0;
-      } else if ( l.count() == 2 ) {
-         //This is an old style version number.  Take each digit following the first one at a time.
-         //The first one is the major version
-         v += l[0].toInt() << (3 * 8);
-
-         if ( l[1].size() >= 1 ) {
-            v += l[1].mid(0, 1).toInt() << (2 * 8);
-         }
-         if ( l[1].size() >= 2 ) {
-            v += l[1].mid(1, 1).toInt() << (1 * 8);
-         }
-         if ( l[1].size() >= 3 ) {
-            v += l[1].mid(2, -1).toInt();
-         }
-         return v;
-      } else {
-         //This is a new style version number with dots separating the digits
-         for ( int i = 0; i < 4 && i < l.count(); i++ ) {
-            v += l[i].toInt( 0, 10 ) << ( (3-i) * 8 );
-         }
-         return v;
-      }
-
-   } else {
-      bool ok;
-      quint32 i = s.toUInt( &ok );
-      return ( i == 0xffffffff ? 0 : i );
-   }
 }
 
 Expression::Operator Expression::operatorFromString( const QString& str )
@@ -173,7 +132,7 @@ void Expression::partition( const QString & cond, int offset /*= 0*/ )
          } else if (reInt.exactMatch(cond)) {
             this->lhs.convert(QVariant::Int);
          } else if (reVersion.exactMatch(cond)) {
-            this->lhs.setValue( version2number(cond) );
+            this->lhs.setValue (nifstr2ver (TMP_Q2S(cond)));
          }
          this->opcode = Expression::e_nop;
          return;

@@ -88,98 +88,101 @@ test: $(GLOBAL_SRC)
 	@echo "RCC_QRC:" $(RCC_QRC)
 	@echo "RCC_OBJ:" $(RCC_OBJ)
 
+
 TEST_OBJS = src/ns_utils.o test/test_main.o
 TEST_APP = test_main
-unittest: $(TEST_OBJS)
-	$(CC) $(TEST_OBJS) $(LDFLAGS) -o $(TEST_APP)
+unittest: $(TEST_APP)
+$(TEST_APP): $(TEST_OBJS)
+	$(CC) $^ $(LDFLAGS) -o $@
+#	$(CC) $(TEST_OBJS) $(LDFLAGS) -o $(TEST_APP)
 
 clean:
 	rm -f $(APP) $(GLOBAL_OBJ) $(MOC_OBJS) $(RCC_OBJ)
 
 # Auto-generated header dependency list
 # includes config.h generation when needed
-src/gl/dds/Image.o: Color.h Image.h stdio.h
-src/gl/dds/DirectDrawSurface.o: DirectDrawSurface.h BlockDXT.h PixelFormat.h stdio.h math.h
-src/gl/dds/dds_api.o: dds_api.h Stream.h DirectDrawSurface.h stdio.h
-src/gl/dds/ColorBlock.o: ColorBlock.h Image.h Common.h
-src/gl/dds/Stream.o: Stream.h stdio.h string.h
-src/gl/dds/BlockDXT.o: Common.h Stream.h ColorBlock.h BlockDXT.h
-src/gl/glmesh.o: ns_base.h glscene.h glmesh.h glcontroller.h gltools.h options.h GL/glext.h
-src/gl/glmarker.o: glmarker.h
-src/gl/GLee.o: stdio.h stdlib.h string.h GLee.h Carbon/Carbon.h
-src/gl/glparticles.o: ns_base.h glscene.h glcontroller.h glparticles.h math.h
-src/gl/glscene.o: ns_base.h glscene.h glcontroller.h glnode.h glmesh.h glparticles.h gltex.h options.h
-src/gl/gltex.o: ns_base.h GLee.h glscene.h gltex.h gltexloaders.h options.h fsengine/fsmanager.h fsengine/fsengine.h
-src/gl/glcontroller.o: ns_base.h glcontroller.h glscene.h options.h
-src/gl/gltools.o: ns_base.h gltools.h nifmodel.h
-src/gl/gltexloaders.o: ns_base.h GLee.h gltexloaders.h dds/dds_api.h dds/DirectDrawSurface.h nifmodel.h
-src/gl/glnode.o: ns_base.h glscene.h glmarker.h glnode.h glcontroller.h options.h NvTriStrip/qtwrapper.h furniture.h constraints.h
-src/gl/renderer.o: ns_base.h GLee.h renderer.h gltex.h glmesh.h glscene.h glproperty.h options.h
-src/gl/glproperty.o: ns_base.h glproperty.h glcontroller.h glscene.h options.h
-src/ns_utils.o: ns_utils.h
-src/nifmodel.o: nifmodel.h niftypes.h options.h config.h spellbook.h
-src/options.o: ns_base.h options.h config.h widgets/colorwheel.h widgets/fileselect.h widgets/floatslider.h widgets/groupbox.h
-src/message.o: message.h
-src/qhull.o: qhull.h math.h qhull/src/qhull_a.h
-src/NvTriStrip/VertexCache.o: VertexCache.h
-src/NvTriStrip/qtwrapper.o: qtwrapper.h NvTriStrip.h
-src/NvTriStrip/NvTriStripObjects.o: assert.h string.h stdio.h NvTriStripObjects.h VertexCache.h
-src/NvTriStrip/NvTriStrip.o: NvTriStripObjects.h NvTriStrip.h string.h
-src/kfmmodel.o: kfmmodel.h
-src/nifvalue.o: ns_base.h ns_utils.h nifvalue.h nifmodel.h config.h options.h
-src/basemodel.o: ns_base.h basemodel.h niftypes.h options.h
-src/kfmxml.o: ns_base.h kfmmodel.h
-src/nifdelegate.o: nifmodel.h nifproxy.h kfmmodel.h spellbook.h widgets/valueedit.h widgets/nifcheckboxlist.h options.h
-src/nifexpr.o: nifexpr.h basemodel.h
-src/spellbook.o: spellbook.h
-src/nifproxy.o: nifproxy.h nifmodel.h
-src/nifxml.o: ns_base.h nifmodel.h niftypes.h
-src/spells/headerstring.o: ns_base.h spellbook.h
-src/spells/color.o: spellbook.h widgets/colorwheel.h
-src/spells/mesh.o: ns_base.h mesh.h
-src/spells/transform.o: ns_base.h transform.h config.h widgets/nifeditors.h
-src/spells/moppcode.o: ns_base.h spellbook.h
-src/spells/skeleton.o: ns_base.h spellbook.h skeleton.h gl/gltools.h NvTriStrip/qtwrapper.h
-src/spells/normals.o: ns_base.h spellbook.h NvTriStrip/qtwrapper.h
-src/spells/fo3only.o: spellbook.h
-src/spells/morphctrl.o: ns_base.h spellbook.h
-src/spells/flags.o: ns_base.h spellbook.h
-src/spells/optimize.o: ns_base.h spellbook.h blocks.h mesh.h tangentspace.h transform.h
-src/spells/stringpalette.o: ns_base.h spellbook.h stringpalette.h
-src/spells/animation.o: ns_base.h spellbook.h options.h
-src/spells/bounds.o: spellbook.h widgets/nifeditors.h
-src/spells/strippify.o: ns_base.h spellbook.h NvTriStrip/qtwrapper.h
-src/spells/tangentspace.o: ns_base.h tangentspace.h NvTriStrip/qtwrapper.h
-src/spells/material.o: ns_base.h spellbook.h widgets/nifeditors.h
-src/spells/misc.o: ns_base.h misc.h
-src/spells/blocks.o: ns_base.h blocks.h config.h
-src/spells/texture.o: ns_base.h blocks.h texture.h spellbook.h gl/gltex.h config.h widgets/fileselect.h widgets/uvedit.h NvTriStrip/qtwrapper.h
-src/spells/light.o: ns_base.h spellbook.h widgets/nifeditors.h
-src/spells/sanitize.o: ns_base.h spellbook.h misc.h
-src/spells/havok.o: ns_base.h spellbook.h qhull.h NvTriStrip/qtwrapper.h blocks.h
-src/fsengine/fsmanager.o: ns_base.h fsmanager.h fsengine.h bsa.h options.h
-src/fsengine/fsengine.o: ns_base.h fsengine.h bsa.h
-src/fsengine/bsa.o: bsa.h
-src/importex/importex.o: nifskope.h widgets/nifview.h nifproxy.h nifmodel.h
-src/importex/obj.o: ns_base.h nifmodel.h NvTriStrip/qtwrapper.h gl/gltex.h
-src/importex/3ds.o: ns_base.h 3ds.h spellbook.h NvTriStrip/qtwrapper.h gl/gltex.h
-src/widgets/refrbrowser.o: ns_base.h refrbrowser.h nifmodel.h
-src/widgets/nifeditors.o: ns_base.h nifeditors.h nifmodel.h colorwheel.h floatslider.h valueedit.h
-src/widgets/groupbox.o: groupbox.h
-src/widgets/inspect.o: ns_base.h inspect.h nifmodel.h gl/glscene.h gl/glnode.h
-src/widgets/nifcheckboxlist.o: nifcheckboxlist.h options.h
-src/widgets/colorwheel.o: colorwheel.h floatslider.h niftypes.h math.h
-src/widgets/xmlcheck.o: ns_base.h xmlcheck.h kfmmodel.h nifmodel.h config.h fileselect.h
-src/widgets/nifview.o: nifview.h basemodel.h nifproxy.h spellbook.h
-src/widgets/uvedit.o: ns_base.h uvedit.h nifmodel.h niftypes.h options.h gl/gltex.h gl/gltools.h NvTriStrip/qtwrapper.h math.h GL/glext.h
-src/widgets/floatslider.o: floatslider.h floatedit.h
-src/widgets/copyfnam.o: copyfnam.h
-src/widgets/valueedit.o: valueedit.h floatedit.h
-src/widgets/fileselect.o: fileselect.h config.h
-src/widgets/floatedit.o: floatedit.h nifvalue.h
-src/nifskope.o: ns_base.h nifskope.h config.h kfmmodel.h nifmodel.h nifproxy.h widgets/nifview.h widgets/refrbrowser.h widgets/inspect.h glview.h spellbook.h widgets/fileselect.h widgets/copyfnam.h widgets/xmlcheck.h options.h fsengine/fsmanager.h
-src/niftypes.o: niftypes.h nifmodel.h
-src/glview.o: ns_base.h gl/GLee.h glview.h math.h nifmodel.h gl/glscene.h gl/gltex.h options.h widgets/fileselect.h widgets/floatedit.h widgets/floatslider.h
+src/gl/dds/Image.o:  src/gl/dds/Color.h src/gl/dds/Image.h 
+src/gl/dds/DirectDrawSurface.o:  src/gl/dds/DirectDrawSurface.h src/gl/dds/BlockDXT.h src/gl/dds/PixelFormat.h  
+src/gl/dds/dds_api.o:  src/gl/dds/dds_api.h src/gl/dds/Stream.h src/gl/dds/DirectDrawSurface.h 
+src/gl/dds/ColorBlock.o:  src/gl/dds/ColorBlock.h src/gl/dds/Image.h src/gl/dds/Common.h
+src/gl/dds/Stream.o:  src/gl/dds/Stream.h  
+src/gl/dds/BlockDXT.o:  src/gl/dds/Common.h src/gl/dds/Stream.h src/gl/dds/ColorBlock.h src/gl/dds/BlockDXT.h
+src/gl/glmesh.o:  include/ns_base.h src/gl/glscene.h src/gl/glmesh.h src/gl/glcontroller.h src/gl/gltools.h src/options.h 
+src/gl/glmarker.o:  src/gl/glmarker.h
+src/gl/GLee.o:     src/gl/GLee.h 
+src/gl/glparticles.o:  include/ns_base.h src/gl/glscene.h src/gl/glcontroller.h src/gl/glparticles.h 
+src/gl/glscene.o:  include/ns_base.h src/gl/glscene.h src/gl/glcontroller.h src/gl/glnode.h src/gl/glmesh.h src/gl/glparticles.h src/gl/gltex.h src/options.h
+src/gl/gltex.o:  include/ns_base.h src/gl/GLee.h src/gl/glscene.h src/gl/gltex.h src/gl/gltexloaders.h src/options.h src/fsengine/fsmanager.h src/fsengine/fsengine.h
+src/gl/glcontroller.o:  include/ns_base.h src/gl/glcontroller.h src/gl/glscene.h src/options.h
+src/gl/gltools.o:  include/ns_base.h src/gl/gltools.h src/nifmodel.h
+src/gl/gltexloaders.o:  include/ns_base.h include/ns_utils.h src/gl/GLee.h src/gl/gltexloaders.h src/gl/dds/dds_api.h src/gl/dds/DirectDrawSurface.h src/nifmodel.h
+src/gl/glnode.o:  include/ns_base.h src/gl/glscene.h src/gl/glmarker.h src/gl/glnode.h src/gl/glcontroller.h src/options.h src/NvTriStrip/qtwrapper.h src/gl/furniture.h src/gl/constraints.h
+src/gl/renderer.o:  include/ns_base.h src/gl/GLee.h src/gl/renderer.h src/gl/gltex.h src/gl/glmesh.h src/gl/glscene.h src/gl/glproperty.h src/options.h
+src/gl/glproperty.o:  include/ns_base.h src/gl/glproperty.h src/gl/glcontroller.h src/gl/glscene.h src/options.h
+src/ns_utils.o:  include/ns_utils.h include/ns_base.h
+src/nifmodel.o:  src/nifmodel.h src/niftypes.h src/options.h config.h src/spellbook.h
+src/options.o:  include/ns_base.h src/options.h config.h src/widgets/colorwheel.h src/widgets/fileselect.h src/widgets/floatslider.h src/widgets/groupbox.h
+src/message.o:  src/message.h
+src/qhull.o:  src/qhull.h qhull/src/qhull.h qhull/src/libqhull.h  qhull/src/qhull_a.h
+src/NvTriStrip/VertexCache.o:  src/NvTriStrip/VertexCache.h
+src/NvTriStrip/qtwrapper.o:  src/NvTriStrip/qtwrapper.h src/NvTriStrip/NvTriStrip.h
+src/NvTriStrip/NvTriStripObjects.o:     src/NvTriStrip/NvTriStripObjects.h src/NvTriStrip/VertexCache.h
+src/NvTriStrip/NvTriStrip.o:  src/NvTriStrip/NvTriStripObjects.h src/NvTriStrip/NvTriStrip.h 
+src/kfmmodel.o:  src/kfmmodel.h include/ns_base.h
+src/nifvalue.o:  include/ns_base.h include/ns_utils.h src/nifvalue.h src/nifmodel.h config.h src/options.h
+src/basemodel.o:  include/ns_base.h src/basemodel.h src/niftypes.h src/options.h
+src/kfmxml.o:  include/ns_base.h src/kfmmodel.h
+src/nifdelegate.o:  src/nifmodel.h src/nifproxy.h src/kfmmodel.h src/spellbook.h src/widgets/valueedit.h src/widgets/nifcheckboxlist.h src/options.h
+src/nifexpr.o:  include/ns_base.h include/ns_utils.h src/nifexpr.h src/basemodel.h
+src/spellbook.o:  src/spellbook.h
+src/nifproxy.o:  src/nifproxy.h src/nifmodel.h
+src/nifxml.o:  include/ns_base.h src/nifmodel.h src/niftypes.h
+src/spells/headerstring.o:  include/ns_base.h src/spellbook.h
+src/spells/color.o:  src/spellbook.h src/widgets/colorwheel.h
+src/spells/mesh.o:  include/ns_base.h src/gl/glmesh.h src/spells/mesh.h
+src/spells/transform.o:  include/ns_base.h src/spells/transform.h config.h src/widgets/nifeditors.h
+src/spells/moppcode.o:  include/ns_base.h src/spellbook.h
+src/spells/skeleton.o:  include/ns_base.h src/spellbook.h src/spells/skeleton.h src/gl/gltools.h src/NvTriStrip/qtwrapper.h
+src/spells/normals.o:  include/ns_base.h src/spellbook.h src/NvTriStrip/qtwrapper.h
+src/spells/fo3only.o:  src/spellbook.h
+src/spells/morphctrl.o:  include/ns_base.h src/spellbook.h
+src/spells/flags.o:  include/ns_base.h src/spellbook.h
+src/spells/optimize.o:  include/ns_base.h src/spellbook.h src/spells/blocks.h src/gl/glmesh.h src/spells/mesh.h src/spells/tangentspace.h src/spells/transform.h
+src/spells/stringpalette.o:  include/ns_base.h src/spellbook.h src/spells/stringpalette.h
+src/spells/animation.o:  include/ns_base.h src/spellbook.h src/options.h
+src/spells/bounds.o:  src/spellbook.h src/widgets/nifeditors.h
+src/spells/strippify.o:  include/ns_base.h src/spellbook.h src/NvTriStrip/qtwrapper.h
+src/spells/tangentspace.o:  include/ns_base.h src/spells/tangentspace.h src/NvTriStrip/qtwrapper.h
+src/spells/material.o:  include/ns_base.h src/spellbook.h src/widgets/nifeditors.h
+src/spells/misc.o:  include/ns_base.h src/spells/misc.h
+src/spells/blocks.o:  include/ns_base.h src/spells/blocks.h config.h
+src/spells/texture.o:  include/ns_base.h src/spells/blocks.h src/spells/texture.h src/spellbook.h src/gl/gltex.h config.h src/widgets/fileselect.h src/widgets/uvedit.h src/NvTriStrip/qtwrapper.h
+src/spells/light.o:  include/ns_base.h src/spellbook.h src/widgets/nifeditors.h
+src/spells/sanitize.o:  include/ns_base.h src/spellbook.h src/spells/misc.h
+src/spells/havok.o:  include/ns_base.h src/spellbook.h src/qhull.h qhull/src/qhull.h qhull/src/libqhull.h src/NvTriStrip/qtwrapper.h src/spells/blocks.h
+src/fsengine/fsmanager.o:  include/ns_base.h src/fsengine/fsmanager.h src/fsengine/fsengine.h src/fsengine/bsa.h src/options.h
+src/fsengine/fsengine.o:  include/ns_base.h src/fsengine/fsengine.h src/fsengine/bsa.h
+src/fsengine/bsa.o:  src/fsengine/bsa.h
+src/importex/importex.o:  src/nifskope.h src/widgets/nifview.h src/nifproxy.h src/nifmodel.h
+src/importex/obj.o:  include/ns_base.h src/nifmodel.h src/NvTriStrip/qtwrapper.h src/gl/gltex.h
+src/importex/3ds.o:  include/ns_base.h src/importex/3ds.h src/spellbook.h src/NvTriStrip/qtwrapper.h src/gl/gltex.h
+src/widgets/refrbrowser.o:  include/ns_base.h src/widgets/refrbrowser.h src/nifmodel.h
+src/widgets/nifeditors.o:  include/ns_base.h src/widgets/nifeditors.h src/nifmodel.h src/widgets/colorwheel.h src/widgets/floatslider.h src/widgets/valueedit.h
+src/widgets/groupbox.o:  src/widgets/groupbox.h
+src/widgets/inspect.o:  include/ns_base.h src/widgets/inspect.h src/nifmodel.h src/gl/glscene.h src/gl/glnode.h
+src/widgets/nifcheckboxlist.o:  src/widgets/nifcheckboxlist.h src/options.h
+src/widgets/colorwheel.o:  src/widgets/colorwheel.h src/widgets/floatslider.h src/niftypes.h 
+src/widgets/xmlcheck.o:  include/ns_base.h src/widgets/xmlcheck.h src/kfmmodel.h src/nifmodel.h config.h src/widgets/fileselect.h
+src/widgets/nifview.o:  src/widgets/nifview.h src/basemodel.h src/nifproxy.h src/spellbook.h
+src/widgets/uvedit.o:  include/ns_base.h src/widgets/uvedit.h src/nifmodel.h src/niftypes.h src/options.h src/gl/gltex.h src/gl/gltools.h src/NvTriStrip/qtwrapper.h  
+src/widgets/floatslider.o:  src/widgets/floatslider.h src/widgets/floatedit.h
+src/widgets/copyfnam.o:  src/widgets/copyfnam.h
+src/widgets/valueedit.o:  src/widgets/valueedit.h src/widgets/floatedit.h
+src/widgets/fileselect.o:  src/widgets/fileselect.h config.h
+src/widgets/floatedit.o:  src/widgets/floatedit.h src/nifvalue.h
+src/nifskope.o:  include/ns_base.h src/nifskope.h config.h src/kfmmodel.h src/nifmodel.h src/nifproxy.h src/widgets/nifview.h src/widgets/refrbrowser.h src/widgets/inspect.h src/glview.h src/spellbook.h src/widgets/fileselect.h src/widgets/copyfnam.h src/widgets/xmlcheck.h src/options.h src/fsengine/fsmanager.h
+src/niftypes.o:  src/niftypes.h src/nifmodel.h
+src/glview.o:  include/ns_base.h src/gl/GLee.h src/glview.h  src/nifmodel.h src/gl/glscene.h src/gl/gltex.h src/options.h src/widgets/fileselect.h src/widgets/floatedit.h src/widgets/floatslider.h
 src/gl/dds/PixelFormat.h: Common.h
 src/gl/dds/Image.h: Common.h Color.h
 src/gl/dds/ColorBlock.h: Color.h Image.h
@@ -289,7 +292,6 @@ nifview.h: src/widgets/nifview.h
 xmlcheck.h: src/widgets/xmlcheck.h
 nifskope.h: src/nifskope.h
 include/nifitem.h: nifvalue.h nifexpr.h
-include/ns_utils.h: ns_base.h
 hacking.h: include/hacking.h
 ns_base.h: include/ns_base.h
 nifitem.h: include/nifitem.h

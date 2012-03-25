@@ -694,7 +694,7 @@ public:
 		const QMimeData * mime = QApplication::clipboard()->mimeData();
 		if ( index.isValid() && mime )
 			foreach ( QString form, mime->formats() )
-				if ( nif->isVersionSupported( nif->version2number( acceptFormat( form, nif ) ) ) )
+				if ( nif->isVersionSupported( nif->str2ver( acceptFormat( form, nif ) ) ) )
 					return true;
 		return false;
 	}
@@ -805,7 +805,7 @@ public:
 		const QMimeData * mime = QApplication::clipboard()->mimeData();
 		if ( mime && ! index.isValid() )
 			foreach ( QString form, mime->formats() )
-				if ( nif->isVersionSupported( nif->version2number( acceptFormat( form, nif ) ) ) )
+				if ( nif->isVersionSupported( nif->str2ver( acceptFormat( form, nif ) ) ) )
 					return true;
 		return false;
 	}

@@ -37,6 +37,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define OVERRIDE
 // temporary macros
 #define TMP_S2Q(S) QString::fromStdString (S)
+#define TMP_Q2S(Q) Q.toStdString ()
 
 #define STR_NOTHING "None"
 #define STR_TS "Tangent space (binormal & tangent vectors)"

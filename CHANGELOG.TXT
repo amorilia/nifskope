@@ -3,6 +3,7 @@
 This is version 2.0.0 of NifSkope.
 
 changes since 2.0.0:
+... integrating NifLib2
 ... building build requirements:
 	- "int" should be 4 bytes
 	- "unsigned int" should be 4 bytes
@@ -11,14 +12,53 @@ changes since 2.0.0:
 ... getting Qt out of many places
 	- carefully with implicit "char * const" and "std::string" and "QString"!
 	- "include/ns_utils.h"
-... coding convention
-	- "#include" goes to headers, code uses its interface only
-... reduce repeating code
-	- nifmodel.h, kfmmodel.h:
-		- static QString version2string( quint32 );
-		- QString getVersion() const { return version2string( version ); }
-		- ver2str( quint32 v ) const { return version2string( v ); }
-... get magic strings and numbers into a header
+... coding convention:
+	- indent: 4 spaces: '    ' and/or one '\t'
+	- argument lists:
+		declaration:
+			void foo(int a, int b);
+		defintion:
+			void
+			foo (4, 2);
+		same for methods;
+	- a ' ' between a method/function name and its opening bracket:
+		Foo ();
+	- no space should be left when its a macro:
+		FOO()
+	- "{" starts in the same line with one ' ' in front of it, except:
+		- after a class name:
+			class Foo
+			{
+			};
+		- after a method/function name
+			void
+			Foo::Bar()
+			{
+			}
+			void
+			bar()
+			{
+			}
+		- when defining code block with no operator prior it
+			cout << "Foo";
+			{
+				cout << "Bar";
+			}
+	- class/struct type names and method names start with capital letter
+		class Foo...
+		struct Bar...
+		void
+		Foo::Method1...
+	- functions, typedef out of class/struct, are all lower-case letter:
+		void print_string();
+	- mehod arguments start with lower case, words afterwards with capital:
+		void
+		Bar::Foo(int numPoints)...
+	Thats it. For the details, look at the existing code before writing a new
+	one. The idea is the code to be readable for everyone, and to be "friendly"
+	to "grep", "awk", "sed", "perl", etc.
+... reducing repeating code
+... getting magic strings and numbers into a header:
 	- "include/ns_base.h"
 * Remove all relative paths from "#include" directives
 * Set up "GNU Make" build system

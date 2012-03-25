@@ -232,7 +232,7 @@ public:
 					}	break;
 					case tagVersion:
 					{
-						int v = NifModel::version2number( list.value( A_NUM ).trimmed() );
+						int v = nifstr2ver (TMP_Q2S(list.value (A_NUM).trimmed () ));
 						if ( v != 0 && ! list.value( A_NUM ).isEmpty() )
 							NifModel::supportedVersions.append( v );
 						else
@@ -272,8 +272,8 @@ public:
 							list.value( A_ARR1 ),
 							list.value( A_ARR2 ),
 							list.value( A_COND ),
-							NifModel::version2number( list.value( A_VER1 ) ),
-							NifModel::version2number( list.value( A_VER2 ) ),
+							nifstr2ver (TMP_Q2S(list.value (A_VER1))),
+							nifstr2ver (TMP_Q2S(list.value (A_VER2))),
 							( list.value( A_ABSTRACT ) == "1" )
 						);
 						if ( data.isAbstract() )

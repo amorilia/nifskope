@@ -69,12 +69,10 @@ public:
 	// is this version supported ?
 	static bool isVersionSupported( quint32 );
 	
-	// version conversion
-	static quint32 version2number( const QString & );
-	
 	// check wether the current nif file version lies in the range since~until
 	bool checkVersion( quint32 since, quint32 until ) const;
 
+	OVERRIDE quint32 str2ver( QString s ) const { return kfmstr2ver (TMP_Q2S(s)); }
 	OVERRIDE QString ver2str(quint32 v) const { return TMP_S2Q(kfmver2str (v)); }
 	quint32 getVersionNumber() const { return version; }
 	
@@ -95,8 +93,6 @@ protected:
 	
 	bool		evalVersion( NifItem * item, bool chkParents = false ) const;
 
-	quint32		str2ver( QString s ) const { return version2number( s ); }
-	
 	// kfm file version
 	quint32		version;
 	

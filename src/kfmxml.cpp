@@ -101,7 +101,7 @@ public:
 				switch ( x )
 				{
 					case 1:
-						v = KfmModel::version2number( list.value( A_NUM ).trimmed() );
+						v = kfmstr2ver (TMP_Q2S(list.value (A_NUM).trimmed ()));
 						if ( v != 0 && ! list.value( A_NUM ).isEmpty() )
 							KfmModel::supportedVersions.append( v );
 						else
@@ -130,8 +130,8 @@ public:
 						list.value( A_ARR1 ),
 						list.value( A_ARR2 ),
 						list.value( A_COND ),
-						KfmModel::version2number( list.value( A_VER1 ) ),
-						KfmModel::version2number( list.value( A_VER2 ) ),
+						kfmstr2ver (TMP_Q2S(list.value (A_VER1))),
+						kfmstr2ver (TMP_Q2S(list.value (A_VER2))),
 						( list.value( A_ABSTRACT ) == "1" )
 					);
 					if ( data.name().isEmpty() || data.type().isEmpty() ) err( tr("add needs at least name and type attributes") );

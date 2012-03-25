@@ -33,10 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __NS_UTILS_H__
 #define __NS_UTILS_H__
 
-#include "ns_base.h"
 #include <string>
-#include <sstream>
-#include <iomanip>
 
 /*
 * Converts a 4 bytes int to a version string. Two formats:
@@ -55,5 +52,25 @@ std::string nifver2str(unsigned int v);
 *  - for v=1 it should return "0.0.0.1".
 */
 std::string kfmver2str(unsigned int v);
+
+/*
+* Converts a string into a 4 bytes int version. Formats:
+*  - "a.b" - a:, b: [0-255]
+*  - "a.b.c" - a:, b:, c:  [0-255]
+*  - "a.b.c.d" - a:, b:, c:, d:  [0-255]
+*  - "a.bcd" - a: [0-255]; b:, c:, d: [0-9]
+* a, b, c and d can be hexadecimal as well, upper and/or lower case 
+*/
+unsigned int nifstr2ver(std::string s);
+
+/*
+* Converts a string into a 4 bytes int version. Formats:
+*  - "a.b" - a:, b: [0-255]
+*  - "a.b.c" - a:, b:, c:  [0-255]
+*  - "a.b.c.d" - a:, b:, c:, d:  [0-255]
+*  - "a.bcd" - a: [0-255]; b:, c:, d: [0-9]
+* a, b, c and d can be hexadecimal as well, upper and/or lower case 
+*/
+unsigned int kfmstr2ver(std::string s);
 
 #endif /* __NS_UTILS_H__ */

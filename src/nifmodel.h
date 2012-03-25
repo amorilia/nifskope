@@ -197,12 +197,10 @@ public:
 	// is this version supported ?
 	static bool isVersionSupported( quint32 );
 	
-	// version conversion
-	static quint32 version2number( const QString & );
-	
 	//! Check whether the current nif file version lies in the range [since, until]
 	bool checkVersion( quint32 since, quint32 until ) const;
 
+	OVERRIDE quint32 str2ver( QString s ) const { return nifstr2ver (TMP_Q2S(s)); }
 	OVERRIDE QString ver2str(quint32 v) const { return TMP_S2Q(nifver2str (v)); }
 	quint32 getVersionNumber() const { return version; }
 	quint32 getUserVersion() const { return get<int>(getHeader(), TA_HUV); }
@@ -260,8 +258,6 @@ protected:
 	int			getBlockNumber( NifItem * item ) const;
 	
 	bool		setHeaderString( const QString & );
-	
-	quint32		str2ver( QString s ) const { return version2number( s ); }
 	
 	bool		evalVersion( NifItem * item, bool chkParents = false ) const;
 

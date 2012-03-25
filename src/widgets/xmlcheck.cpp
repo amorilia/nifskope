@@ -208,7 +208,7 @@ void TestShredder::renumberThreads( int num )
 		threads.append( thread );
 		
 		thread->blockMatch = blockMatch->text();
-		thread->verMatch = NifModel::version2number( verMatch->text() );
+		thread->verMatch = nifstr2ver (TMP_Q2S(verMatch->text ()));
 		thread->reportAll = ! repErr->isChecked();
 		
 		if ( btRun->isChecked() )
@@ -254,7 +254,7 @@ void TestShredder::run()
 	
 	foreach ( TestThread * thread, threads )
 	{
-		thread->verMatch = NifModel::version2number( verMatch->text() );
+		thread->verMatch = nifstr2ver (TMP_Q2S(verMatch->text ()));
 		thread->blockMatch = blockMatch->text();
 		thread->reportAll = ! repErr->isChecked();
 		thread->start();

@@ -31,6 +31,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***** END LICENCE BLOCK *****/
 
 #include "kfmmodel.h"
+#include "ns_base.h"
 
 KfmModel::KfmModel( QObject * parent ) : BaseModel( parent )
 {
@@ -43,22 +44,6 @@ QModelIndex KfmModel::getKFMroot() const
 		return createIndex( 0, 0, kfmroot );
 	else
 		return QModelIndex();
-}
-
-quint32 KfmModel::version2number( const QString & s )
-{
-	if ( s.isEmpty() )	return 0;
-	QStringList l = s.split( "." );
-	if ( l.count() <= 1 )
-	{
-		bool ok;
-		quint32 i = s.toUInt( &ok );
-		return ( i == 0xffffffff ? 0 : i );
-	}
-	quint32 v = 0;
-	for ( int i = 0; i < l.count(); i++ )
-		v += l[i].toInt( 0, 16 ) << ( (3-i) * 8 );
-	return v;
 }
 
 bool KfmModel::evalVersion( NifItem * item, bool chkParents ) const
@@ -205,7 +190,7 @@ bool KfmModel::setHeaderString( const QString & s )
 	//msg( DbgMsg() << s << s.right( s.length() - 27 ) );
 	if ( s.startsWith( ";Gamebryo KFM File Version " ) )
 	{
-		version = version2number( s.right( s.length() - 27 ) );
+		version = str2ver( s.right( s.length() - 27 ) );
 		if ( isVersionSupported( version ) )
 		{
 			return true;

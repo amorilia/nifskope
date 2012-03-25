@@ -157,6 +157,9 @@ public:
 	//! Evaluate version.
 	bool evalVersion( const QModelIndex & idx, bool chkParents = false ) const;
 	
+	//! Convert a version string to a number
+	virtual quint32 str2ver( QString ) const = 0;
+
 	//! Get version as a string
 	QString getVersion() const {return ver2str (getVersionNumber ());}
 	//! Get aversion as a string
@@ -263,9 +266,6 @@ protected:
 	bool		evalCondition( NifItem * item, bool chkParents = false ) const;
 	//! Evaluate conditions
 	bool		evalConditionHelper( NifItem * item, const QString & cond ) const;
-	
-	//! Convert a version string to a number
-	virtual quint32 str2ver( QString ) const = 0;
 	
 	//! Set the header string
 	virtual bool setHeaderString( const QString & ) = 0;

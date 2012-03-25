@@ -17,10 +17,21 @@ do
 		if [ -e $FNAME ]
 		then
 			OBJ=$(echo $FNAME | sed s/'\.c..$'/'\.o'/)
-			echo $OBJ": "$(grep "#include.*\.h.*" $FNAME |\
+			echo -n $OBJ": "
+			AFS=$IFS
+			IFS=$'\n'
+			for HDR in $(grep "#include.*\.h.*" $FNAME |\
 					awk -F' ' '{print $2}' |\
-					tr -d '\"<>' |\
-					tr '\n' ' ')
+					tr -d '\"<>')
+			do
+				echo -n " "$(find . -type f -name "*.h" -printf %P$'\n' | grep $HDR)
+			done
+			echo ""
+			IFS=$AFS
+			#echo $OBJ": "$( grep "#include.*\.h.*" $FNAME |\
+			#		awk -F' ' '{print $2}' |\
+			#		tr -d '\"<>' |\
+			#		tr '\n' ' ')
 		fi
 	done
 	# header <-> header

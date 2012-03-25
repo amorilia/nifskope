@@ -41,11 +41,10 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Test target
 #include "ns_utils.h"
 
-#include <QString>
-#include <QDebug>
-
 void test_nifver2str();
 void test_kfmver2str();
+void test_nifstr2ver();
+void test_kfmstr2ver();
 
 static struct {
 	int t, p, f;
@@ -113,6 +112,8 @@ main(int argc, char **argv)
 
 	TEST(nifver2str)
 	TEST(kfmver2str)
+	TEST(nifstr2ver)
+	TEST(kfmstr2ver)
 
 	TESTS.PrintStats ();
 	return 0;
@@ -159,4 +160,82 @@ test_kfmver2str()
 	MAKE_SURE(kfmver2str (-1) == "ff.ff.ff.ff")
 	MAKE_SURE(kfmver2str (0x000A0B0C) == "0.a.b.c")
 	MAKE_SURE(kfmver2str (0x0200000B) == "2.0.0.b")
+}
+
+void
+test_nifstr2ver()
+{
+	MAKE_SURE(nifstr2ver ("1.234") == 0x01020304)
+	MAKE_SURE(nifstr2ver ("128.234") == 0x80020304)
+	MAKE_SURE(nifstr2ver ("1.2") == 0x01020000)
+	MAKE_SURE(nifstr2ver ("1.23") == 0x01020300)
+	MAKE_SURE(nifstr2ver ("") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.3") == 0x01020300)
+	MAKE_SURE(nifstr2ver ("1..3") == 0)
+	MAKE_SURE(nifstr2ver (".") == 0)
+	MAKE_SURE(nifstr2ver ("..") == 0)
+	MAKE_SURE(nifstr2ver ("...") == 0)
+	MAKE_SURE(nifstr2ver ("1.") == 0)
+	MAKE_SURE(nifstr2ver (".1") == 0)
+	MAKE_SURE(nifstr2ver ("1234.1") == 0)
+	MAKE_SURE(nifstr2ver ("1.1234") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.3.4") == 0x01020304)
+	MAKE_SURE(nifstr2ver ("1111.2.3.4") == 0)
+	MAKE_SURE(nifstr2ver ("1.2222.3.4") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.3.4444") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.3.4.5") == 0)
+	MAKE_SURE(nifstr2ver ("255.2.3.4") == 0xFF020304)
+	MAKE_SURE(nifstr2ver ("256.2.3.4") == 0)
+	MAKE_SURE(nifstr2ver ("0.0.0.0") == 0)
+	MAKE_SURE(nifstr2ver ("1..3.4") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.333.4") == 0)
+	MAKE_SURE(nifstr2ver ("255.255.255.255") == 0xFFFFFFFF)
+	MAKE_SURE(nifstr2ver ("255.255.255.2554") == 0)
+	MAKE_SURE(nifstr2ver ("25x.25y.25z.25w") == 0)
+	MAKE_SURE(nifstr2ver ("255") == 0x000000ff)
+	MAKE_SURE(nifstr2ver ("0255") == 0x000000ff)
+	MAKE_SURE(nifstr2ver ("0000000000255") == 0x000000ff)
+	MAKE_SURE(nifstr2ver ("256") == 0x00000100)
+	MAKE_SURE(nifstr2ver ("00000000000255") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.4b") == 0x01024b00)
+	MAKE_SURE(nifstr2ver ("1.2.4b") != 0x01020400)
+}
+
+void
+test_kfmstr2ver()
+{
+	MAKE_SURE(nifstr2ver ("1.234") == 0x01020304)
+	MAKE_SURE(nifstr2ver ("128.234") == 0x80020304)
+	MAKE_SURE(nifstr2ver ("1.2") == 0x01020000)
+	MAKE_SURE(nifstr2ver ("1.23") == 0x01020300)
+	MAKE_SURE(nifstr2ver ("") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.3") == 0x01020300)
+	MAKE_SURE(nifstr2ver ("1..3") == 0)
+	MAKE_SURE(nifstr2ver (".") == 0)
+	MAKE_SURE(nifstr2ver ("..") == 0)
+	MAKE_SURE(nifstr2ver ("...") == 0)
+	MAKE_SURE(nifstr2ver ("1.") == 0)
+	MAKE_SURE(nifstr2ver (".1") == 0)
+	MAKE_SURE(nifstr2ver ("1234.1") == 0)
+	MAKE_SURE(nifstr2ver ("1.1234") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.3.4") == 0x01020304)
+	MAKE_SURE(nifstr2ver ("1111.2.3.4") == 0)
+	MAKE_SURE(nifstr2ver ("1.2222.3.4") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.3.4444") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.3.4.5") == 0)
+	MAKE_SURE(nifstr2ver ("255.2.3.4") == 0xFF020304)
+	MAKE_SURE(nifstr2ver ("256.2.3.4") == 0)
+	MAKE_SURE(nifstr2ver ("0.0.0.0") == 0)
+	MAKE_SURE(nifstr2ver ("1..3.4") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.333.4") == 0)
+	MAKE_SURE(nifstr2ver ("255.255.255.255") == 0xFFFFFFFF)
+	MAKE_SURE(nifstr2ver ("255.255.255.2554") == 0)
+	MAKE_SURE(nifstr2ver ("25x.25y.25z.25w") == 0)
+	MAKE_SURE(nifstr2ver ("255") == 0x000000ff)
+	MAKE_SURE(nifstr2ver ("0255") == 0x000000ff)
+	MAKE_SURE(nifstr2ver ("0000000000255") == 0x000000ff)
+	MAKE_SURE(nifstr2ver ("256") == 0x00000100)
+	MAKE_SURE(nifstr2ver ("00000000000255") == 0)
+	MAKE_SURE(nifstr2ver ("1.2.4b") == 0x01024b00)
+	MAKE_SURE(nifstr2ver ("1.2.4b") != 0x01020400)
 }
