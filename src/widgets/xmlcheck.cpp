@@ -193,8 +193,8 @@ void TestShredder::xml()
 	//queue.clear();
 	//foreach ( TestThread * thread, threads )
 	//	thread->wait();
-	NifModel::loadXML();
-	KfmModel::loadXML();
+	//NifModel::loadXML();
+	//KfmModel::loadXML();
 }
 
 void TestShredder::renumberThreads( int num )
@@ -412,18 +412,18 @@ void TestThread::run()
 		emit sigStart( filepath );
 		
 		BaseModel * model = & nif;
-		QReadWriteLock * lock = &nif.XMLlock;
+		//QReadWriteLock * lock = &nif.XMLlock;
 		
 		if ( filepath.endsWith( ".KFM", Qt::CaseInsensitive ) )
 		{
 			model = & kfm;
-			lock = & kfm.XMLlock;
+			//lock = & kfm.XMLlock;
 		}
 		
 		bool kf = ( filepath.endsWith( ".KF", Qt::CaseInsensitive ) || filepath.endsWith( ".KFA", Qt::CaseInsensitive ) );
 		
 		{	// lock the XML lock
-			QReadLocker lck( lock );
+			//QReadLocker lck( lock );
 			
 			if (  model == &nif && NifModel::earlyRejection( filepath, blockMatch, verMatch ) )
 			{

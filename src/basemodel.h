@@ -155,9 +155,9 @@ public:
 	//! Evaluate condition and version.
 	bool evalCondition( const QModelIndex & idx, bool chkParents = false ) const;
 	//! Evaluate version.
-	bool evalVersion( const QModelIndex & idx, bool chkParents = false ) const;
+	bool evalVersion(const QModelIndex &idx, bool chkParents = false) const;
 	
-	//! Convert a version string to a number
+	//! Convert a  version string to a number
 	virtual quint32 str2ver( QString ) const = 0;
 
 	//! Get version as a string
@@ -261,7 +261,7 @@ protected:
 	bool setItemValue( NifItem * parent, const QString & name, const NifValue & v );
 	
 	//! Evaluate version
-	virtual bool		evalVersion( NifItem * item, bool chkParents = false ) const = 0;
+	virtual bool evalVersion(NifItem *item, bool chkParents = false) const = 0;
 	//! Evaluate conditions
 	bool		evalCondition( NifItem * item, bool chkParents = false ) const;
 	//! Evaluate conditions
@@ -294,7 +294,7 @@ template <typename T> inline T BaseModel::get( NifItem * parent, const QString &
 {
 	NifItem * item = getItem( parent, name );
 	if ( item )
-		return item->value().get<T>();
+		return item->value.get<T>();
 	else
 		return T();
 }
@@ -307,7 +307,7 @@ template <typename T> inline T BaseModel::get( const QModelIndex & parent, const
 	
 	NifItem * item = getItem( parentItem, name );
 	if ( item )
-		return item->value().get<T>();
+		return item->value.get<T>();
 	else
 		return T();
 }
@@ -336,7 +336,7 @@ template <typename T> inline bool BaseModel::set( const QModelIndex & parent, co
 
 template <typename T> inline T BaseModel::get( NifItem * item ) const
 {
-	return item->value().get<T>();
+	return item->value.get<T>();
 }
 
 template <typename T> inline T BaseModel::get( const QModelIndex & index ) const
@@ -345,12 +345,12 @@ template <typename T> inline T BaseModel::get( const QModelIndex & index ) const
 	if ( ! ( index.isValid() && item && index.model() == this ) )
 		return T();
 	
-	return item->value().get<T>();
+	return item->value.get<T>();
 }
 
 template <typename T> inline bool BaseModel::set( NifItem * item, const T & d )
 {
-	if ( item->value().set( d ) )
+	if ( item->value.set( d ) )
 	{
 		emit dataChanged( createIndex( item->row(), ValueCol, item ), createIndex( item->row(), ValueCol, item ) );
 		return true;
@@ -385,9 +385,9 @@ template <typename T> inline void BaseModel::setArray( const QModelIndex & iArra
 	if ( isArray( iArray ) && item && iArray.model() == this )
 	{
 		item->setArray<T>( array );
-		int x = item->childCount() - 1;
+		int x = item->count() - 1;
 		if ( x >= 0 )
-			emit dataChanged( createIndex( 0, ValueCol, item->child( 0 ) ), createIndex( x, ValueCol, item->child( x ) ) );
+			emit dataChanged( createIndex( 0, ValueCol, item->itemAt( 0 ) ), createIndex( x, ValueCol, item->itemAt( x ) ) );
 	}
 }
 

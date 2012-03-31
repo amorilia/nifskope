@@ -49,10 +49,10 @@ public:
 	KfmModel( QObject * parent = 0 );
 	
 	// call this once on startup to load the XML descriptions
-	static bool loadXML();
+	//static bool loadXML();
 
 	// when creating kfmmodels from outside the main thread better protect them with a QReadLocker
-	static QReadWriteLock XMLlock;
+	//static QReadWriteLock XMLlock;
 	
 	// clear model data
 	void clear();
@@ -99,9 +99,9 @@ protected:
 	NifItem	* kfmroot;
 	
 	// XML structures
-	static QList<quint32>		supportedVersions;
+	//QList<quint32>		supportedVersions;
 	
-	static QHash<QString,NifBlock*>		compounds;
+	//static QHash<QString,NifBlock*>		compounds;
 	
 	static QString parseXmlDescription( const QString & filename );
 
@@ -111,12 +111,12 @@ protected:
 
 inline bool KfmModel::isCompound( const QString & name )
 {
-	return compounds.contains( name );
+	return false;
 }
 
 inline bool KfmModel::isVersionSupported( quint32 v )
 {
-	return supportedVersions.contains( v );
+	return false;
 }
 
 #endif

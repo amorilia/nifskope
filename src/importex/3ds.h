@@ -204,7 +204,7 @@ public:
 	// class members
 
 	Chunk( QFile * _f, ChunkHeader _h, ChunkPos _p )
-		: f( _f ), h( _h ), p( _p ), df( false ), dp( 0 ), dl( 0 ), dc( 0 )
+		: h( _h ), p( _p ), df( false ), dp( 0 ), dl( 0 ), dc( 0 ), f( _f )
 	{
 		if( h.t == FILE_DUMMY ) {
 			this->addchildren();
@@ -545,11 +545,11 @@ private:
 		}
 	}
 
-	void addchildren()
+	void
+	addchildren()
 	{
-		f->seek( p + CHUNKHEADERSIZE + dl );
-
-		QMap< ChunkType, Chunk * > temp;
+		f->seek (p + CHUNKHEADERSIZE + dl);
+		QMap<ChunkType, Chunk *> temp;
 
 		while( f->pos() < ( p + h.l ) )
 		{
@@ -576,50 +576,38 @@ private:
 		f->seek( p + h.l );
 	}
 
-	void addname()
+	void
+	addname()
 	{
-		f->seek( p + CHUNKHEADERSIZE + dl );
-
+		f->seek (p + CHUNKHEADERSIZE + dl);
 		char n = 0x01;
 		int nl = 0;
-
-		while( n != 0 )
-		{
-			if( !f->getChar( &n ) ) {
+		while (n != 0) {
+			if (!f->getChar (&n))
 				break;
-			}
-
 			nl++;
 		}
-
 		dl += nl;
 	}
 
-	void addcount( ChunkDataLength _dl )
+	void
+	addcount(ChunkDataLength _dl)
 	{
-		f->seek( p + CHUNKHEADERSIZE + dl );
-
-		int n = sizeof( dc );
-
-		f->read( (char *)( &dc ), sizeof( dc ) );
-
-		dl += ( sizeof( ChunkDataCount ) + ( dc * _dl ) );
+		f->seek (p + CHUNKHEADERSIZE + dl);
+		f->read ((char *)(&dc), sizeof(dc));
+		dl += (sizeof(ChunkDataCount) + (dc *_dl));
 	}
 
 
-	void adddata( ChunkDataLength _dl = 0 )
+	void
+	adddata(ChunkDataLength _dl = 0)
 	{
 		dl += _dl;
-
-		if( dl == 0 ) {
-			dl = ( h.l - CHUNKHEADERSIZE );
-		}
-
+		if (dl == 0)
+			dl = h.l - CHUNKHEADERSIZE;
 		df = true;
-
-		f->seek( p + CHUNKHEADERSIZE + dl );
+		f->seek (p + CHUNKHEADERSIZE + dl);
 	}
-
 };
 
 #endif

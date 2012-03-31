@@ -188,7 +188,7 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 	//Be sure the user hasn't clicked on a NiTriStrips object
 	if ( iBlock.isValid() && nif->itemName(iBlock) == T_NITRISTRIPS )
 	{
-		int result = QMessageBox::information( 0, tr("Import OBJ"), tr("You cannot import an OBJ file over a NiTriStrips object.  Please convert it to a NiTriShape object first by right-clicking and choosing Mesh > Triangulate") );
+		QMessageBox::information( 0, tr("Import OBJ"), tr("You cannot import an OBJ file over a NiTriStrips object.  Please convert it to a NiTriShape object first by right-clicking and choosing Mesh > Triangulate") );
 		return;
 	}
 
@@ -268,7 +268,6 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 
 	//--Read the file--//
 
-	float ObjScale;
 	QVector< objMesh > ObjMeshes;
 	QMap< QString, objMaterial > ObjMaterials;
 	QMap< QString, objKfSequence > ObjKeyframes;
@@ -308,12 +307,8 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 	}
 
 	Chunk * MasterScale = ModelData->getChild( MASTER_SCALE );
-	if( MasterScale ) {
-		ObjScale = MasterScale->read< float >();
-	}
-	else {
-		ObjScale = 1.0f;
-	}
+	if (MasterScale)
+		MasterScale->read<float> ();
 
 	QList< Chunk * > Materials = ModelData->getChildren( MATERIAL );
 	QList< Chunk * > Meshes = ModelData->getChildren( NAMED_OBJECT );
@@ -466,10 +461,10 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 
 	Chunk * Keyframes = Model->getChild( KFDATA );
 	if( Keyframes ) {
-		if( Chunk * KfHdr = Keyframes->getChild( KFHDR ) )
+		/*if( Chunk * KfHdr = Keyframes->getChild( KFHDR ) )
 		{
 
-		}
+		}*/
 
 		QList< Chunk * > KfSegs = Keyframes->getChildren( KFSEG );
 		QList< Chunk * > KfCurTimes = Keyframes->getChildren( KFCURTIME );
@@ -502,9 +497,12 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			if( Chunk * NodeHdr = KfObj->getChild( NODE_HDR ) ) {
 				newKfSeq.objectName = NodeHdr->readString();
 
-				unsigned short Flags1 = NodeHdr->read< unsigned short >();
-				unsigned short Flags2 = NodeHdr->read< unsigned short >();
-				unsigned short Hierarchy = NodeHdr->read< unsigned short >();
+				//unsigned short Flags1 =
+ 				NodeHdr->read< unsigned short >();
+				//unsigned short Flags2 =
+ 				NodeHdr->read< unsigned short >();
+				//unsigned short Hierarchy =
+				NodeHdr->read< unsigned short >();
 			}
 
 			if( Chunk * Pivot = KfObj->getChild( PIVOT ) ) {
@@ -516,21 +514,28 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			}
 
 			if( Chunk * PosTrack = KfObj->getChild( POS_TRACK_TAG ) ) {
-				unsigned short flags = PosTrack->read< unsigned short >();
+				//unsigned short flags =
+				PosTrack->read< unsigned short >();
 
-				unsigned short unknown1 = PosTrack->read< unsigned short >();
-				unsigned short unknown2 = PosTrack->read< unsigned short >();
-				unsigned short unknown3 = PosTrack->read< unsigned short >();
-				unsigned short unknown4 = PosTrack->read< unsigned short >();
+				//unsigned short unknown1 =
+				PosTrack->read< unsigned short >();
+				//unsigned short unknown2 =
+				PosTrack->read< unsigned short >();
+				//unsigned short unknown3 =
+				PosTrack->read< unsigned short >();
+				//unsigned short unknown4 =
+				PosTrack->read< unsigned short >();
 
 				unsigned short keys = PosTrack->read< unsigned short >();
 				
-				unsigned short unknown = PosTrack->read< unsigned short >();
+				//unsigned short unknown =
+				PosTrack->read< unsigned short >();
 
 				for( int key = 0; key < keys; key++ )
 				{
 					unsigned short kfNum = PosTrack->read< unsigned short >();
-					unsigned long kfUnknown = PosTrack->read< unsigned long >();
+					//unsigned long kfUnknown =
+					PosTrack->read< unsigned long >();
 					float kfPosX = PosTrack->read< float >();
 					float kfPosY = PosTrack->read< float >();
 					float kfPosZ = PosTrack->read< float >();
@@ -540,21 +545,28 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			}
 
 			if( Chunk * RotTrack = KfObj->getChild( ROT_TRACK_TAG ) ) {
-				unsigned short flags = RotTrack->read< unsigned short >();
+				//unsigned short flags =
+				RotTrack->read< unsigned short >();
 
-				unsigned short unknown1 = RotTrack->read< unsigned short >();
-				unsigned short unknown2 = RotTrack->read< unsigned short >();
-				unsigned short unknown3 = RotTrack->read< unsigned short >();
-				unsigned short unknown4 = RotTrack->read< unsigned short >();
+				//unsigned short unknown1 =
+				RotTrack->read< unsigned short >();
+				//unsigned short unknown2 =
+				RotTrack->read< unsigned short >();
+				//unsigned short unknown3 =
+				RotTrack->read< unsigned short >();
+				//unsigned short unknown4 =
+				RotTrack->read< unsigned short >();
 
 				unsigned short keys = RotTrack->read< unsigned short >();
 				
-				unsigned short unknown = RotTrack->read< unsigned short >();
+				//unsigned short unknown =
+				RotTrack->read< unsigned short >();
 
 				for( unsigned short key = 0; key < keys; key++ )
 				{
 					unsigned short kfNum = RotTrack->read< unsigned short >();
-					unsigned long kfUnknown = RotTrack->read< unsigned long >();
+					//unsigned long kfUnknown =
+					RotTrack->read< unsigned long >();
 					float kfRotAngle = RotTrack->read< float >();
 					float kfAxisX = RotTrack->read< float >();
 					float kfAxisY = RotTrack->read< float >();
@@ -566,21 +578,28 @@ void import3ds( NifModel * nif, const QModelIndex & index )
 			}
 
 			if( Chunk * SclTrack = KfObj->getChild( SCL_TRACK_TAG ) ) {
-				unsigned short flags = SclTrack->read< unsigned short >();
+				//unsigned short flags =
+				SclTrack->read< unsigned short >();
 
-				unsigned short unknown1 = SclTrack->read< unsigned short >();
-				unsigned short unknown2 = SclTrack->read< unsigned short >();
-				unsigned short unknown3 = SclTrack->read< unsigned short >();
-				unsigned short unknown4 = SclTrack->read< unsigned short >();
+				//unsigned short unknown1 =
+				SclTrack->read< unsigned short >();
+				//unsigned short unknown2 =
+				SclTrack->read< unsigned short >();
+				//unsigned short unknown3 =
+				SclTrack->read< unsigned short >();
+				//unsigned short unknown4 =
+				SclTrack->read< unsigned short >();
 
 				unsigned short keys = SclTrack->read< unsigned short >();
 				
-				unsigned short unknown = SclTrack->read< unsigned short >();
+				//unsigned short unknown =
+				SclTrack->read< unsigned short >();
 
 				for( unsigned short key = 0; key < keys; key++ )
 				{
 					unsigned short kfNum = SclTrack->read< unsigned short >();
-					unsigned long kfUnknown = SclTrack->read< unsigned long >();
+					//unsigned long kfUnknown =
+					SclTrack->read< unsigned long >();
 					float kfSclX = SclTrack->read< float >();
 					float kfSclY = SclTrack->read< float >();
 					float kfSclZ = SclTrack->read< float >();

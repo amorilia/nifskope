@@ -977,16 +977,16 @@ NifSkope * NifSkope::createWindow( const QString & fname )
 
 void NifSkope::loadXML()
 {
-	NifModel::loadXML();
-	KfmModel::loadXML();
+	//NifModel::loadXML();
+	//KfmModel::loadXML();
 }
 
 void NifSkope::reload()
 {
-	if ( NifModel::loadXML() )
+	/*if ( NifModel::loadXML() )
 	{
 		load();
-	}
+	}*/
 }
 
 void NifSkope::sltSelectFont()
@@ -1329,8 +1329,8 @@ int main( int argc, char * argv[] )
 	SetAppLocale( cfg.value( "Language", "en" ).toLocale() );
 	cfg.endGroup();
 	 
-	NifModel::loadXML();
-	KfmModel::loadXML();
+	//NifModel::loadXML();
+	//KfmModel::loadXML();
 	
 	QString fname;
 	bool reuseSession = true;

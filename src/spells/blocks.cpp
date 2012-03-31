@@ -181,7 +181,7 @@ static void populateBlocks( QList<qint32> & blocks, NifModel * nif, qint32 block
 }
 
 //! Remove the children from the specified block
-static void removeChildren( NifModel * nif, const QPersistentModelIndex & iBlock )
+static void remove( NifModel * nif, const QPersistentModelIndex & iBlock )
 {
 	QList<QPersistentModelIndex> iChildren;
 	foreach ( quint32 link, nif->getChildLinks( nif->getBlockNumber( iBlock ) ) )
@@ -189,7 +189,7 @@ static void removeChildren( NifModel * nif, const QPersistentModelIndex & iBlock
 
 	foreach ( QPersistentModelIndex iChild, iChildren )
 		if ( iChild.isValid() && nif->getBlockNumber( iBlock ) == nif->getParent( nif->getBlockNumber( iChild ) ) )
-			removeChildren( nif, iChild );
+			remove( nif, iChild );
 
 	foreach ( QPersistentModelIndex iChild, iChildren )
 		if ( iChild.isValid() && nif->getBlockNumber( iBlock ) == nif->getParent( nif->getBlockNumber( iChild ) ) )
@@ -831,7 +831,7 @@ bool spRemoveBranch::isApplicable( const NifModel * nif, const QModelIndex & iBl
 QModelIndex spRemoveBranch::cast( NifModel * nif, const QModelIndex & index )
 {
 	QPersistentModelIndex iBlock = index;
-	removeChildren( nif, iBlock );
+	remove( nif, iBlock );
 	nif->removeNiBlock( nif->getBlockNumber( iBlock ) );
 	return QModelIndex();
 }

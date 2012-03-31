@@ -50,50 +50,89 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class NifSharedData : public QSharedData
 {
 	friend class NifData;
+
+	NifSharedData(const QString &n, const QString &t, const QString & tt,
+		const QString &a, const QString &a1, const QString &a2,
+		const QString &c, quint32 v1, quint32 v2, bool abs)
+		: QSharedData ()
+	{
+		name = n;
+		type = t;
+		temp = tt;
+		arg = a;
+		arr1 = a1;
+		arr2 = a2;
+		cond = c;
+		ver1 = v1;
+		ver2 = v2;
+		condexpr = Expression (c);
+		isAbstract = abs;
+	}
 	
-	//! Constructor.
-	NifSharedData( const QString & n, const QString & t, const QString & tt, const QString & a, const QString & a1, const QString & a2, const QString & c, quint32 v1, quint32 v2, bool abs )
-		: QSharedData(), name( n ), type( t ), temp( tt ), arg( a ), arr1( a1 ), arr2( a2 ), cond( c ), ver1( v1 ), ver2( v2 ), condexpr(c), isAbstract( abs ) {}
+	NifSharedData(const QString &n, const QString &t, const QString & tt,
+		const QString &a, const QString &a1, const QString &a2,
+		const QString &c, quint32 v1, quint32 v2, bool abs,
+		const QString &vc, const QString &txt)
+		: QSharedData ()
+	{
+		name = n;
+		type = t;
+		temp = tt;
+		arg = a;
+		arr1 = a1;
+		arr2 = a2;
+		cond = c;
+		ver1 = v1;
+		ver2 = v2;
+		condexpr = Expression (c);
+		isAbstract = abs;
+		vercond = vc;
+		verexpr = Expression (vc);
+		text = txt;
+	}
 	
-	//! Constructor.
-	NifSharedData( const QString & n, const QString & t )
-		: QSharedData(), name( n ), type( t ), ver1( 0 ), ver2( 0 ), isAbstract( false ) {}
+	NifSharedData(const QString &n, const QString &t)
+		: QSharedData ()
+	{
+		name = n;
+		type = t;
+		ver1 = 0;
+		ver2 = 0;
+		isAbstract = false;
+	}
 	
-	//! Constructor.
-	NifSharedData( const QString & n, const QString & t, const QString & txt )
-		: QSharedData(), name( n ), type( t ), ver1( 0 ), ver2( 0 ), text( txt ), isAbstract( false ) {}
+	NifSharedData(const QString &n, const QString &t, const QString &txt)
+		: QSharedData ()
+	{
+		name = n;
+		type = t;
+		ver1 = 0;
+		ver2 = 0;
+		text = txt;
+		isAbstract = false;
+	}
 	
-	//! Constructor.
 	NifSharedData()
-		: QSharedData(), ver1( 0 ), ver2( 0 ), isAbstract( false ) {}
+		: QSharedData ()
+	{
+		ver1 = 0;
+		ver2 = 0;
+		isAbstract = false;
+	}
 	
-	//! Name.
 	QString  name;
-	//! Type.
 	QString  type;
-	//! Template type.
-	QString  temp;
-	//! Argument.
+	QString  temp;			// Template type
 	QString  arg;
-	//! First array length.
 	QString  arr1;
-	//! Second array length.
 	QString  arr2;
-	//! Condition.
 	QString  cond;
-	//! Earliest version.
 	quint32  ver1;
-	//! Latest version.
 	quint32  ver2;
-	//! Description text.
-	QString  text;
-	//! Condition as an expression.
-	Expression condexpr;
-	//! Version condition.
+	QString  text;			// Description text
+	Expression condexpr;	// Condition as an expression
 	QString  vercond;
-	//! Version condition as an expression.
-	Expression verexpr;
-	//! Abstract flag.
+	Expression verexpr;		// Version condition as an expression
 	bool isAbstract;
 };
 
@@ -101,335 +140,308 @@ class NifSharedData : public QSharedData
 class NifData
 {
 public:
-	//! Constructor.
-	NifData( const QString & name, const QString & type, const QString & temp, const NifValue & val, const QString & arg, const QString & arr1, const QString & arr2, const QString & cond, quint32 ver1, quint32 ver2, bool isAbstract = false )
-		: d( new NifSharedData( name, type, temp, arg, arr1, arr2, cond, ver1, ver2, isAbstract ) ), value( val ) {}
+	NifData(const QString &name, const QString &type, const QString &temp,
+		const NifValue &val, const QString &arg, const QString &arr1,
+		const QString &arr2, const QString &cond, quint32 ver1, quint32 ver2,
+		bool isAbstract = false)
+	{
+		d = new NifSharedData (name, type, temp, arg, arr1, arr2, cond, ver1,
+			ver2, isAbstract);
+		value = val;
+	}
+
+	NifData(const NifData &src)
+	{
+		d = new NifSharedData (src.name (), src.type (), src.temp (),
+			src.arg (), src.arr1 (), src.arr2 (), src.cond (), src.ver1 (),
+			src.ver2 (), src.isAbstract (), src.vercond (), src.text ());
+		value = src.value;
+	} 
 	
-	//! Constructor.
-	NifData( const QString & name, const QString & type = QString(), const QString & text = QString() )
-		: d( new NifSharedData( name, type, text ) ) {}
+	NifData(const QString &name, const QString &type = QString (),
+		const QString &text = QString ())
+	{
+		d = new NifSharedData (name, type, text);
+	}
 	
-	//! Constructor.
 	NifData()
-		: d( new NifSharedData() ) {}
-	
-	//! Get the name of the data.
-	inline const QString & name() const	{ return d->name; }
-	//! Get the type of the data.
-	inline const QString & type() const	{ return d->type; }
-	//! Get the template type of the data.
-	inline const QString & temp() const	{ return d->temp; }
-	//! Get the argument of the data.
-	inline const QString & arg() const	{ return d->arg; }
-	//! Get the first array length of the data.
-	inline const QString & arr1() const	{ return d->arr1; }
-	//! Get the second array length of the data.
-	inline const QString & arr2() const	{ return d->arr2; }
-	//! Get the condition attribute of the data.
-	inline const QString & cond() const	{ return d->cond; }
-	//! Get the earliest version of the data.
-	inline quint32 ver1() const			{ return d->ver1; }
-	//! Get the latest version of the data.
-	inline quint32 ver2() const			{ return d->ver2; }
-	//! Get the text description of the data.
-	inline const QString & text() const	{ return d->text; }
-	//! Get the condition attribute of the data, as an expression.
-	inline const Expression & condexpr() const	{ return d->condexpr; }
-	//! Get the version condition attribute of the data.
-	inline const QString & vercond() const	{ return d->vercond; }
-	//! Get the version condition attribute of the data, as an expression.
-	inline const Expression & verexpr() const	{ return d->verexpr; }
-	//! Get the abstract attribute of the data.
-	inline const bool & isAbstract() const	{ return d->isAbstract; }
-	
-	//! Sets the name of the data.
-	void setName( const QString & name )	{ d->name = name; }
-	//! Sets the type of the data.
-	void setType( const QString & type )	{ d->type = type; }
-	//! Sets the template type of the data.
-	void setTemp( const QString & temp )	{ d->temp = temp; }
-	//! Sets the argument of the data.
-	void setArg( const QString & arg )		{ d->arg = arg; }
-	//! Sets the first array length of the data.
-	void setArr1( const QString & arr1 )	{ d->arr1 = arr1; }
-	//! Sets the second array length of the data.
-	void setArr2( const QString & arr2 )	{ d->arr2 = arr2; }
-	//! Sets the condition attribute of the data.
-	void setCond( const QString & cond )	{ 
-		d->cond = cond; 
-		d->condexpr = Expression(cond); 
+	{
+		d = new NifSharedData ();
 	}
-	//! Sets the earliest version of the data.
-	void setVer1( quint32 ver1 )			{ d->ver1 = ver1; }
-	//! Sets the latest version of the data.
-	void setVer2( quint32 ver2 )			{ d->ver2 = ver2; }
-	//! Sets the text description of the data.
-	void setText( const QString & text )	{ d->text = text; }
-	//! Sets the version condition attribute of the data.
-	void setVerCond( const QString & cond )	{ 
-		d->vercond = cond; 
-		d->verexpr = Expression(cond); 
+
+// Forwarding Property
+#define FPROPERTY(GPFX, GNAME, SPFX, SNAME, TYPE, FIELD)\
+	GPFX TYPE GNAME() const { return FIELD; }\
+	SPFX SNAME(TYPE value) { FIELD=value; }
+
+	FPROPERTY(inline, name, void, setName, const QString &, d->name)
+
+	FPROPERTY(inline, type, void, setType, const QString &, d->type)
+
+	FPROPERTY(inline, temp, void, setTemp, const QString &, d->temp)
+
+	FPROPERTY(inline, arg, void, setArg, const QString &, d->arg)
+
+	FPROPERTY(inline, arr1, void, setArr1, const QString &, d->arr1)
+
+	FPROPERTY(inline, arr2, void, setArr2, const QString &, d->arr2)
+
+	inline const QString &
+	cond() const
+	{
+		return d->cond;
 	}
-	//! Sets the abstract attribute of the data.
-	void setAbstract( bool & isAbstract)	{ d->isAbstract = isAbstract; }
+
+	void
+	setCond(const QString &cond)
+	{
+		d->cond = cond;
+		d->condexpr = Expression (cond);
+	}
+
+	FPROPERTY(inline, ver1, void, setVer1, quint32, d->ver1)
+
+	FPROPERTY(inline, ver2, void, setVer2, quint32, d->ver2)
+
+	// The text description of the data.
+	FPROPERTY(inline, text, void, setText, const QString &, d->text)
+
+	// Get the condition attribute of the data, as an expression.
+	inline const Expression &
+	condexpr() const
+	{
+		return d->condexpr;
+	}
+
+	inline const QString &
+	vercond() const
+	{
+		return d->vercond;
+	}
+
+	void
+	setVerCond(const QString &cond)
+	{
+		d->vercond = cond;
+		d->verexpr = Expression (cond);
+	}
+
+	// Get the version condition attribute of the data, as an expression.
+	inline const Expression &
+	verexpr() const
+	{
+		return d->verexpr;
+	}
+
+	FPROPERTY(inline, isAbstract, void, setAbstract, const bool &,
+		d->isAbstract)
+
+#undef FPROPERTY
 
 protected:
-	//! The internal shared data.
+	// The internal shared data
 	QSharedDataPointer<NifSharedData> d;
 
 public:
-	//! The value stored with the data.
+	// The value stored with the data
 	NifValue value;
 };
 
 //! A block representing a niobject in XML.
-struct NifBlock
-{
-	//! Identifier.
-	QString id;
-	//! Ancestor.
-	QString ancestor;
-	//! Description text.
-	QString text;
-	//! Abstract flag.
-	bool abstract;
-	//! Data present.
-	QList<NifData> types;
+struct NifBlock {
+	QString id;				// Identifier
+	QString ancestor;		// Ancestor
+	QString text;			// Description text
+	bool abstract;			// Abstract flag
+	QList<NifData> types;	// Data present
 };
 
 //! An item which contains NifData
-class NifItem
+// It also contains NifData interface, so its not just a container.
+class NifItem: public NifData
 {
 public:
-	//! Constructor.
-	NifItem( NifItem * parent )
-		: parentItem( parent ) {}
+	NifItem(NifItem *parent)
+	{
+		pNode = parent;
+	}
 	
-	//! Constructor.
-	NifItem( const NifData & data, NifItem * parent )
-		: itemData( data ), parentItem( parent ) {}
+	NifItem(const NifData &data, NifItem *parent)
+		: NifData (data)
+	{
+		pNode = parent;
+	}
 	
-	//! Destructor.
 	~NifItem()
 	{
-		qDeleteAll( childItems );
+		qDeleteAll (nodes);
 	}
 	
-	//! Return the parent item.
-	NifItem * parent() const
+	NifItem *
+	parent() const
 	{
-		return parentItem;
+		return pNode;
 	}
 	
-	//! Return the row that this item is at.
-	int row() const
+	//! Return the row that this item is at
+	int
+	row() const
 	{
-		if ( parentItem )
-			return parentItem->childItems.indexOf( const_cast<NifItem*>(this) );
+		if (pNode)
+			return pNode->nodes.indexOf (const_cast<NifItem*>(this));
 		return 0;
 	}
 	
-	//! Allocate memory to insert child items
+	//! Allocate memory to insert items
 	/*!
-	 * \param e The number of items to be inserted
+	 * \param num The number of nodes to be inserted
 	 */
-	void prepareInsert( int e )
+	void
+	prepareInsert(int num)
 	{
-		childItems.reserve( childItems.count() + e );
+		nodes.reserve (nodes.count () + num);
 	}
 	
-	//! Insert child data item
+	//! Insert data
 	/*!
 	 * \param data The data to insert
 	 * \param at The position to insert at; append if not specified
 	 * \return An item containing the inserted data
 	 */
-	NifItem * insertChild( const NifData & data, int at = -1 )
+	NifItem *
+	insert(const NifData &data, int at = -1)
 	{
-		NifItem * item = new NifItem( data, this );
-		if ( at < 0 || at > childItems.count() )
-			childItems.append( item );
-		else
-			childItems.insert( at, item );
+		NifItem *item = new NifItem (data, this);
+		insert (item, at);
 		return item;
 	}
 	
-	//! Insert child item
+	//! Insert item
 	/*!
-	 * \param child The data to insert
+	 * \param item The data to insert
 	 * \param at The position to insert at; append if not specified
-	 * \return The row the child was inserted at
+	 * \return The row the item was inserted at
 	 */
-	int insertChild( NifItem * child, int at = -1 )
+	int
+	insert(NifItem *item, int at = -1)
 	{
-		child->parentItem = this;
-		if ( at < 0 || at > childItems.count() )
-			childItems.append( child );
-		else
-			childItems.insert( at, child );
-		return child->row();
-	}
-	
-	//! Take child item at row
-	/*!
-	 * \param row The row to take the item from
-	 * \return The child item that was removed
-	 */
-	NifItem * takeChild( int row )
-	{
-		NifItem * item = child( row );
-		if ( item )
-		{
-			childItems.remove( row );
-			item->parentItem = 0;
+		item->pNode = this;
+		if (at < 0 || at > nodes.count ()) {
+			nodes.append (item);
+			return nodes.count () - 1;
 		}
-		return item;
+		else {
+			nodes.insert (at, item);
+			return at;
+		}
 	}
+
+ 	//! Extract item at row
+ 	/*!
+ 	* \param row The row to take the item from
+ 	* \return The item that was removed
+ 	*/
+ 	NifItem *
+	extract(int row)
+ 	{
+ 		NifItem *item = itemAt (row);
+ 		if (item) {
+ 			nodes.remove (row);
+ 			item->pNode = 0;
+ 		}
+ 		return item;
+ 	}
 	
-	//! Remove child item at row
+	//! Remove item at row
 	/*!
 	 * \param row The row to remove the item from
 	 */
-	void removeChild( int row )
+	void
+	remove(int row)
 	{
-		NifItem * item = child( row );
-		if ( item )
-		{
-			childItems.remove( row );
+		NifItem *item = itemAt (row);
+		if (item) {
+			nodes.remove (row);
 			delete item;
 		}
 	}
 	
-	//! Remove several child items
+	//! Remove several items
 	/*!
 	 * \param row The row to start from
 	 * \param count The number of rows to delete
 	 */
-	void removeChildren( int row, int count )
+	void
+	remove(int row, int count)
 	{
-		for ( int c = row; c < row + count; c++ )
-		{
-			NifItem * item = childItems.value( c );
-			if ( item ) delete item;
+		for (int c = row; c < (row + count); c++) {
+			NifItem *item = itemAt (c);
+			if (item)
+				delete item;
 		}
-		childItems.remove( row, count );
+		nodes.remove (row, count);
 	}
 	
-	//! Return the child item at the specified row
-	NifItem * child( int row )
+	//! Return the item at the specified row
+	NifItem *
+	itemAt(int row)
 	{
-		return childItems.value( row );
+		return nodes.value (row);
 	}
 	
-	//! Return the child item with the specified name
-	NifItem * child( const QString & name )
+	//! Return the item with the specified name
+	NifItem *
+	byName(const QString &name)
 	{
-		foreach ( NifItem * child, childItems )
-			if ( child->name() == name )
-				return child;
+		foreach (NifItem *item, nodes)
+			if (item->name () == name)
+				return item;
 		return 0;
 	}
 	
-	//! Return a count of the number of child items
-	int childCount()
+	int
+	count()
 	{
-		return childItems.count();
+		return nodes.count ();
 	}
 	
-	//! Remove all child items
-	void killChildren()
+	void
+	clear()
 	{
-		qDeleteAll( childItems );
-		childItems.clear();
+		qDeleteAll (nodes);
+		nodes.clear ();
 	}
-	
-	//! Return the value of the item data (const version)
-	inline const NifValue & value() const	{ return itemData.value; }
-	//! Return the value of the item data
-	inline NifValue & value()	{ return itemData.value; }
-	
-	//! Return the name of the data
-	inline QString  name() const	{	return itemData.name();	}
-	//! Return the type of the data
-	inline QString  type() const	{	return itemData.type();	}
-	//! Return the template type of the data
-	inline QString  temp() const	{	return itemData.temp();	}
-	//! Return the argument attribute of the data
-	inline QString  arg() const	{	return itemData.arg();		}
-	//! Return the first array length of the data
-	inline QString  arr1() const	{	return itemData.arr1();	}
-	//! Return the second array length of the data
-	inline QString  arr2() const	{	return itemData.arr2();	}
-	//! Return the condition attribute of the data
-	inline QString  cond() const	{	return itemData.cond();	}
-	//! Return the earliest version attribute of the data
-	inline quint32  ver1() const	{	return itemData.ver1();	}
-	//! Return the latest version attribute of the data
-	inline quint32  ver2() const	{	return itemData.ver2();	}
-	//! Return the description text of the data
-	inline QString  text() const	{	return itemData.text();	}
-	//! Return the condition attribute of the data, as an expression
-	inline const Expression& condexpr() const	{	return itemData.condexpr();	}
-	//! Return the version condition attribute of the data
-	inline QString  vercond() const	{	return itemData.vercond();	}
-	//! Return the version condition attribute of the data, as an expression
-	inline const Expression& verexpr() const	{	return itemData.verexpr();	}
-	//! Return the abstract attribute of the data
-	inline const bool & isAbstract() const	{ return itemData.isAbstract(); }
-	
-	//! Set the name
-	inline void setName( const QString & name )	{	itemData.setName( name );	}
-	//! Set the type
-	inline void setType( const QString & type )	{	itemData.setType( type );	}
-	//! Set the template type
-	inline void setTemp( const QString & temp )	{	itemData.setTemp( temp );	}
-	//! Set the argument attribute
-	inline void setArg( const QString & arg )		{	itemData.setArg( arg );		}
-	//! Set the first array length
-	inline void setArr1( const QString & arr1 )	{	itemData.setArr1( arr1 );	}
-	//! Set the second array length
-	inline void setArr2( const QString & arr2 )	{	itemData.setArr2( arr2 );	}
-	//! Set the condition attribute
-	inline void setCond( const QString & cond )	{	itemData.setCond( cond );	}
-	//! Set the earliest version attribute
-	inline void setVer1( int v1 )					{	itemData.setVer1( v1 );		}
-	//! Set the latest version attribute
-	inline void setVer2( int v2 )					{	itemData.setVer2( v2 );		}
-	//! Set the description text
-	inline void setText( const QString & text )	{	itemData.setText( text );	}
-	//! Set the version condition attribute
-	inline void setVerCond( const QString & cond )	{	itemData.setVerCond( cond );	}
 	
 	//! Determine if this item is present in the specified version
-	inline bool evalVersion( quint32 v )
+	inline bool
+	evalVersion(quint32 v)
 	{
-		return ( ( ver1() == 0 || ver1() <= v ) && ( ver2() == 0 || v <= ver2() ) );
+		return ((ver1 () == 0 || ver1 () <= v) &&
+				(ver2 () == 0 || v <= ver2 ()));
 	}
 	
-	//! Get the child items as an array
-	template <typename T> QVector< T > getArray() const
+	//! Get the sub-items as an array
+	template <typename T> QVector<T>
+	getArray() const
 	{
 		QVector<T> array;
-		foreach ( NifItem * child, childItems )
-			array.append( child->itemData.value.get< T >() );
+		foreach (NifItem *item, nodes)
+			array.append (item->value.get<T> ());
 		return array;
 	}
 	
-	//! Set the child items from an array
-	template <typename T> void setArray( const QVector< T > & array )
+	//! Set the sub-items from an array
+	template <typename T> void
+	setArray(const QVector<T>  &array)
 	{
 		int x = 0;
-		foreach ( NifItem * child, childItems )
-			child->itemData.value.set< T >( array.value( x++ ) );
+		foreach (NifItem *item, nodes)
+			item->value.set<T> (array.value (x++));
 	}
 
 private:
-	//! The data held by the item
-	NifData itemData;
-	//! The parent of this item
-	NifItem * parentItem;
-	//! The child items
-	QVector<NifItem*> childItems;
+	NifItem *pNode;		// The parent of this item
+	QVector<NifItem *> nodes;
 };
 
 #endif

@@ -1103,7 +1103,7 @@ bool NifOStream::write( const NifValue & val )
 		{
 			if( NifModel* mdl = static_cast<NifModel*>(const_cast<BaseModel*>(model)) )
 			{
-				QString headerString = mdl->getItem( mdl->getHeaderItem(), TA_HSTRING )->value().toString();
+				QString headerString = mdl->getItem( mdl->getHeaderItem(), TA_HSTRING )->value.toString();
 				quint32 version;
 				// hack for neosteam
 				if( headerString.startsWith( "NS" ) )

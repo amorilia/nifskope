@@ -107,12 +107,12 @@ public:
 		return childItems.value( row );
 	}
 	
-	int childCount()
+	int count()
 	{
 		return childItems.count();
 	}
 	
-	void killChildren()
+	void clear()
 	{
 		qDeleteAll( childItems );
 		childItems.clear();
@@ -244,7 +244,7 @@ void NifProxyModel::setModel( QAbstractItemModel * model )
 void NifProxyModel::reset()
 {
 	//qDebug() << "proxy reset";
-	root->killChildren();
+	root->clear();
 	updateRoot( true );
 	QAbstractItemModel::reset();
 }
@@ -253,10 +253,10 @@ void NifProxyModel::updateRoot( bool fast )
 {
 	if ( ! ( nif && nif->getBlockCount() > 0 ) )
 	{
-		if ( root->childCount() > 0 )
+		if ( root->count() > 0 )
 		{
-			if ( ! fast ) beginRemoveRows( QModelIndex(), 0, root->childCount() - 1 );
-			root->killChildren();
+			if ( ! fast ) beginRemoveRows( QModelIndex(), 0, root->count() - 1 );
+			root->clear();
 			if ( ! fast ) endRemoveRows();
 		}
 		return;
@@ -280,7 +280,7 @@ void NifProxyModel::updateRoot( bool fast )
 		NifProxyItem * item = root->getLink( l );
 		if ( ! item )
 		{
-			if ( ! fast )	beginInsertRows( QModelIndex(), root->childCount(), root->childCount() );
+			if ( ! fast )	beginInsertRows( QModelIndex(), root->count(), root->count() );
 			item = root->addLink( l );
 			if ( ! fast )	endInsertRows();
 		}
@@ -309,7 +309,7 @@ void NifProxyModel::updateItem( NifProxyItem * item, bool fast )
 		NifProxyItem * child = item->getLink( l );
 		if ( ! child )
 		{
-			int at = item->childCount();
+			int at = item->count();
 			if ( ! fast )	beginInsertRows( index, at, at );
 			child = item->addLink( l );
 			if ( ! fast )	endInsertRows();
@@ -325,7 +325,7 @@ void NifProxyModel::updateItem( NifProxyItem * item, bool fast )
 	{
 		if ( ! item->getLink( l ) )
 		{
-			int at = item->childCount();
+			int at = item->count();
 			if ( ! fast )	beginInsertRows( index, at, at );
 			item->addLink( l );
 			if ( ! fast )	endInsertRows();
@@ -342,7 +342,7 @@ int NifProxyModel::rowCount( const QModelIndex & parent ) const
 	else
 		parentItem = static_cast<NifProxyItem*>( parent.internalPointer() );
 	
-	return ( parentItem ? parentItem->childCount() : 0 );
+	return ( parentItem ? parentItem->count() : 0 );
 }
 
 QModelIndex NifProxyModel::index( int row, int column, const QModelIndex & parent ) const

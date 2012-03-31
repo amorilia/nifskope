@@ -55,10 +55,10 @@ public:
 	
 	// call this once on startup to load the XML descriptions
 	//! Find and parse the XML file
-	static bool loadXML();
+	//static bool loadXML();
 
 	// when creating NifModels from outside the main thread protect them with a QReadLocker (see the XML check spell for an example)
-	static QReadWriteLock XMLlock;
+	QReadWriteLock XMLlock;
 	
 	// clear model data; implements BaseModel
 	void clear();
@@ -285,10 +285,10 @@ protected:
 
 
 	// XML structures
-	static QList<quint32>		supportedVersions;
+	QList<quint32>		supportedVersions;
 	
-	static QHash<QString,NifBlock*>		compounds;
-	static QHash<QString,NifBlock*>		blocks;
+	QHash<QString,NifBlock*>		compounds;
+	QHash<QString,NifBlock*>		blocks;
 	
 	//! Parse the XML file using a NifXmlHandler
 	static QString parseXmlDescription( const QString & filename );
@@ -307,33 +307,27 @@ protected:
 
 inline QStringList NifModel::allNiBlocks()
 {
-	QStringList lst;
-	foreach ( NifBlock * blk, blocks )
-		if ( ! blk->abstract )
-			lst.append( blk->id );
-	return lst;
+	return QStringList ();
 }
 
 inline bool NifModel::isNiBlock( const QString & name )
 {
-	NifBlock * blk = blocks.value( name );
-	return blk && ! blk->abstract;
+	return false;
 }
 
 inline bool NifModel::isAncestor( const QString & name )
 {
-	NifBlock * blk = blocks.value( name );
-	return blk && blk->abstract;
+	return false;
 }
 
 inline bool NifModel::isCompound( const QString & name )
 {
-	return compounds.contains( name );
+	return false;
 }
 
 inline bool NifModel::isVersionSupported( quint32 v )
 {
-	return supportedVersions.contains( v );
+	return false;
 }
 
 inline QList<int> NifModel::getRootLinks() const
@@ -354,8 +348,8 @@ inline QList<int> NifModel::getParentLinks( int block ) const
 inline bool NifModel::itemIsLink( NifItem * item, bool * isChildLink ) const
 {
 	if ( isChildLink )
-		*isChildLink = ( item->value().type() == NifValue::tLink );
-	return item->value().isLink();
+		*isChildLink = ( item->value.type() == NifValue::tLink );
+	return item->value.isLink();
 }
 
 inline bool NifModel::checkVersion( quint32 since, quint32 until ) const
