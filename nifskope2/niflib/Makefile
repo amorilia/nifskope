@@ -5,6 +5,7 @@ CPPFLAGS =
 CFLAGS   =
 LDFLAGS  = -lssl
 APP      = niflib++
+LIB      = niflib++
 
 WORK_DIR = .
 
