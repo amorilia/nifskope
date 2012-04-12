@@ -34,7 +34,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __NS_BASE_H__
 
 #define APP "NifSkope"
-#define OVERRIDE
 // temporary macros
 #define TMP_S2Q(S) QString::fromStdString (S)
 #define TMP_Q2S(Q) Q.toStdString ()

@@ -41,6 +41,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "glcontrolable.h"
 
+#include "ns_math.h"
+#include "ns_opengl.h"
+
 //! \file glproperty.h Property classes
 
 //! Controllable properties attached to nodes and meshes

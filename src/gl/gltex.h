@@ -35,8 +35,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QtOpenGL>
 
-#include "niftypes.h"
-
 class QAction;
 class QFileSystemWatcher;
 

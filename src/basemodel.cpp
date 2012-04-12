@@ -60,15 +60,15 @@ bool BaseModel::isArray( const QModelIndex & index ) const
 	return false;
 }
  
-int BaseModel::getArraySize( NifItem * array ) const
+/*int BaseModel::getArraySize( NifItem * array ) const
 {
 	return 0;
-}
+}*/
 
-int BaseModel::evaluateString( NifItem * array, const QString & text ) const
+/*int BaseModel::evaluateString( NifItem * array, const QString & text ) const
 {
 	return 0;
-}
+}*/
 
 bool BaseModel::updateArray( const QModelIndex & array )
 {
@@ -95,10 +95,10 @@ QString BaseModel::itemTmplt( const QModelIndex & index ) const
 	return QString();
 }
 
-NifValue BaseModel::getValue( const QModelIndex & index ) const
+/*NifValue BaseModel::getValue( const QModelIndex & index ) const
 {
 	return NifValue();
-}
+}*/
 
 QString BaseModel::itemArg( const QModelIndex & index ) const
 {
@@ -136,15 +136,15 @@ QString BaseModel::itemText( const QModelIndex & index ) const
 }
 
 
-bool BaseModel::setValue( const QModelIndex & index, const NifValue & val )
+/*bool BaseModel::setValue( const QModelIndex & index, const NifValue & val )
 {
 	return false;
-}
+}*/
 
-bool BaseModel::setValue( const QModelIndex & parent, const QString & name, const NifValue & val )
+/*bool BaseModel::setValue( const QModelIndex & parent, const QString & name, const NifValue & val )
 {
 	return false;
-}
+}*/
 
 QModelIndex BaseModel::index( int row, int column, const QModelIndex & parent ) const
 {
@@ -191,30 +191,30 @@ bool BaseModel::saveToFile( const QString & filename ) const
 	return false;
 }
  
-NifItem * BaseModel::getItem( NifItem * item, const QString & name ) const
+/*NifItem * BaseModel::getItem( NifItem * item, const QString & name ) const
 {
 	return 0;
-}
+}*/
 
-NifItem * BaseModel::getItemX( NifItem * item, const QString & name ) const
+/*NifItem * BaseModel::getItemX( NifItem * item, const QString & name ) const
 {
 	return 0;
-}
+}*/
 
 QModelIndex BaseModel::getIndex( const QModelIndex & parent, const QString & name ) const
 {
 	return QModelIndex();
 }
 
-bool BaseModel::evalCondition( NifItem * item, bool chkParents ) const
+/*bool BaseModel::evalCondition( NifItem * item, bool chkParents ) const
 {
 	return false;
-}
+}*/
 
-bool BaseModel::evalConditionHelper( NifItem * item, const QString & cond ) const
+/*bool BaseModel::evalConditionHelper( NifItem * item, const QString & cond ) const
 {	
 	return false;
-}
+}*/
 
 bool BaseModel::evalVersion( const QModelIndex & index, bool chkParents ) const
 {

@@ -33,6 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef KFMMODEL_H
 #define KFMMODEL_H
 
+#include "ns_types.h"
 #include "ns_base.h"
 #include "ns_utils.h"
 

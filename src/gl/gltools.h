@@ -35,8 +35,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QtOpenGL>
 
-#include "niftypes.h"
-
 //! \file gltools.h BoundSphere, VertexWeight, BoneWeights, SkinPartition
 
 //! A bounding sphere for an object, typically a Mesh

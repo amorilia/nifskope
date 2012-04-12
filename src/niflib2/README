@@ -1,0 +1,49 @@
+             README for NifLib 2 - NIFF runtime parser generator
+
+1. What is it?
+
+	It is a runtime parser generator capable of reading/editing/writing of
+.nif (NetImmerse File Format) game state files.
+
+1.1. Description
+
+	It uses XML documents as formal languages what are used as .nif/.kf/.kfm
+parser at runtime. You can find the documents here:
+	- "nif.xml" -> https://github.com/amorilia/nifxml
+	- "kfm.xml" -> https://github.com/amorilia/kfmxml
+	It can be used to read/edit/write those documents.
+	It can be used to read/edit/write file formats parsed by using those
+documents.
+	It has XML tag and attribute names and meaning hard-coded. It also has
+a hard-coded mapping between tag "basic", attribute "niflibtype" value, and
+"C++" types.
+	Provides access to the .nif file structure as:
+		- a list of fields - Compiler.FCount(), Compiler[]
+		- a tree of lists of fields - Compiler.AsTree()
+
+	The latest version can be found here:
+http://niftools.git.sourceforge.net/git/gitweb.cgi?p=niftools/nifskope;a=tree;f=nifskope2/niflib;hb=refs/heads/ogre3d
+
+2. Requirements
+
+	It has no external dependencies. Uses "C++" STL.
+	It will probably use "C++0x".
+	You may want to read about the "NifTools" project:
+http://niftools.sourceforge.net
+
+3. Build
+
+	3.1. Linux
+
+	Type "make".
+
+	3.2. Others
+
+	N/A yet.
+
+4. Credits
+
+	Thanks to "amorilia" @ "NifTools" and all the people who created and/or
+are working on "nif.xml" and "NifSkope".
+
+	Also, my eternal Thanks to all the Open Source Free Software people.

@@ -39,9 +39,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class QAbstractItemDelegate;
 
-#include "niftypes.h"
-#include "nifitem.h"
-
 #include "message.h"
 
 //! \file basemodel.h BaseModel
@@ -117,15 +114,15 @@ public:
 	template <typename T> bool set( const QModelIndex & parent, const QString & name, const T & v );
 	
 	//! Get an item as a NifValue.
-	NifValue getValue( const QModelIndex & index ) const;
+	//NifValue getValue( const QModelIndex & index ) const;
 	/* Not implemented? */
 	// Get an item as a NifValue by name.
 	//NifValue getValue( const QModelIndex & parent, const QString & name ) const;
 	
 	//! Set an item from a NifValue.
-	bool setValue( const QModelIndex & index, const NifValue & v );
+	//bool setValue( const QModelIndex & index, const NifValue & v );
 	//! Set an item from a NifValue by name.
-	bool setValue( const QModelIndex & parent, const QString & name, const NifValue & v );
+	//bool setValue( const QModelIndex & parent, const QString & name, const NifValue & v );
 	
 	// get item attributes
 	//! Get the item name.
@@ -235,43 +232,43 @@ signals:
 	
 protected:
 	//! Update an array item
-	virtual bool		updateArrayItem( NifItem * array, bool fast ) = 0;
+	//virtual bool		updateArrayItem( NifItem * array, bool fast ) = 0;
 	//! Get the size of an array
-	int			getArraySize( NifItem * array ) const;
+	//int			getArraySize( NifItem * array ) const;
 	//! Evaluate a string for an array
-	int			evaluateString( NifItem * array, const QString & text ) const;
+	//int			evaluateString( NifItem * array, const QString & text ) const;
 	
 	//! Get an item
-	virtual NifItem *	getItem( NifItem * parent, const QString & name ) const;
+	//virtual NifItem *	getItem( NifItem * parent, const QString & name ) const;
 	//! Get an item by name
-	NifItem *	getItemX( NifItem * item, const QString & name ) const; // find upwards
+	//NifItem *	getItemX( NifItem * item, const QString & name ) const; // find upwards
 	
 	//! Get an item by name
-	template <typename T> T get( NifItem * parent, const QString & name ) const;
+	//template <typename T> T get( NifItem * parent, const QString & name ) const;
 	//! Get an item
-	template <typename T> T get( NifItem * item ) const;
+	//template <typename T> T get( NifItem * item ) const;
 	
 	//! Set an item by name
-	template <typename T> bool set( NifItem * parent, const QString & name, const T & d );
+	//template <typename T> bool set( NifItem * parent, const QString & name, const T & d );
 	//! Set an item
-	template <typename T> bool set( NifItem * item, const T & d );
+	//template <typename T> bool set( NifItem * item, const T & d );
 	//! Set an item value
-	virtual bool setItemValue( NifItem * item, const NifValue & v ) = 0;
+	//virtual bool setItemValue( NifItem * item, const NifValue & v ) = 0;
 	//! Set an item value by name
-	bool setItemValue( NifItem * parent, const QString & name, const NifValue & v );
+	//bool setItemValue( NifItem * parent, const QString & name, const NifValue & v );
 	
 	//! Evaluate version
-	virtual bool evalVersion(NifItem *item, bool chkParents = false) const = 0;
+	//virtual bool evalVersion(NifItem *item, bool chkParents = false) const = 0;
 	//! Evaluate conditions
-	bool		evalCondition( NifItem * item, bool chkParents = false ) const;
+	//bool		evalCondition( NifItem * item, bool chkParents = false ) const;
 	//! Evaluate conditions
-	bool		evalConditionHelper( NifItem * item, const QString & cond ) const;
+	//bool		evalConditionHelper( NifItem * item, const QString & cond ) const;
 	
 	//! Set the header string
 	virtual bool setHeaderString( const QString & ) = 0;
 	
 	//! The root item
-	NifItem *	root;
+	//NifItem *	root;
 	
 	//! The filepath of the model
 	QString folder;
@@ -290,16 +287,16 @@ protected:
 }; // class BaseModel
 
 
-template <typename T> inline T BaseModel::get( NifItem * parent, const QString & name ) const
+/*template <typename T> inline T BaseModel::get( NifItem * parent, const QString & name ) const
 {
 	NifItem * item = getItem( parent, name );
 	if ( item )
 		return item->value.get<T>();
 	else
 		return T();
-}
+}*/
 
-template <typename T> inline T BaseModel::get( const QModelIndex & parent, const QString & name ) const
+/*template <typename T> inline T BaseModel::get( const QModelIndex & parent, const QString & name ) const
 {
 	NifItem * parentItem = static_cast<NifItem*>( parent.internalPointer() );
 	if ( ! ( parent.isValid() && parentItem && parent.model() == this ) )
@@ -310,18 +307,18 @@ template <typename T> inline T BaseModel::get( const QModelIndex & parent, const
 		return item->value.get<T>();
 	else
 		return T();
-}
+}*/
 
-template <typename T> inline bool BaseModel::set( NifItem * parent, const QString & name, const T & d )
+/*template <typename T> inline bool BaseModel::set( NifItem * parent, const QString & name, const T & d )
 {
 	NifItem * item = getItem( parent, name );
 	if ( item )
 		return set( item, d );
 	else
 		return false;
-}
+}*/
 
-template <typename T> inline bool BaseModel::set( const QModelIndex & parent, const QString & name, const T & d )
+/*template <typename T> inline bool BaseModel::set( const QModelIndex & parent, const QString & name, const T & d )
 {
 	NifItem * parentItem = static_cast<NifItem*>( parent.internalPointer() );
 	if ( ! ( parent.isValid() && parentItem && parent.model() == this ) )
@@ -332,23 +329,23 @@ template <typename T> inline bool BaseModel::set( const QModelIndex & parent, co
 		return set( item, d );
 	else
 		return false;
-}
+}*/
 
-template <typename T> inline T BaseModel::get( NifItem * item ) const
+/*template <typename T> inline T BaseModel::get( NifItem * item ) const
 {
 	return item->value.get<T>();
-}
+}*/
 
-template <typename T> inline T BaseModel::get( const QModelIndex & index ) const
+/*template <typename T> inline T BaseModel::get( const QModelIndex & index ) const
 {
 	NifItem * item = static_cast<NifItem*>( index.internalPointer() );
 	if ( ! ( index.isValid() && item && index.model() == this ) )
 		return T();
 	
 	return item->value.get<T>();
-}
+}*/
 
-template <typename T> inline bool BaseModel::set( NifItem * item, const T & d )
+/*template <typename T> inline bool BaseModel::set( NifItem * item, const T & d )
 {
 	if ( item->value.set( d ) )
 	{
@@ -357,29 +354,29 @@ template <typename T> inline bool BaseModel::set( NifItem * item, const T & d )
 	}
 	else
 		return false;
-}
+}*/
 
-template <typename T> inline bool BaseModel::set( const QModelIndex & index, const T & d )
+/*template <typename T> inline bool BaseModel::set( const QModelIndex & index, const T & d )
 {
 	NifItem * item = static_cast<NifItem*>( index.internalPointer() );
 	if ( ! ( index.isValid() && item && index.model() == this ) )	return false;
 	return set( item, d );
-}
+}*/
 
-template <typename T> inline QVector<T> BaseModel::getArray( const QModelIndex & iArray ) const
+/*template <typename T> inline QVector<T> BaseModel::getArray( const QModelIndex & iArray ) const
 {
 	NifItem * item = static_cast<NifItem*>( iArray.internalPointer() );
 	if ( isArray( iArray ) && item && iArray.model() == this )
 		return item->getArray<T>();
 	return QVector<T>();
-}
+}*/
 
 template <typename T> inline QVector<T> BaseModel::getArray( const QModelIndex & iParent, const QString & name ) const
 {
 	return getArray<T>( getIndex( iParent, name ) );
 }
 
-template <typename T> inline void BaseModel::setArray( const QModelIndex & iArray, const QVector<T> & array )
+/*template <typename T> inline void BaseModel::setArray( const QModelIndex & iArray, const QVector<T> & array )
 {
 	NifItem * item = static_cast<NifItem*>( iArray.internalPointer() );
 	if ( isArray( iArray ) && item && iArray.model() == this )
@@ -389,7 +386,7 @@ template <typename T> inline void BaseModel::setArray( const QModelIndex & iArra
 		if ( x >= 0 )
 			emit dataChanged( createIndex( 0, ValueCol, item->itemAt( 0 ) ), createIndex( x, ValueCol, item->itemAt( x ) ) );
 	}
-}
+}*/
 
 template <typename T> inline void BaseModel::setArray( const QModelIndex & iParent, const QString & name, const QVector<T> & array )
 {

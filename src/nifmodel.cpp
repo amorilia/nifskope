@@ -61,22 +61,22 @@ QString NifModel::parseXmlDescription( const QString & filename )
 	return QString();
 }
 
-bool
+/*bool
 NifModel::evalVersion(NifItem *item, bool chkParents) const
 {
 	return false;
-}
+}*/
 
 void
 NifModel::clear()
 {
 }
 
-NifItem *
+/*NifItem *
 NifModel::getFooterItem() const
 {
 	return NULL;
-}
+}*/
 
 QModelIndex
 NifModel::getFooter() const
@@ -95,28 +95,28 @@ NifModel::getHeader() const
 	return QModelIndex ();
 }
 
-NifItem *
+/*NifItem *
 NifModel::getHeaderItem() const
 {
 	return NULL;
-}
+}*/
 
 void
 NifModel::updateHeader()
 {
 }
 
-NifItem *
+/*NifItem *
 NifModel::getItem(NifItem *item, const QString &name) const
 {
 	return NULL;
-}
+}*/
 
-bool
+/*bool
 NifModel::updateByteArrayItem(NifItem *array, bool fast)
 {
 	return false;
-}
+}*/
 
 bool
 NifModel::updateArrayItem(NifItem *array, bool fast)
@@ -124,11 +124,11 @@ NifModel::updateArrayItem(NifItem *array, bool fast)
 	return false;
 }
 
-bool
+/*bool
 NifModel::updateArrays(NifItem *parent, bool fast)
 {
 	return false;
-}
+}*/
 
 QModelIndex
 NifModel::insertNiBlock(const QString &identifier, int at, bool fast)
@@ -146,9 +146,9 @@ NifModel::moveNiBlock(int src, int dst)
 {
 }
 
-void NifModel::updateStrings(NifModel *src, NifModel* tgt, NifItem *item)
+/*void NifModel::updateStrings(NifModel *src, NifModel* tgt, NifItem *item)
 {
-}
+}*/
 
 QMap<qint32,qint32> NifModel::moveAllNiBlocks( NifModel * targetnif, bool update )
 {
@@ -188,10 +188,10 @@ QModelIndex NifModel::getBlockOrHeader( const QModelIndex & idx ) const
 	return QModelIndex ();
 }
 
-int NifModel::getBlockNumber( NifItem * block ) const
+/*int NifModel::getBlockNumber( NifItem * block ) const
 {
 	return 0;
-}
+}*/
 
 QModelIndex NifModel::getBlock( int x, const QString & name ) const
 {
@@ -203,19 +203,19 @@ bool NifModel::isNiBlock( const QModelIndex & index, const QString & name ) cons
 	return false;
 }
 
-NifItem * NifModel::getBlockItem( int x ) const
+/*NifItem * NifModel::getBlockItem( int x ) const
 {
 	return NULL;
-}
+}*/
 
 int NifModel::getBlockCount() const
 {
 	return -1;
 }
 
-void NifModel::insertAncestor( NifItem * parent, const QString & identifier, int at )
+/*void NifModel::insertAncestor( NifItem * parent, const QString & identifier, int at )
 {
-}
+}*/
 
 bool NifModel::inherits( const QString & name, const QString & aunty )
 {
@@ -227,18 +227,18 @@ bool NifModel::inherits( const QModelIndex & idx, const QString & aunty ) const
 	return false;
 }
 
-void NifModel::insertType( const QModelIndex & parent, const NifData & data, int at )
+/*void NifModel::insertType( const QModelIndex & parent, const NifData & data, int at )
 {
-}
+}*/
 
-void NifModel::insertType( NifItem * parent, const NifData & data, int at )
+/*void NifModel::insertType( NifItem * parent, const NifData & data, int at )
 {
-}
+}*/
 
-bool NifModel::setItemValue( NifItem * item, const NifValue & val )
+/*bool NifModel::setItemValue( NifItem * item, const NifValue & val )
 {
 	return false;
-}
+}*/
 
 QVariant NifModel::data( const QModelIndex & idx, int role ) const
 {
@@ -311,56 +311,56 @@ int NifModel::blockSize( const QModelIndex & index ) const
 	return 0;
 }
 
-int NifModel::blockSize( NifItem * parent ) const
+/*int NifModel::blockSize( NifItem * parent ) const
 {
 	return 0;
-}
+}*/
 
-int NifModel::blockSize( NifItem * parent, NifSStream& stream ) const
+/*int NifModel::blockSize( NifItem * parent, NifSStream& stream ) const
 {
 	return 0;
-}
+}*/
 
-bool
+/*bool
 NifModel::load(NifItem *parent, NifIStream &stream, bool fast)
 {
 	return false;
-}
+}*/
 
-bool NifModel::save( NifItem * parent, NifOStream & stream ) const
+/*bool NifModel::save( NifItem * parent, NifOStream & stream ) const
 {
 	return false;
-}
+}*/
 
-bool NifModel::fileOffset( NifItem * parent, NifItem * target, NifSStream & stream, int & ofs ) const
+/*bool NifModel::fileOffset( NifItem * parent, NifItem * target, NifSStream & stream, int & ofs ) const
 {
 	return false;
-}
+}*/
 
-NifItem * NifModel::insertBranch( NifItem * parentItem, const NifData & data, int at )
+/*NifItem * NifModel::insertBranch( NifItem * parentItem, const NifData & data, int at )
 {
 	return NULL;
-}
+}*/
 
 void NifModel::updateLinks( int block )
 {
 }
 
-void NifModel::updateLinks( int block, NifItem * parent )
+/*void NifModel::updateLinks( int block, NifItem * parent )
 {
-}
+}*/
 
 void NifModel::checkLinks( int block, QStack<int> & parents )
 {
 }
 
-void NifModel::adjustLinks( NifItem * parent, int block, int delta )
+/*void NifModel::adjustLinks( NifItem * parent, int block, int delta )
 {
-}
+}*/
 
-void NifModel::mapLinks( NifItem * parent, const QMap<qint32,qint32> & map )
+/*void NifModel::mapLinks( NifItem * parent, const QMap<qint32,qint32> & map )
 {
-}
+}*/
 
 qint32 NifModel::getLink( const QModelIndex & index ) const
 {
@@ -427,10 +427,10 @@ bool NifModel::assignString( const QModelIndex & index, const QString & string, 
 	return false;
 }
 
-bool NifModel::assignString( NifItem * item, const QString & string, bool replace )
+/*bool NifModel::assignString( NifItem * item, const QString & string, bool replace )
 {
 	return false;
-}
+}*/
 
 bool NifModel::assignString( const QModelIndex & index, const QString & name, const QString & string, bool replace )
 {
