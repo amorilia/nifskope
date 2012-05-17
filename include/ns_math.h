@@ -54,7 +54,6 @@ public:
 	bool operator==(const Vector2 &) const;
 	//! Comparison function for lexicographic sorting
 	static bool lexLessThan(const Vector2 &v1, const Vector2 &v2);
-protected:
 	NSfloat x, y;
 };
 
@@ -64,7 +63,7 @@ class Vector3
 public:
 	Vector3();
 	Vector3(NSfloat x, NSfloat y, NSfloat z);
-	explicit Vector3(const Vector2 &v2, NSfloat z = 0);
+	explicit Vector3(const Vector2 &, NSfloat z = 0);
 	explicit Vector3(const class Vector4 &);
 	Vector3 &operator+=(const Vector3 &);
 	Vector3 &operator-=(const Vector3 &);
@@ -95,9 +94,7 @@ public:
 	//! Size a vector to a maximum bound
 	void boundMax(const Vector3 &);
 	//! Return vector first component
-protected:
 	NSfloat x, y, z;
-	friend class Quad;
 };
 
 //! A vector of 4 floats
@@ -129,15 +126,14 @@ public:
 	static NSfloat angle(const Vector4 &, const Vector4 &);
 	//! Comparison function for lexicographic sorting
 	static bool lexLessThan(const Vector4 &, const Vector4 &);
-protected:
 	NSfloat x, y, z, w;
 };
 
 inline Vector3::Vector3(const Vector4 &v4)
 {
-	x = v4.X ();
-	y = v4.Y ();
-	z = v4.Z ();
+	x = v4.x;
+	y = v4.y;
+	z = v4.z;
 }
 
 //! A quaternion
@@ -152,7 +148,7 @@ public:
 	Quat operator*(NSfloat) const;
 	Quat &operator+=(const Quat &);
 	Quat operator+(const Quat &) const;
-	static NSfloat dotproduct(const Quat &, const Quat &)
+	static NSfloat dotproduct(const Quat &, const Quat &);
 	//! Set from vector and angle
 	void fromAxisAngle(Vector3 axis, NSfloat angle);
 	//! Find vector and angle
@@ -173,10 +169,10 @@ class Matrix3
 {
 public:
 	Matrix3();
-	Matrix3 operator*(const Matrix &) const;
+	Matrix3 operator*(const Matrix3 &) const;
 	Vector3 operator*(const Vector3 &) const;
-	//float &operator()(int c, int d);
-	//float operator()(int c, int d) const;
+	float &operator()(int c, int d);
+	float operator()(int c, int d) const;
 	Matrix3 inverted() const;
 	void fromQuat(const Quat &);
 	Quat toQuat() const;
@@ -189,10 +185,6 @@ public:
 protected:
 	NSfloat m[3][3];
 	static const NSfloat identity[9];
-};
-
-class Matrix: public Matrix3
-{
 };
 
 //! A 4 by 4 matrix
@@ -211,12 +203,53 @@ public:
 	Vector3 scale() const;
 	*/
 	//! Decompose into translation, rotation and scale
-	void decompose(Vector3 &trans, Matrix &rot, Vector3 &scale) const;
+	void decompose(Vector3 &trans, Matrix3 &rot, Vector3 &scale) const;
 	//! Compose from translation, rotation and scale
-	void compose(const Vector3 &trans, const Matrix &rot, const Vector3 &scale);
+	void compose(const Vector3 &trans, const Matrix3 &rot, const Vector3 &scale);
+	operator NSfloat const *() const
+	{
+		return &(m[0][0]);
+	}
 protected:
-	float m[4][4];
-	static const float identity[16];
+	NSfloat m[4][4];
+	static const NSfloat identity[16];
+};
+
+//! A triangle
+class Triangle
+{
+public:
+	Triangle();
+	Triangle(NSushort a, NSushort b, NSushort c);
+	NSushort &operator[](unsigned int i);
+	const NSushort &operator[](unsigned int i) const;
+	//! Sets the vertices of the triangle
+	void set(NSushort a, NSushort b, NSushort c);
+	//! Gets the first vertex
+	inline NSushort v1() const
+	{
+		return v[0];
+	}
+	//! Gets the second vertex
+	inline NSushort v2() const
+	{
+		return v[1];
+	}
+	//! Gets the third vertex
+	inline NSushort v3() const
+	{
+		return v[2];
+	}
+	//! Flips the triangle face
+	/*!
+	 * Triangles are usually drawn anticlockwise(?); by changing the order of
+	 * the vertices the triangle is flipped.
+	 */
+	void flip();
+	//! Add operator
+	Triangle operator+(NSushort d);
+protected:
+	NSushort v[3];
 };
 
 #endif /* __NS_MATH_H__ */

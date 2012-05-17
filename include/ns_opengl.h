@@ -33,6 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __NS_OPENGL_H__
 #define __NS_OPENGL_H__
 
+#include "ns_math.h"
 #include "GL/gl.h"
 
 //! A transformation consisting of a translation, rotation and scale
@@ -40,12 +41,10 @@ class Transform
 {
 public:
 	Transform();
-	//! Times operator
 	friend Transform operator*(const Transform &t1, const Transform &t2);
-	//! Times operator
-	Vector3 operator*(const class Vector3 &v) const;
+	Vector3 operator*(const Vector3 &v) const;
 	//! Returns a matrix holding the transform
-	class Matrix4 toMatrix4() const;
+	Matrix4 toMatrix4() const;
 	// Format of rotation matrix? See http://en.wikipedia.org/wiki/Euler_angles
 	// fromEuler indicates that it might be "zyx" form
 	// Yaw, Pitch, Roll correspond to rotations in X, Y, Z axes respectively
@@ -55,9 +54,9 @@ public:
 	// From entim: "The rotations are applied after each other: first yaw,
 	// then pitch, then roll"
 	// For A,X,Y,Z representation, A is amplitude, each axis is a percentage
-	class Matrix rotation;
-	class Vector3 translation;
-	float scale;
+	Matrix3 rotation;
+	Vector3 translation;
+	NSfloat scale;
 };
 
 //! A 3 value color (RGB)
@@ -86,8 +85,10 @@ public:
 	void setBlue(GLfloat);
 	//! Set the color components
 	void setRGB(GLfloat, GLfloat, GLfloat);
-	//! %Data accessor
-	const GLfloat *data() const;
+	operator GLfloat const *() const
+	{
+		return &(rgb[0]);
+	}
 protected:
 	union {
 		GLfloat rgb[3];
@@ -127,8 +128,10 @@ public:
 	void setAlpha(GLfloat);
 	//! Set the color components
 	void setRGBA(GLfloat, GLfloat, GLfloat, GLfloat);
-	//! %Data accessor
-	const GLfloat *data() const;
+	operator GLfloat const *() const
+	{
+		return &(rgba[0]);
+	}
 	//! Alpha blend
 	Color4 blend(GLfloat alpha) const;
 protected:
@@ -146,5 +149,11 @@ inline Color3::Color3(const Color4 &c4)
 	g = c4.g;
 	b = c4.b;
 }
+
+//! NifSkope Open GL 2 renderer NifLib interface
+class NifGL
+{
+	
+};
 
 #endif /* __NS_OPENGL_H__ */

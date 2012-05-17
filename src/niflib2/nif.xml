@@ -5119,7 +5119,6 @@
         <option value="6" name="CPU Write Static Inititialized"></option>
     </bitflags>
 
-
     <niobject name="NiDataStream" inherit="NiObject" abstract="0">
         <add name="Usage" type="DataStreamUsage" abstract="1"></add>
         <add name="Access" type="DataStreamAccess" abstract="1"></add>
@@ -5242,7 +5241,7 @@
         <add name="Instancing Enabled" type="bool">Sets whether hardware instancing is being used.</add>
         <add name="Bound" type="SphereBV">The combined bounding volume of all submeshes.</add>
         <add name="Num Datas" type="uint" />
-        <add name="Datas" type="MeshData" arr1="Num Datas" />
+        <add name="Datas" type="MeshData" arr1="Num Datas" context="items"/>
         <add name="Num Modifiers" type="uint" />
         <add name="Modifiers" type="Ref" template="NiMeshModifier" arr1="Num Modifiers" /><!-- see Zorsis Zombie_Boy.nif -->
 

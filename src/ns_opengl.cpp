@@ -32,6 +32,45 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ns_opengl.h"
 
+/* Transform */
+
+Transform::Transform()
+{
+	scale = 1.0;
+}
+	
+Transform
+Transform::operator*(const Transform &t1, const Transform &t2)
+{
+	Transform t;
+	t.rotation = t1.rotation * t2.rotation;
+	t.translation = t1.translation + (t1.rotation * t2.translation * t1.scale);
+	t.scale = t1.scale * t2.scale;
+	return t;
+}
+	
+Vector3
+Transform::operator*(const Vector3 &v) const
+{
+	return (rotation * v * scale) + translation;
+}
+	
+Matrix4
+Transform::toMatrix4() const
+{
+	Matrix4 m;
+	for (int c = 0; c < 3; c++) {
+		for (int d = 0; d < 3; d++)
+			m(c, d) = rotation(d, c) * scale;
+		m(3, c) = translation[c];
+	}
+	m(0, 3) = 0.0;
+	m(1, 3) = 0.0;
+	m(2, 3) = 0.0;
+	m(3, 3) = 1.0;
+	return m;
+}
+
 /* Color3 */
 
 Color3::Color3()
@@ -130,11 +169,11 @@ Color3::setRGB(GLfloat r, GLfloat g, GLfloat b)
 	this->b = b;
 }
 
-const GLfloat *
+/*const GLfloat *
 Color3::data() const
 {
 	return &(rgb[0]);
-}
+}*/
 
 /* Color4 */
 
@@ -264,11 +303,11 @@ Color4::setRGBA(GLfloat r, GLfloat g, GLfloat b, GLfloat a)
 	this->a = a;
 }
 
-const GLfloat *
+/*const GLfloat *
 Color4::data() const
 {
 	return &(rgba[0]);
-}
+}*/
 	
 Color4
 Color4::blend(GLfloat alpha) const

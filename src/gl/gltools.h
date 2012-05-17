@@ -118,90 +118,91 @@ void drawConvexHull( QVector<Vector4> vertices, QVector<Vector4> normals );
 void drawSpring( Vector3 a, Vector3 b, float stiffness, int sd = 16, bool solid = false );
 void drawRail( const Vector3 &a, const Vector3 &b );
 
-inline void glTranslate( const Vector3 & v )
+inline void
+glTranslate(const Vector3 &v)
 {
-	glTranslatef( v[0], v[1], v[2] );
+	glTranslatef (v.x, v.y, v.z);
 }
 
-inline void glScale( const Vector3 & v )
+inline void
+glScale(const Vector3 &v)
 {
-	glScalef( v[0], v[1], v[2] );
+	glScalef (v.x, v.y, v.z);
 }
 
-inline void glVertex( const Vector2 & v )
+inline void
+glVertex(const Vector2 &v)
 {
-	glVertex2fv( v.data() );
+	glVertex2f (v.x, v.y);
 }
 
-inline void glVertex( const Vector3 & v )
+inline void
+glVertex(const Vector3 &v)
 {
-	glVertex3fv( v.data() );
+	glVertex3f (v.x, v.y, v.z);
 }
 
-inline void glVertex( const Vector4 & v )
+inline void
+glVertex(const Vector4 &v)
 {
-	glVertex3fv( v.data() );
+	glVertex3f (v.x, v.y, v.z);
 }
 
-inline void glNormal( const Vector3 & v )
+inline void
+glNormal(const Vector3 &v)
 {
-	glNormal3fv( v.data() );
+	glNormal3f (v.x, v.y, v.z);
 }
 
-inline void glTexCoord( const Vector2 & v )
+inline void
+glTexCoord(const Vector2 &v)
 {
-	glTexCoord2fv( v.data() );
+	// TODO: implicit mapping: (x, y) -> (u, v). Make it explicit.
+	// TODO: implicit mapping: NSfloat -> GLfloat. Make it explicit.
+	glTexCoord2f (v.x, v.y);
 }
 
-inline void glColor( const Color3 & c )
+inline void
+glColor(const Color3 &c)
 {
-	glColor3fv( c.data() );
+	glColor3fv (c);// the contract is via implicit cast operator
 }
 
-inline void glColor( const Color4 & c )
+inline void
+glColor(const Color4 &c)
 {
-	glColor4fv( c.data() );
+	glColor4fv (c);// the contract is via implicit cast operator
 }
 
-inline void glMaterial( GLenum x, GLenum y, const Color4 & c )
+inline void
+glMaterial(GLenum x, GLenum y, const Color4 &c)
 {
-	glMaterialfv( x, y, c.data() );
+	glMaterialfv (x, y, c);
 }
 
-inline void glLoadMatrix( const Matrix4 & m )
+inline void
+glLoadMatrix(const Matrix4 &m)
 {
-	glLoadMatrixf( m.data() );
+	// TODO: if the cast fails, extend Matrix4 with implicit GLfloat cast
+	glLoadMatrixf (m);
 }
 
-inline void glMultMatrix( const Matrix4 & m )
+inline void
+glMultMatrix(const Matrix4 &m)
 {
-	glMultMatrixf( m.data() );
+	glMultMatrixf (m);
 }
 
-inline void glLoadMatrix( const Transform & t )
+inline void
+glLoadMatrix(const Transform &t)
 {
-	glLoadMatrix( t.toMatrix4() );
+	glLoadMatrix (t.toMatrix4 ());
 }
 
-inline void glMultMatrix( const Transform & t )
+inline void
+glMultMatrix (const Transform &t)
 {
-	glMultMatrix( t.toMatrix4() );
-}
-
-
-inline GLuint glClosestMatch( GLuint * buffer, GLint hits )
-{	// a little helper function, returns the closest matching hit from the name buffer
-	GLuint	choose = buffer[ 3 ];
-	GLuint	depth = buffer[ 1 ];
-	for ( int loop = 1; loop < hits; loop++ )
-	{
-		if ( buffer[ loop * 4 + 1 ] < depth )
-		{
-			choose = buffer[ loop * 4 + 3 ];
-			depth = buffer[ loop * 4 + 1 ];
-		}       
-	}
-	return choose;
+	glMultMatrix (t.toMatrix4 ());
 }
 
 void renderText(double x, double y, double z, const QString & str);

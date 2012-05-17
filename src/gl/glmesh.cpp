@@ -31,6 +31,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***** END LICENCE BLOCK *****/
 
 #include "ns_base.h"
+#include "NS3DObject.h"
 
 #include "glscene.h"
 #include "glmesh.h"
@@ -179,7 +180,7 @@ public:
 				// scaling/tiling applied before translation
 				// Note that scaling is relative to center!
 				current += Vector2( -0.5, -0.5 );
-				current = Vector2( current[0] * val[2], current[1] * val[3] );
+				current = Vector2( current.x * val[2], current.y * val[3] );
 				current += Vector2( -val[0], val[1] );
 				current += Vector2( 0.5, 0.5 );
 				target->coords[0][i] = current;
@@ -338,26 +339,23 @@ bool compareTriangles( const QPair< int, float > & tri1, const QPair< int, float
 
 void Mesh::transform()
 {
-	const NifModel * nif = static_cast<const NifModel *>( iBlock.model() );
-	if ( ! nif || ! iBlock.isValid() )
-	{
-		clear();
-		return;
-	}
-	
-	if ( upData )
-	{
+	//object->transform ();
+
+	if (upData) {
 		upData = false;
+		//block->transform ();
 		
 		// update for NiMesh
+		
 		if ( nif->checkVersion( NF_V20050000, 0 ) && nif->inherits( iBlock, T_NIMESH ) )
 		{
 #ifndef QT_NO_DEBUG
 			// do stuff
 			qWarning() << "Entering NiMesh decoding...";
 			// mesh primitive type
-			QString meshPrimitiveType = NifValue::enumOptionName( TN_MESHPRIMITIVETYPE, nif->get<uint>( iData, TA_PRIMITIVETYPE ) );
-			qWarning() << "Mesh uses" << meshPrimitiveType;
+			//QString meshPrimitiveType = NifValue::enumOptionName( TN_MESHPRIMITIVETYPE, nif->get<uint>( iData, TA_PRIMITIVETYPE ) );
+
+			//qWarning() << "Mesh uses" << meshPrimitiveType;
 			for ( int i = 0; i < nif->rowCount( iData ); i ++ )
 			{
 				// each data reference is to a single data stream
@@ -417,9 +415,9 @@ void Mesh::transform()
 				for( uint j = 0; j < numStreamComponents; j++ )
 				{
 					uint compFormat = nif->get<uint>( streamComponents.child( j, 0 ) );
-					QString compName = NifValue::enumOptionName( TN_COMPONENTFORMAT, compFormat );
-					qWarning() << "Component format is" << compName;
-					qWarning() << "Stored as a" << compName.split( "_" )[1];
+					//QString compName = NifValue::enumOptionName( TN_COMPONENTFORMAT, compFormat );
+					//qWarning() << "Component format is" << compName;
+					//qWarning() << "Stored as a" << compName.split( "_" )[1];
 					typeList.append( compFormat - 1 );
 					
 					// this can probably wait until we're reading the stream values
@@ -452,7 +450,7 @@ void Mesh::transform()
 						int typeSize = ( ( typeList[k] & 0x00000F00 ) >> 0x08 );
 						qWarning() << "Reading" << typeLength << "values" << typeSize << "bytes";
 
-						NifIStream tempInput( new NifModel, &streamBuffer );
+						//NifIStream tempInput( new NifModel, &streamBuffer );
 						QList<NifValue> values;
 						NifValue tempValue;
 						// if we had the right types, we could read in Vector etc. and not have the mess below
@@ -471,12 +469,12 @@ void Mesh::transform()
 								tempValue.changeType( NifValue::tFloat );
 								break;
 						}
-						for( int l = 0; l < typeLength; l++ )
+						/*for( int l = 0; l < typeLength; l++ )
 						{
 							tempInput.read( tempValue );
 							values.append( tempValue );
 							qWarning() << tempValue.toString();
-						}
+						}*/
 						QString compType = componentIndexMap.value( k ).split( " " )[0];
 						qWarning() << "Will store this value in" << compType;
 						// the mess begins...

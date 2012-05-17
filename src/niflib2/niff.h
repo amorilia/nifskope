@@ -104,6 +104,8 @@ public:
 
 	int ReadFloat(register NIFfloat *buf, register int count);
 
+	int ByteOrder;// TODO: implement me: 0 - 3 2 1 0 , != 0 - 0 1 2 3
+
 	~NifStream();
 };
 

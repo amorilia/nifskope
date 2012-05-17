@@ -37,5 +37,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define ASSERTION_FAILED -1
 #define NS_ASSERT(X) { if (!(X)) throw ASSERTION_FAILED; }
 #define NSfloat float
+#define NSushort unsigned short int
+#define NSString std::string
 
 #endif /* __NS_TYPES_H__ */

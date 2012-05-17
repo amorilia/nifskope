@@ -44,7 +44,8 @@ WORK_DIR = .
 QHULLDIR = $(WORK_DIR)/qhull
 RESDIR   = $(WORK_DIR)/res
 HEADERS  = -Iinclude -I. -Isrc
-INCS     = $(HEADERS) $(QTINCS)
+NL2INCS  = -Isrc/niflib2
+INCS     = $(HEADERS) $(QTINCS) $(NL2INCS)
 NSOPTNS  = -DFSENGINE -DNIFSKOPE_QT -DNIFSKOPE_X -DNIFSKOPE_OGRE_GL
 QT4OPTNS = -DQT_XML_LIB -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_SHARED
 OPTNS    = $(NSOPTNS) $(QT4OPTNS)
@@ -121,7 +122,7 @@ src/gl/dds/BlockDXT.o: src/gl/dds/Image.h src/gl/dds/BlockDXT.h
 src/gl/glmesh.o: include/ns_base.h src/gl/glscene.h src/gl/GLee.h
 src/gl/glmesh.o: src/nifmodel.h include/ns_types.h include/ns_utils.h
 src/gl/glmesh.o: src/basemodel.h src/message.h src/gl/glnode.h
-src/gl/glmesh.o: src/gl/glcontrolable.h src/gl/glproperty.h
+src/gl/glmesh.o: src/gl/glcontrolable.h src/gl/glproperty.h include/ns_math.h
 src/gl/glmesh.o: include/ns_opengl.h src/gl/gltex.h src/gl/gltools.h
 src/gl/glmesh.o: src/gl/renderer.h src/gl/glmesh.h src/gl/glcontroller.h
 src/gl/glmesh.o: src/options.h src/widgets/groupbox.h
@@ -131,20 +132,21 @@ src/gl/glparticles.o: include/ns_base.h src/gl/glscene.h src/gl/GLee.h
 src/gl/glparticles.o: src/nifmodel.h include/ns_types.h include/ns_utils.h
 src/gl/glparticles.o: src/basemodel.h src/message.h src/gl/glnode.h
 src/gl/glparticles.o: src/gl/glcontrolable.h src/gl/glproperty.h
-src/gl/glparticles.o: include/ns_opengl.h src/gl/gltex.h src/gl/gltools.h
-src/gl/glparticles.o: src/gl/renderer.h src/gl/glcontroller.h
-src/gl/glparticles.o: src/gl/glparticles.h
+src/gl/glparticles.o: include/ns_math.h include/ns_opengl.h src/gl/gltex.h
+src/gl/glparticles.o: src/gl/gltools.h src/gl/renderer.h
+src/gl/glparticles.o: src/gl/glcontroller.h src/gl/glparticles.h
 src/gl/glscene.o: include/ns_base.h src/gl/glscene.h src/gl/GLee.h
 src/gl/glscene.o: src/nifmodel.h include/ns_types.h include/ns_utils.h
 src/gl/glscene.o: src/basemodel.h src/message.h src/gl/glnode.h
 src/gl/glscene.o: src/gl/glcontrolable.h src/gl/glproperty.h
-src/gl/glscene.o: include/ns_opengl.h src/gl/gltex.h src/gl/gltools.h
-src/gl/glscene.o: src/gl/renderer.h src/gl/glcontroller.h src/gl/glmesh.h
-src/gl/glscene.o: src/gl/glparticles.h src/options.h src/widgets/groupbox.h
+src/gl/glscene.o: include/ns_math.h include/ns_opengl.h src/gl/gltex.h
+src/gl/glscene.o: src/gl/gltools.h src/gl/renderer.h src/gl/glcontroller.h
+src/gl/glscene.o: src/gl/glmesh.h src/gl/glparticles.h src/options.h
+src/gl/glscene.o: src/widgets/groupbox.h
 src/gl/gltex.o: include/ns_base.h src/gl/GLee.h src/gl/glscene.h
 src/gl/gltex.o: src/nifmodel.h include/ns_types.h include/ns_utils.h
 src/gl/gltex.o: src/basemodel.h src/message.h src/gl/glnode.h
-src/gl/gltex.o: src/gl/glcontrolable.h src/gl/glproperty.h
+src/gl/gltex.o: src/gl/glcontrolable.h src/gl/glproperty.h include/ns_math.h
 src/gl/gltex.o: include/ns_opengl.h src/gl/gltex.h src/gl/gltools.h
 src/gl/gltex.o: src/gl/renderer.h src/gl/gltexloaders.h src/options.h
 src/gl/gltex.o: src/widgets/groupbox.h src/fsengine/fsmanager.h
@@ -153,9 +155,9 @@ src/gl/glcontroller.o: include/ns_base.h src/gl/glcontroller.h src/nifmodel.h
 src/gl/glcontroller.o: include/ns_types.h include/ns_utils.h src/basemodel.h
 src/gl/glcontroller.o: src/message.h src/gl/glscene.h src/gl/GLee.h
 src/gl/glcontroller.o: src/gl/glnode.h src/gl/glcontrolable.h
-src/gl/glcontroller.o: src/gl/glproperty.h include/ns_opengl.h src/gl/gltex.h
-src/gl/glcontroller.o: src/gl/gltools.h src/gl/renderer.h src/options.h
-src/gl/glcontroller.o: src/widgets/groupbox.h
+src/gl/glcontroller.o: src/gl/glproperty.h include/ns_math.h
+src/gl/glcontroller.o: include/ns_opengl.h src/gl/gltex.h src/gl/gltools.h
+src/gl/glcontroller.o: src/gl/renderer.h src/options.h src/widgets/groupbox.h
 src/gl/gltools.o: include/ns_base.h src/gl/gltools.h src/nifmodel.h
 src/gl/gltools.o: include/ns_types.h include/ns_utils.h src/basemodel.h
 src/gl/gltools.o: src/message.h
@@ -169,7 +171,7 @@ src/gl/gltexloaders.o: src/message.h
 src/gl/glnode.o: include/ns_base.h src/gl/glscene.h src/gl/GLee.h
 src/gl/glnode.o: src/nifmodel.h include/ns_types.h include/ns_utils.h
 src/gl/glnode.o: src/basemodel.h src/message.h src/gl/glnode.h
-src/gl/glnode.o: src/gl/glcontrolable.h src/gl/glproperty.h
+src/gl/glnode.o: src/gl/glcontrolable.h src/gl/glproperty.h include/ns_math.h
 src/gl/glnode.o: include/ns_opengl.h src/gl/gltex.h src/gl/gltools.h
 src/gl/glnode.o: src/gl/renderer.h src/gl/glmarker.h src/gl/glcontroller.h
 src/gl/glnode.o: src/options.h src/widgets/groupbox.h
@@ -179,15 +181,16 @@ src/gl/renderer.o: include/ns_base.h src/gl/GLee.h src/gl/renderer.h
 src/gl/renderer.o: src/nifmodel.h include/ns_types.h include/ns_utils.h
 src/gl/renderer.o: src/basemodel.h src/message.h src/gl/gltex.h
 src/gl/renderer.o: src/gl/glmesh.h src/gl/glnode.h src/gl/glcontrolable.h
-src/gl/renderer.o: src/gl/glproperty.h include/ns_opengl.h src/gl/gltools.h
-src/gl/renderer.o: src/gl/glscene.h src/options.h src/widgets/groupbox.h
+src/gl/renderer.o: src/gl/glproperty.h include/ns_math.h include/ns_opengl.h
+src/gl/renderer.o: src/gl/gltools.h src/gl/glscene.h src/options.h
+src/gl/renderer.o: src/widgets/groupbox.h
 src/gl/glproperty.o: include/ns_base.h src/gl/glproperty.h src/gl/GLee.h
 src/gl/glproperty.o: src/gl/glcontrolable.h src/nifmodel.h include/ns_types.h
 src/gl/glproperty.o: include/ns_utils.h src/basemodel.h src/message.h
-src/gl/glproperty.o: include/ns_opengl.h src/gl/glcontroller.h
-src/gl/glproperty.o: src/gl/glscene.h src/gl/glnode.h src/gl/gltex.h
-src/gl/glproperty.o: src/gl/gltools.h src/gl/renderer.h src/options.h
-src/gl/glproperty.o: src/widgets/groupbox.h
+src/gl/glproperty.o: include/ns_math.h include/ns_opengl.h
+src/gl/glproperty.o: src/gl/glcontroller.h src/gl/glscene.h src/gl/glnode.h
+src/gl/glproperty.o: src/gl/gltex.h src/gl/gltools.h src/gl/renderer.h
+src/gl/glproperty.o: src/options.h src/widgets/groupbox.h
 src/ns_utils.o: include/ns_utils.h include/ns_base.h
 src/nifmodel.o: src/nifmodel.h include/ns_types.h include/ns_base.h
 src/nifmodel.o: include/ns_utils.h src/basemodel.h src/message.h
@@ -195,7 +198,7 @@ src/nifmodel.o: src/options.h src/widgets/groupbox.h config.h src/spellbook.h
 src/options.o: include/ns_base.h src/options.h src/widgets/groupbox.h
 src/options.o: config.h src/widgets/colorwheel.h src/widgets/fileselect.h
 src/options.o: src/widgets/floatslider.h
-src/ns_opengl.o: include/ns_opengl.h
+src/ns_opengl.o: include/ns_opengl.h include/ns_math.h include/ns_types.h
 src/message.o: src/message.h
 src/qhull.o: src/qhull.h qhull/src/qhull_a.h qhull/src/libqhull.h
 src/qhull.o: qhull/src/user.h qhull/src/stat.h qhull/src/random.h
@@ -364,8 +367,9 @@ src/widgets/inspect.o: include/ns_base.h src/widgets/inspect.h src/nifmodel.h
 src/widgets/inspect.o: include/ns_types.h include/ns_utils.h src/basemodel.h
 src/widgets/inspect.o: src/message.h src/gl/glscene.h src/gl/GLee.h
 src/widgets/inspect.o: src/gl/glnode.h src/gl/glcontrolable.h
-src/widgets/inspect.o: src/gl/glproperty.h include/ns_opengl.h src/gl/gltex.h
-src/widgets/inspect.o: src/gl/gltools.h src/gl/renderer.h src/gl/glnode.h
+src/widgets/inspect.o: src/gl/glproperty.h include/ns_math.h
+src/widgets/inspect.o: include/ns_opengl.h src/gl/gltex.h src/gl/gltools.h
+src/widgets/inspect.o: src/gl/renderer.h src/gl/glnode.h
 src/widgets/nifcheckboxlist.o: src/widgets/nifcheckboxlist.h src/nifmodel.h
 src/widgets/nifcheckboxlist.o: include/ns_types.h include/ns_base.h
 src/widgets/nifcheckboxlist.o: include/ns_utils.h src/basemodel.h
@@ -403,7 +407,7 @@ src/glview.o: include/ns_base.h src/gl/GLee.h src/glview.h src/nifmodel.h
 src/glview.o: include/ns_types.h include/ns_utils.h src/basemodel.h
 src/glview.o: src/message.h src/widgets/floatedit.h src/widgets/floatslider.h
 src/glview.o: src/gl/glscene.h src/gl/GLee.h src/gl/glnode.h
-src/glview.o: src/gl/glcontrolable.h src/gl/glproperty.h include/ns_opengl.h
-src/glview.o: src/gl/gltex.h src/gl/gltools.h src/gl/renderer.h
-src/glview.o: src/gl/gltex.h src/options.h src/widgets/groupbox.h
-src/glview.o: src/widgets/fileselect.h
+src/glview.o: src/gl/glcontrolable.h src/gl/glproperty.h include/ns_math.h
+src/glview.o: include/ns_opengl.h src/gl/gltex.h src/gl/gltools.h
+src/glview.o: src/gl/renderer.h src/gl/gltex.h src/options.h
+src/glview.o: src/widgets/groupbox.h src/widgets/fileselect.h
