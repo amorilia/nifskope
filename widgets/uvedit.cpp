@@ -41,6 +41,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <math.h>
 #include <GL/glext.h>
+#include <GL/glu.h>
 
 #include <QCursor>
 #include <QDialog>
