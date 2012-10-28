@@ -203,6 +203,9 @@ SOURCES += \
 RESOURCES += \
     nifskope.qrc
 
+FORMS += \
+	ui/about_dialog.ui
+
 fsengine {
     DEFINES += FSENGINE
     HEADERS += \
@@ -243,6 +246,3 @@ console {
 TRANSLATIONS += lang/NifSkope_de.ts lang/NifSkope_fr.ts
 
 # vim: set filetype=config : 
-
-FORMS += \
-    ui/about_dialog.ui
