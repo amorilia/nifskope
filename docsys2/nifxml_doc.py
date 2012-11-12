@@ -1,13 +1,5 @@
-# nifxml_doc.py
-#
 # This script generates HTML documentation from the XML file.
 #
-# --------------------------------------------------------------------------
-# Command line options
-#
-# -p /path/to/doc : specifies the path where HTML documentation must be created
-#
-# --------------------------------------------------------------------------
 # ***** BEGIN LICENSE BLOCK *****
 #
 # Copyright (c) 2005, 2006, 2007 NIF File Format Library and Tools
@@ -44,12 +36,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 # ***** END LICENCE BLOCK *****
-# --------------------------------------------------------------------------
 
-from nifxml import *
-from distutils.dir_util import mkpath
-import os
+import formast
 import itertools
+import os
 
 #
 # global data
@@ -57,15 +47,48 @@ import itertools
 
 ROOT_DIR = "."
 
+# parse xml, and compile into a more useful structure
 
-prev = ""
-for i in sys.argv:
-    if prev == "-p":
-        ROOT_DIR = i
-    prev = i
+class Info:
+    classes = {}
+    enums = {}
+    bitflags = {}
+
+    def __init__(self, xmlfile):
+        # important: we have to keep a reference to the formast Module object
+        # beware that any references to the AST might become invalid
+        # once Module goes out of scope
+        self._mod = formast.Module()
+        with open(xmlfile) as stream:
+            formast.XmlParser().parse_string(stream.read(), self._mod)
+        Compile(self).module(self._mod)
+
+    def inherits(self, class_name, other_class_name):
+        c = self.classes[class_name]
+        while c.base_name:
+            base_name = c.base_name.get()
+            if base_name == other_class_name:
+                return True
+            c = self.classes[base_name]
+        return False
+
+class Compile(formast.Visitor):
+    def __init__(self, info):
+        formast.Visitor.__init__(self)
+        self.info = info
+
+    def module_class(self, class_):
+        self.info.classes[class_.name] = class_
+
+    def module_enums(self, enum):
+        self.info.enums[enum.name] = enum
+
+info = Info("../docsys/nifxml/nif.xml")
+
+#print(info.inherits("NiTriShape", "NiObject"))
 
 #
-# Sort Name Lists
+# get and sort name lists
 #
 
 block_names.sort()
