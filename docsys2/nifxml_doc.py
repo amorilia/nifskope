@@ -54,6 +54,10 @@ class Info:
     enums = {}
     bitflags = {}
 
+    niobjects = {}
+    compounds = {}
+    basics = {}
+
     def __init__(self, xmlfile):
         # important: we have to keep a reference to the formast Module object
         # beware that any references to the AST might become invalid
@@ -65,6 +69,8 @@ class Info:
 
     def inherits(self, class_name, other_class_name):
         c = self.classes[class_name]
+        if class_name == other_class_name:
+            return True
         while c.base_name:
             base_name = c.base_name.get()
             if base_name == other_class_name:
@@ -77,6 +83,16 @@ class Compile(formast.Visitor):
         formast.Visitor.__init__(self)
         self.info = info
 
+    def module(self, mod):
+        formast.Visitor.module(self, mod)
+        for class_name, class_ in self.info.classes.items():
+            if self.info.inherits(class_name, "NiObject"):
+                self.info.niobjects[class_name] = class_
+            elif class_.base_name or class_.stats:
+                self.info.compounds[class_name] = class_
+            else:
+                self.info.basics[class_name] = class_
+
     def module_class(self, class_):
         self.info.classes[class_.name] = class_
 
@@ -84,8 +100,6 @@ class Compile(formast.Visitor):
         self.info.enums[enum.name] = enum
 
 info = Info("../docsys/nifxml/nif.xml")
-
-#print(info.inherits("NiTriShape", "NiObject"))
 
 #
 # get and sort name lists
