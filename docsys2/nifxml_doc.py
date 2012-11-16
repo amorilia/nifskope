@@ -50,13 +50,11 @@ ROOT_DIR = "."
 # parse xml, and compile into a more useful structure
 
 class Info:
-    classes = {}
-    enums = {}
-    bitflags = {}
-
-    niobjects = {}
-    compounds = {}
     basics = {}
+    bitflags = {}
+    compounds = {}
+    enums = {}
+    niobjects = {}
 
     def __init__(self, xmlfile):
         # important: we have to keep a reference to the formast Module object
@@ -67,7 +65,13 @@ class Info:
             formast.XmlParser().parse_string(stream.read(), self._mod)
         Compile(self).module(self._mod)
 
-    def inherits(self, class_name, other_class_name):
+class Compile(formast.Visitor):
+    def __init__(self, info):
+        formast.Visitor.__init__(self)
+        self.info = info
+        self.classes = {}
+
+    def _inherits(self, class_name, other_class_name):
         c = self.classes[class_name]
         if class_name == other_class_name:
             return True
@@ -78,15 +82,10 @@ class Info:
             c = self.classes[base_name]
         return False
 
-class Compile(formast.Visitor):
-    def __init__(self, info):
-        formast.Visitor.__init__(self)
-        self.info = info
-
     def module(self, mod):
         formast.Visitor.module(self, mod)
-        for class_name, class_ in self.info.classes.items():
-            if self.info.inherits(class_name, "NiObject"):
+        for class_name, class_ in self.classes.items():
+            if self._inherits(class_name, "NiObject"):
                 self.info.niobjects[class_name] = class_
             elif class_.base_name or class_.stats:
                 self.info.compounds[class_name] = class_
@@ -94,7 +93,8 @@ class Compile(formast.Visitor):
                 self.info.basics[class_name] = class_
 
     def module_class(self, class_):
-        self.info.classes[class_.name] = class_
+        # moved into self.info later
+        self.classes[class_.name] = class_
 
     def module_enums(self, enum):
         self.info.enums[enum.name] = enum
